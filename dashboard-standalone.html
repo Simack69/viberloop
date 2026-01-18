@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Viberloop Bio - Dashboard (Demo)</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .flow-node {
+            transition: all 0.3s ease;
+        }
+
+        .flow-node.active {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(147, 51, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(147, 51, 234, 0.8); }
+        }
+
+        .flow-connector {
+            stroke: #9333ea;
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5, 5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            min-width: 600px;
+        }
+
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        <i class="fas fa-flask mr-1"></i>DEMO - localStorage
+    </div>
+
+    <div class="min-h-screen p-4 pb-24">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-white text-3xl font-black uppercase tracking-widest">Dashboard</h1>
+                    <p class="text-purple-300 text-sm">Supply Chain Control Tower</p>
+                </div>
+                <a href="viberloop-standalone.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                    <i class="fas fa-arrow-left mr-2"></i>Field App
+                </a>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Total Transactions</div>
+                    <div class="text-white text-2xl font-black" id="totalCount">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Total Weight</div>
+                    <div class="text-white text-2xl font-black" id="totalWeight">0 kg</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Active Nodes</div>
+                    <div class="text-white text-2xl font-black" id="activeNodes">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Storage Used</div>
+                    <div class="text-white text-2xl font-black" id="dbUsage">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button onclick="switchTab('ledger')" id="tabLedger" class="tab-btn bg-purple-600 text-white px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-table mr-2"></i>Ledger
+            </button>
+            <button onclick="switchTab('map')" id="tabMap" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-project-diagram mr-2"></i>Traceability Map
+            </button>
+            <button onclick="switchTab('explorer')" id="tabExplorer" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-search mr-2"></i>Block Explorer
+            </button>
+        </div>
+
+        <!-- Ledger Tab -->
+        <div id="ledgerTab" class="tab-content">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-white text-xl font-bold flex items-center">
+                        <i class="fas fa-database mr-3 text-purple-400"></i>
+                        Live Ledger
+                    </h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="searchInput" placeholder="Search NX, Source, Batch..."
+                               class="bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               oninput="filterLedger()">
+                        <button onclick="refreshLedger()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-purple-500/30">
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">ID</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Source</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Batch</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Location</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Weight</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Time</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-purple-300 py-8">
+                                    No transactions yet
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Traceability Map Tab -->
+        <div id="mapTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-map-marked-alt mr-3 text-purple-400"></i>
+                    Supply Chain Flow
+                </h2>
+
+                <!-- Flow Diagram -->
+                <div class="relative overflow-x-auto pb-8">
+                    <div class="flex items-center justify-between min-w-max gap-4 p-4">
+                        <!-- SVG Connectors -->
+                        <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index: 0;">
+                            <path id="connector1" class="flow-connector" d="M 120 80 L 220 80"></path>
+                            <path id="connector2" class="flow-connector" d="M 320 80 L 420 80"></path>
+                            <path id="connector3" class="flow-connector" d="M 520 80 L 620 80"></path>
+                            <path id="connector4" class="flow-connector" d="M 720 80 L 820 80"></path>
+                            <path id="connector5" class="flow-connector" d="M 920 80 L 1020 80"></path>
+                        </svg>
+
+                        <!-- Nodes -->
+                        <div id="nodeRecycler" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-warehouse text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Recycler</div>
+                            <div id="countRecycler" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeHubMixed" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-layer-group text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Hub Mixed</div>
+                            <div id="countHubMixed" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeSpinner" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-cog text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Spinner</div>
+                            <div id="countSpinner" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeWeaver" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-th text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Weaver</div>
+                            <div id="countWeaver" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeFactory" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-industry text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Factory</div>
+                            <div id="countFactory" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeRetailer" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-store text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Retailer</div>
+                            <div id="countRetailer" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-black/20 rounded-xl p-4">
+                    <div class="text-purple-300 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Nodes light up when transactions are recorded. Click any node to filter transactions.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block Explorer Tab -->
+        <div id="explorerTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-cube mr-3 text-purple-400"></i>
+                    Solana Block Explorer
+                </h2>
+
+                <div class="mb-4">
+                    <input type="text" id="hashSearch" placeholder="Enter transaction hash..."
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           oninput="searchByHash()">
+                </div>
+
+                <div id="explorerResults" class="space-y-4">
+                    <div class="text-center text-purple-300 py-8">
+                        <i class="fas fa-search text-4xl mb-3"></i>
+                        <div>Enter a transaction hash to view details</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Passport Modal -->
+    <div id="passportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white text-xl font-bold">Digital Passport</h3>
+                <button onclick="closePassport()" class="text-purple-300 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div id="passportContent">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== LOCALSTORAGE (DEMO MODE) ====================
+        const STORAGE_KEY = 'viberloop_demo_data';
+
+        // ==================== STATE MANAGEMENT ====================
+        let allTransactions = [];
+        let filteredTransactions = [];
+
+        // ==================== LOCALSTORAGE HELPERS ====================
+        function getTransactions() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-white/10', 'text-purple-300');
+            });
+
+            if (tabName === 'ledger') {
+                document.getElementById('ledgerTab').classList.remove('hidden');
+                document.getElementById('tabLedger').classList.add('bg-purple-600', 'text-white');
+                document.getElementById('tabLedger').classList.remove('bg-white/10', 'text-purple-300');
+            } else if (tabName === 'map') {
+                document.getElementById('mapTab').classList.remove('hidden');
+                document.getElementById('tabMap').classList.add('bg-purple-600', 'text-white');
+                document.getElementById('tabMap').classList.remove('bg-white/10', 'text-purple-300');
+                updateFlowMap();
+            } else if (tabName === 'explorer') {
+                document.getElementById('explorerTab').classList.remove('hidden');
+                document.getElementById('tabExplorer').classList.add('bg-purple-600', 'text-white');
+                document.getElementById('tabExplorer').classList.remove('bg-white/10', 'text-purple-300');
+            }
+        }
+
+        // ==================== LEDGER MANAGEMENT ====================
+        function loadLedger() {
+            allTransactions = getTransactions();
+            allTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            filteredTransactions = [...allTransactions];
+            renderLedger();
+            updateStats();
+            updateFlowMap();
+        }
+
+        function renderLedger() {
+            const tbody = document.getElementById('ledgerBody');
+
+            if (filteredTransactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-purple-300 py-8">
+                            No transactions found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredTransactions.map(tx => `
+                <tr class="border-b border-purple-500/20 hover:bg-white/5 transition">
+                    <td class="py-3 px-2">
+                        <div class="text-white font-bold text-sm">${tx.id}</div>
+                        <div class="text-purple-400 text-xs">${tx.material}</div>
+                    </td>
+                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.wasteSource}</td>
+                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.batchId}</td>
+                    <td class="py-3 px-2">
+                        <span class="bg-purple-600 px-2 py-1 rounded text-white text-xs">
+                            ${tx.location}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2 text-white font-bold text-sm">${tx.weight}</td>
+                    <td class="py-3 px-2 text-purple-300 text-xs">${tx.time}</td>
+                    <td class="py-3 px-2">
+                        <button onclick='viewPassport(${JSON.stringify(tx).replace(/'/g, "&#39;")})'
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs">
+                            <i class="fas fa-id-card"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterLedger() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+            filteredTransactions = allTransactions.filter(tx => {
+                return (
+                    tx.id.toLowerCase().includes(searchTerm) ||
+                    tx.wasteSource.toLowerCase().includes(searchTerm) ||
+                    tx.batchId.toLowerCase().includes(searchTerm) ||
+                    tx.location.toLowerCase().includes(searchTerm) ||
+                    tx.hash.toLowerCase().includes(searchTerm)
+                );
+            });
+
+            renderLedger();
+        }
+
+        function refreshLedger() {
+            loadLedger();
+        }
+
+        // ==================== STATS UPDATE ====================
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allTransactions.length;
+
+            let totalWeight = 0;
+            allTransactions.forEach(tx => {
+                const weight = parseFloat(tx.weight.replace(' kg', ''));
+                if (!isNaN(weight)) totalWeight += weight;
+            });
+            document.getElementById('totalWeight').textContent = `${totalWeight.toFixed(0)} kg`;
+
+            const uniqueLocations = new Set(allTransactions.map(tx => tx.location));
+            document.getElementById('activeNodes').textContent = uniqueLocations.size;
+
+            const estimatedSize = JSON.stringify(allTransactions).length;
+            const maxSize = 5 * 1024 * 1024;
+            const usage = ((estimatedSize / maxSize) * 100).toFixed(1);
+            document.getElementById('dbUsage').textContent = `${usage}%`;
+        }
+
+        // ==================== FLOW MAP ====================
+        function updateFlowMap() {
+            const locationMap = {
+                'RECYCLER HUB': 'nodeRecycler',
+                'HUB MIXED': 'nodeHubMixed',
+                'SPINNING MILL': 'nodeSpinner',
+                'WEAVING UNIT': 'nodeWeaver',
+                'FACTORY': 'nodeFactory',
+                'RETAILER': 'nodeRetailer'
+            };
+
+            const counts = {
+                'RECYCLER HUB': 0,
+                'HUB MIXED': 0,
+                'SPINNING MILL': 0,
+                'WEAVING UNIT': 0,
+                'FACTORY': 0,
+                'RETAILER': 0
+            };
+
+            allTransactions.forEach(tx => {
+                const location = tx.location;
+                if (counts.hasOwnProperty(location)) {
+                    counts[location]++;
+                }
+            });
+
+            Object.keys(locationMap).forEach(location => {
+                const nodeId = locationMap[location];
+                const node = document.getElementById(nodeId);
+                const countEl = document.getElementById('count' + nodeId.replace('node', ''));
+
+                if (counts[location] > 0) {
+                    node.classList.remove('bg-slate-700', 'border-slate-500');
+                    node.classList.add('bg-purple-600', 'border-purple-400', 'active');
+                    countEl.textContent = counts[location];
+                } else {
+                    node.classList.add('bg-slate-700', 'border-slate-500');
+                    node.classList.remove('bg-purple-600', 'border-purple-400', 'active');
+                    countEl.textContent = '0';
+                }
+            });
+        }
+
+        // ==================== BLOCK EXPLORER ====================
+        function searchByHash() {
+            const hash = document.getElementById('hashSearch').value.trim();
+            const resultsDiv = document.getElementById('explorerResults');
+
+            if (!hash) {
+                resultsDiv.innerHTML = `
+                    <div class="text-center text-purple-300 py-8">
+                        <i class="fas fa-search text-4xl mb-3"></i>
+                        <div>Enter a transaction hash to view details</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const found = allTransactions.filter(tx =>
+                tx.hash.toLowerCase().includes(hash.toLowerCase())
+            );
+
+            if (found.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="text-center text-red-400 py-8">
+                        <i class="fas fa-exclamation-circle text-4xl mb-3"></i>
+                        <div>No transactions found with this hash</div>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsDiv.innerHTML = found.map(tx => {
+                const slotId = Math.floor(Math.random() * 1000000) + 100000000;
+                const gasFee = (Math.random() * 0.001).toFixed(6);
+
+                return `
+                    <div class="bg-black/30 rounded-2xl p-6 border border-purple-500/30">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-white font-bold text-lg">Transaction Details</h3>
+                            <span class="bg-green-500 px-3 py-1 rounded-lg text-white text-xs">
+                                <i class="fas fa-check mr-1"></i>Confirmed
+                            </span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <div>
+                                <div class="text-purple-400 text-xs uppercase mb-1">Transaction Hash</div>
+                                <div class="text-white font-mono text-sm break-all">${tx.hash}</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <div class="text-purple-400 text-xs uppercase mb-1">Slot ID</div>
+                                    <div class="text-white font-mono text-sm">${slotId}</div>
+                                </div>
+                                <div>
+                                    <div class="text-purple-400 text-xs uppercase mb-1">Gas Fee</div>
+                                    <div class="text-white font-mono text-sm">${gasFee} SOL</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-purple-400 text-xs uppercase mb-1">Borsh Data</div>
+                                <div class="bg-black/40 rounded-lg p-3 text-purple-300 font-mono text-xs overflow-x-auto">
+                                    {<br>
+                                    &nbsp;&nbsp;"id": "${tx.id}",<br>
+                                    &nbsp;&nbsp;"batch": "${tx.batchId}",<br>
+                                    &nbsp;&nbsp;"source": "${tx.wasteSource}",<br>
+                                    &nbsp;&nbsp;"action": "${tx.action}",<br>
+                                    &nbsp;&nbsp;"location": "${tx.location}",<br>
+                                    &nbsp;&nbsp;"weight": "${tx.weight}",<br>
+                                    &nbsp;&nbsp;"material": "${tx.material}"<br>
+                                    }
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-purple-400 text-xs uppercase mb-1">Timestamp</div>
+                                <div class="text-white text-sm">${tx.time}</div>
+                            </div>
+                        </div>
+
+                        <button onclick='viewPassport(${JSON.stringify(tx).replace(/'/g, "&#39;")})'
+                                class="w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">
+                            <i class="fas fa-passport mr-2"></i>View Digital Passport
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== PASSPORT MODAL ====================
+        function viewPassport(txData) {
+            const content = document.getElementById('passportContent');
+
+            content.innerHTML = `
+                <div class="mb-6">
+                    <img src="${txData.photoUrl}" alt="Product Photo"
+                         class="w-full h-48 object-cover rounded-2xl border-2 border-purple-400">
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Asset ID</div>
+                        <div class="text-white text-lg font-black">${txData.id}</div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Batch ID</div>
+                            <div class="text-white font-bold">${txData.batchId}</div>
+                        </div>
+                        <div>
+                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Weight</div>
+                            <div class="text-white font-bold">${txData.weight}</div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Source</div>
+                        <div class="text-white">${txData.wasteSource}</div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Material</div>
+                        <div class="text-white">${txData.material}</div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Process Action</div>
+                        <div class="text-white">${txData.action}</div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Location</div>
+                        <div class="bg-purple-600 inline-block px-3 py-1 rounded-lg text-white text-sm">
+                            ${txData.location}
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Timestamp</div>
+                        <div class="text-white text-sm">${txData.time}</div>
+                    </div>
+
+                    <div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Blockchain Hash</div>
+                        <div class="text-white font-mono text-xs break-all bg-black/20 p-2 rounded">
+                            ${txData.hash}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-purple-500/30">
+                    <div class="flex items-center justify-center gap-2 text-purple-300 text-xs">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Verified on Solana Blockchain</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('passportModal').classList.remove('hidden');
+        }
+
+        function closePassport() {
+            document.getElementById('passportModal').classList.add('hidden');
+        }
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            loadLedger();
+            switchTab('ledger');
+
+            // Auto-refresh every 5 seconds to catch new transactions
+            setInterval(loadLedger, 5000);
+        });
+    </script>
+</body>
+</html>
