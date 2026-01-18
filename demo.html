@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Viberloop Bio - Demo Mockup</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mining-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        .demo-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        <i class="fas fa-flask mr-2"></i>DEMO MODE - localStorage
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-4xl w-full">
+            <div class="text-center mb-12">
+                <div class="inline-block bg-purple-600 p-6 rounded-[2rem] mb-6">
+                    <i class="fas fa-recycle text-white text-6xl"></i>
+                </div>
+                <h1 class="text-white text-5xl font-black uppercase tracking-widest mb-4">Viberloop Bio</h1>
+                <p class="text-purple-300 text-xl mb-2">Textile Supply Chain dApp</p>
+                <p class="text-purple-400 text-sm">Demo Mockup Version</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Field App Card -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20 hover:border-purple-400 transition-all cursor-pointer transform hover:scale-105" onclick="openFieldApp()">
+                    <div class="bg-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
+                        <i class="fas fa-mobile-alt text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-white text-2xl font-bold mb-3">Field App</h2>
+                    <p class="text-purple-300 mb-4">Data entry interface for supply chain operators</p>
+                    <ul class="text-purple-400 text-sm space-y-2 mb-6">
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Role-based authentication</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Dynamic forms</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Photo compression</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Blockchain simulation</li>
+                    </ul>
+                    <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl">
+                        Open Field App <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+
+                <!-- Dashboard Card -->
+                <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20 hover:border-purple-400 transition-all cursor-pointer transform hover:scale-105" onclick="openDashboard()">
+                    <div class="bg-purple-600 w-16 h-16 rounded-2xl flex items-center justify-center mb-4">
+                        <i class="fas fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-white text-2xl font-bold mb-3">Dashboard</h2>
+                    <p class="text-purple-300 mb-4">Executive control tower for tracking and audit</p>
+                    <ul class="text-purple-400 text-sm space-y-2 mb-6">
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Live ledger view</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Traceability map</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Block explorer</li>
+                        <li><i class="fas fa-check text-green-400 mr-2"></i>Digital passports</li>
+                    </ul>
+                    <button class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl">
+                        Open Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-info-circle text-yellow-400 text-xl mt-1"></i>
+                    <div>
+                        <h3 class="text-yellow-400 font-bold mb-2">Demo Mode Information</h3>
+                        <p class="text-yellow-300 text-sm mb-2">This is a mockup version using browser localStorage for demonstration purposes.</p>
+                        <ul class="text-yellow-300 text-sm space-y-1">
+                            <li>• Data is stored locally in your browser</li>
+                            <li>• No Firebase configuration required</li>
+                            <li>• Perfect for testing the UI and workflow</li>
+                            <li>• For production, use the Firebase version (viberloop.html)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="loadSampleData()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl mr-3">
+                    <i class="fas fa-database mr-2"></i>Load Sample Data
+                </button>
+                <button onclick="clearAllData()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-xl">
+                    <i class="fas fa-trash mr-2"></i>Clear All Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openFieldApp() {
+            window.open('viberloop-demo.html', '_blank');
+        }
+
+        function openDashboard() {
+            window.open('dashboard-demo.html', '_blank');
+        }
+
+        function loadSampleData() {
+            const sampleTransactions = [
+                {
+                    id: "NX-10001",
+                    batchId: "TRK-A001",
+                    wasteSource: "Jayanti Group",
+                    action: "Bale Creation",
+                    location: "RECYCLER HUB",
+                    time: new Date().toLocaleString(),
+                    weight: "250 kg",
+                    material: "Bio Cotton",
+                    hash: "SOL-" + Math.random().toString(36).substring(2, 15),
+                    photoUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E📦%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now()
+                },
+                {
+                    id: "NX-10002",
+                    batchId: "TRK-A002",
+                    wasteSource: "Green Textiles Ltd",
+                    action: "Bale Creation",
+                    location: "RECYCLER HUB",
+                    time: new Date(Date.now() - 3600000).toLocaleString(),
+                    weight: "180 kg",
+                    material: "Bio Cotton",
+                    hash: "SOL-" + Math.random().toString(36).substring(2, 15),
+                    photoUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E📦%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now() - 3600000
+                },
+                {
+                    id: "PL-SP001",
+                    batchId: "TRK-B001",
+                    wasteSource: "Recycler Hub",
+                    action: "Yarn Production",
+                    location: "SPINNING MILL",
+                    time: new Date(Date.now() - 7200000).toLocaleString(),
+                    weight: "220 kg",
+                    material: "Processing Output",
+                    hash: "SOL-" + Math.random().toString(36).substring(2, 15),
+                    photoUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E🧵%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now() - 7200000
+                },
+                {
+                    id: "PL-WV001",
+                    batchId: "TRK-C001",
+                    wasteSource: "Spinner Mill",
+                    action: "Fabric Weaving",
+                    location: "WEAVING UNIT",
+                    time: new Date(Date.now() - 10800000).toLocaleString(),
+                    weight: "200 kg",
+                    material: "Processing Output",
+                    hash: "SOL-" + Math.random().toString(36).substring(2, 15),
+                    photoUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E🧶%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now() - 10800000
+                },
+                {
+                    id: "PL-FC001",
+                    batchId: "TRK-D001",
+                    wasteSource: "Weaving Unit",
+                    action: "Garment Production",
+                    location: "FACTORY",
+                    time: new Date(Date.now() - 14400000).toLocaleString(),
+                    weight: "150 kg",
+                    material: "Finished Goods",
+                    hash: "SOL-" + Math.random().toString(36).substring(2, 15),
+                    photoUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E👕%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now() - 14400000
+                }
+            ];
+
+            localStorage.setItem('viberloop_demo_data', JSON.stringify(sampleTransactions));
+            alert('✅ Sample data loaded successfully!\n\nYou can now open the Field App or Dashboard to see the data.');
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all demo data?')) {
+                localStorage.removeItem('viberloop_demo_data');
+                localStorage.removeItem('viberloop_role');
+                alert('✅ All demo data cleared!');
+            }
+        }
+    </script>
+</body>
+</html>
