@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "transactions": {
+      ".read": true,
+      ".write": true,
+      "$transactionId": {
+        ".validate": "newData.hasChildren(['id', 'batchId', 'wasteSource', 'action', 'location', 'time', 'weight', 'material', 'hash', 'photoUrl'])"
+      }
+    }
+  }
+}

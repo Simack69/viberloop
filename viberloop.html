@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Viberloop Bio - Field App</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mining-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-purple-600 p-4 rounded-[2rem] mb-4">
+                    <i class="fas fa-recycle text-white text-4xl"></i>
+                </div>
+                <h1 class="text-white text-3xl font-black uppercase tracking-widest mb-2">Viberloop</h1>
+                <p class="text-purple-300 text-sm">Bio Cotton Supply Chain</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6">Select Your Role</h2>
+
+                <div class="space-y-3">
+                    <button onclick="login('RECYCLER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-warehouse mr-3"></i>Recycler</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('HUB_MIXED')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Hub Mixed</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('SPINNER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-cog mr-3"></i>Spinner</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('WEAVER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-th mr-3"></i>Weaver</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('FACTORY')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-industry mr-3"></i>Factory</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('RETAILER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-store mr-3"></i>Retailer</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-white/20">
+                    <a href="dashboard.html" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="appScreen" class="hidden min-h-screen p-4 pb-24">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-white text-2xl font-black uppercase tracking-wider">Viberloop</h1>
+                    <p class="text-purple-300 text-sm" id="roleDisplay"></p>
+                </div>
+                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Transaction Form -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 mb-6">
+            <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-plus-circle mr-3 text-purple-400"></i>
+                New Transaction
+            </h2>
+
+            <form id="transactionForm" class="space-y-4">
+                <!-- Dynamic ID Field -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2" id="idLabel">
+                        Reference Code
+                    </label>
+                    <input type="text" id="assetId" required
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="Enter code...">
+                </div>
+
+                <!-- Batch/Truck ID -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Batch/Truck ID
+                    </label>
+                    <input type="text" id="batchId" required
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="e.g., TRK-A1B2">
+                </div>
+
+                <!-- Dynamic Source Field -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2" id="sourceLabel">
+                        Source
+                    </label>
+                    <input type="text" id="wasteSource" required
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="Enter source...">
+                </div>
+
+                <!-- Hub Mixed Consolidation -->
+                <div id="consolidationSection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        <i class="fas fa-layer-group mr-2"></i>Consolidate Existing Bales
+                    </label>
+                    <div id="existingBalesList" class="space-y-2 max-h-48 overflow-y-auto bg-black/20 rounded-xl p-3">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Weight -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Net Weight (kg)
+                    </label>
+                    <input type="number" id="weight" required
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="e.g., 200">
+                </div>
+
+                <!-- Material Type -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Material Type
+                    </label>
+                    <select id="material" required
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="Bio Cotton">Bio Cotton</option>
+                        <option value="Processing Output">Processing Output</option>
+                        <option value="Finished Goods">Finished Goods</option>
+                    </select>
+                </div>
+
+                <!-- Photo Upload -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Photo Evidence (Optional)
+                    </label>
+                    <div class="flex gap-3">
+                        <label class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-camera mr-2"></i>
+                            <span id="photoButtonText">Take Photo</span>
+                            <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoUpload(event)">
+                        </label>
+                        <button type="button" onclick="clearPhoto()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 rounded-xl">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <canvas id="photoCanvas" class="hidden"></canvas>
+                    <img id="photoPreview" class="hidden mt-3 w-full rounded-xl border-2 border-purple-400">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-black py-4 px-6 rounded-2xl uppercase tracking-wider transition-all transform hover:scale-105">
+                    <i class="fas fa-cubes mr-2"></i>
+                    Submit to Chain
+                </button>
+            </form>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+            <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-history mr-3 text-purple-400"></i>
+                Recent Transactions
+            </h2>
+            <div id="recentTransactions" class="space-y-3">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mining Modal -->
+    <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
+                    <i class="fas fa-cubes text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Mining Transaction</h3>
+            <p class="text-purple-300 text-sm mb-4 mining-dots">Broadcasting to Solana Network</p>
+            <div class="bg-purple-600/30 rounded-full h-2 overflow-hidden">
+                <div class="bg-purple-500 h-full w-3/4 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-green-500 p-6 rounded-full">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Transaction Confirmed!</h3>
+            <p class="text-purple-300 text-sm mb-4" id="successHash"></p>
+            <button onclick="closeSuccessModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== FIREBASE CONFIGURATION ====================
+        // IMPORTANT: Replace these values with your Firebase project credentials
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        let app, database, storage;
+        try {
+            app = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            storage = firebase.storage();
+            console.log("✅ Firebase initialized successfully");
+        } catch (error) {
+            console.error("❌ Firebase initialization error:", error);
+            alert("Firebase configuration error. Please check your credentials.");
+        }
+
+        // ==================== STATE MANAGEMENT ====================
+        let currentRole = null;
+        let currentPhotoData = null;
+        let selectedBalesForConsolidation = [];
+
+        // ==================== ROLE CONFIGURATION ====================
+        const roleConfig = {
+            'RECYCLER': {
+                display: 'Recycler Hub',
+                action: 'Bale Creation',
+                location: 'RECYCLER HUB',
+                idLabel: 'NX Reference Code',
+                idPrefix: 'NX-',
+                sourceLabel: 'Waste/Hub Source'
+            },
+            'HUB_MIXED': {
+                display: 'Hub Mixed',
+                action: 'Bale Consolidation',
+                location: 'HUB MIXED',
+                idLabel: 'NX Reference Code',
+                idPrefix: 'NX-',
+                sourceLabel: 'Waste/Hub Source',
+                allowConsolidation: true
+            },
+            'SPINNER': {
+                display: 'Spinning Mill',
+                action: 'Yarn Production',
+                location: 'SPINNING MILL',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            },
+            'WEAVER': {
+                display: 'Weaving Unit',
+                action: 'Fabric Weaving',
+                location: 'WEAVING UNIT',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            },
+            'FACTORY': {
+                display: 'Manufacturing Factory',
+                action: 'Garment Production',
+                location: 'FACTORY',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            },
+            'RETAILER': {
+                display: 'Retail Point',
+                action: 'Product Sale',
+                location: 'RETAILER',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            }
+        };
+
+        // ==================== AUTHENTICATION ====================
+        function login(role) {
+            currentRole = role;
+            localStorage.setItem('viberloop_role', role);
+
+            const config = roleConfig[role];
+            document.getElementById('roleDisplay').textContent = config.display;
+            document.getElementById('idLabel').textContent = config.idLabel;
+            document.getElementById('sourceLabel').textContent = config.sourceLabel;
+            document.getElementById('assetId').placeholder = `e.g., ${config.idPrefix}12345`;
+
+            // Show/hide consolidation section
+            if (config.allowConsolidation) {
+                document.getElementById('consolidationSection').classList.remove('hidden');
+                loadExistingBales();
+            } else {
+                document.getElementById('consolidationSection').classList.add('hidden');
+            }
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+
+            loadRecentTransactions();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentRole = null;
+                localStorage.removeItem('viberloop_role');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('transactionForm').reset();
+                clearPhoto();
+            }
+        }
+
+        // ==================== PHOTO HANDLING ====================
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compressImage(dataUrl) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('photoCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Calculate dimensions to keep under 20kb
+                let width = img.width;
+                let height = img.height;
+                const maxDimension = 400; // Reduced for mobile
+
+                if (width > height && width > maxDimension) {
+                    height = (height / width) * maxDimension;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width / height) * maxDimension;
+                    height = maxDimension;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Compress to JPEG with quality adjustment
+                let quality = 0.6;
+                let compressed = canvas.toDataURL('image/jpeg', quality);
+
+                // Further reduce quality if still too large
+                while (compressed.length > 20000 && quality > 0.1) {
+                    quality -= 0.1;
+                    compressed = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                currentPhotoData = compressed;
+                document.getElementById('photoPreview').src = compressed;
+                document.getElementById('photoPreview').classList.remove('hidden');
+                document.getElementById('photoButtonText').textContent = 'Photo Added ✓';
+            };
+            img.onerror = function() {
+                alert('Error processing image. Please try another photo.');
+            };
+            img.src = dataUrl;
+        }
+
+        function clearPhoto() {
+            currentPhotoData = null;
+            document.getElementById('photoInput').value = '';
+            document.getElementById('photoPreview').classList.add('hidden');
+            document.getElementById('photoButtonText').textContent = 'Take Photo';
+        }
+
+        // ==================== HUB MIXED CONSOLIDATION ====================
+        function loadExistingBales() {
+            const listEl = document.getElementById('existingBalesList');
+            listEl.innerHTML = '<p class="text-purple-300 text-sm">Loading existing bales...</p>';
+
+            database.ref('transactions').orderByChild('location').equalTo('RECYCLER HUB').limitToLast(20).once('value')
+                .then(snapshot => {
+                    listEl.innerHTML = '';
+                    const bales = [];
+
+                    snapshot.forEach(childSnapshot => {
+                        bales.push({
+                            key: childSnapshot.key,
+                            data: childSnapshot.val()
+                        });
+                    });
+
+                    if (bales.length === 0) {
+                        listEl.innerHTML = '<p class="text-purple-300 text-sm">No existing bales found</p>';
+                        return;
+                    }
+
+                    bales.forEach(bale => {
+                        const checkbox = document.createElement('label');
+                        checkbox.className = 'flex items-center gap-3 bg-white/5 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition';
+                        checkbox.innerHTML = `
+                            <input type="checkbox" value="${bale.key}" onchange="toggleBaleSelection('${bale.key}')"
+                                   class="w-5 h-5 text-purple-600 rounded">
+                            <div class="flex-1 text-sm">
+                                <div class="text-white font-bold">${bale.data.id}</div>
+                                <div class="text-purple-300">${bale.data.weight} - ${bale.data.wasteSource}</div>
+                            </div>
+                        `;
+                        listEl.appendChild(checkbox);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading bales:', error);
+                    listEl.innerHTML = '<p class="text-red-400 text-sm">Error loading bales</p>';
+                });
+        }
+
+        function toggleBaleSelection(baleKey) {
+            const index = selectedBalesForConsolidation.indexOf(baleKey);
+            if (index > -1) {
+                selectedBalesForConsolidation.splice(index, 1);
+            } else {
+                selectedBalesForConsolidation.push(baleKey);
+            }
+        }
+
+        // ==================== FORM SUBMISSION ====================
+        document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const config = roleConfig[currentRole];
+            const assetId = document.getElementById('assetId').value.trim();
+            const batchId = document.getElementById('batchId').value.trim();
+            const wasteSource = document.getElementById('wasteSource').value.trim();
+            const weight = document.getElementById('weight').value;
+            const material = document.getElementById('material').value;
+
+            // Validation
+            if (!assetId || !batchId || !wasteSource || !weight) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            // Show mining modal
+            document.getElementById('miningModal').classList.remove('hidden');
+
+            // Simulate blockchain mining delay
+            const miningDelay = Math.floor(Math.random() * 700) + 800; // 800-1500ms
+
+            setTimeout(async () => {
+                try {
+                    // Generate mock Solana transaction hash
+                    const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
+                                 Math.random().toString(36).substring(2, 15);
+
+                    // Prepare transaction data
+                    const transaction = {
+                        id: assetId,
+                        batchId: batchId,
+                        wasteSource: wasteSource,
+                        action: config.action,
+                        location: config.location,
+                        time: new Date().toLocaleString(),
+                        weight: `${weight} kg`,
+                        material: material,
+                        hash: hash,
+                        photoUrl: currentPhotoData || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E',
+                        consolidatedBales: selectedBalesForConsolidation.length > 0 ? selectedBalesForConsolidation : null,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    // Save to Firebase
+                    await database.ref('transactions').push(transaction);
+
+                    // Hide mining, show success
+                    document.getElementById('miningModal').classList.add('hidden');
+                    document.getElementById('successHash').textContent = `Hash: ${hash}`;
+                    document.getElementById('successModal').classList.remove('hidden');
+
+                    // Reset form
+                    document.getElementById('transactionForm').reset();
+                    clearPhoto();
+                    selectedBalesForConsolidation = [];
+
+                    // Reload recent transactions
+                    loadRecentTransactions();
+
+                } catch (error) {
+                    console.error('Error saving transaction:', error);
+                    document.getElementById('miningModal').classList.add('hidden');
+                    alert('Error submitting transaction. Please try again.');
+                }
+            }, miningDelay);
+        });
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // ==================== RECENT TRANSACTIONS ====================
+        function loadRecentTransactions() {
+            const container = document.getElementById('recentTransactions');
+            container.innerHTML = '<p class="text-purple-300 text-sm">Loading...</p>';
+
+            database.ref('transactions').orderByChild('timestamp').limitToLast(10).once('value')
+                .then(snapshot => {
+                    container.innerHTML = '';
+                    const transactions = [];
+
+                    snapshot.forEach(childSnapshot => {
+                        transactions.unshift({
+                            key: childSnapshot.key,
+                            data: childSnapshot.val()
+                        });
+                    });
+
+                    if (transactions.length === 0) {
+                        container.innerHTML = '<p class="text-purple-300 text-sm text-center py-4">No transactions yet</p>';
+                        return;
+                    }
+
+                    transactions.forEach(tx => {
+                        const card = document.createElement('div');
+                        card.className = 'bg-black/30 rounded-xl p-4 border border-purple-500/30';
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <div class="text-white font-bold">${tx.data.id}</div>
+                                    <div class="text-purple-300 text-sm">${tx.data.location}</div>
+                                </div>
+                                <div class="bg-purple-600 px-3 py-1 rounded-lg text-white text-xs">
+                                    ${tx.data.weight}
+                                </div>
+                            </div>
+                            <div class="text-purple-400 text-xs">
+                                <i class="fas fa-clock mr-1"></i>${tx.data.time}
+                            </div>
+                            <div class="text-purple-400 text-xs mt-1 truncate">
+                                <i class="fas fa-link mr-1"></i>${tx.data.hash}
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading transactions:', error);
+                    container.innerHTML = '<p class="text-red-400 text-sm">Error loading transactions</p>';
+                });
+        }
+
+        // ==================== AUTO-LOGIN IF ROLE EXISTS ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedRole = localStorage.getItem('viberloop_role');
+            if (savedRole && roleConfig[savedRole]) {
+                login(savedRole);
+            }
+        });
+    </script>
+</body>
+</html>
