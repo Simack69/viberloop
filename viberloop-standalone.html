@@ -191,8 +191,21 @@
                            placeholder="e.g., TRK-A1B2">
                 </div>
 
+                <!-- Material Type (Early - for Spinning Mill and Weaving Unit) -->
+                <div id="materialEarlySection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Material Type
+                    </label>
+                    <select id="materialEarly"
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select type...</option>
+                        <option value="BIO">BIO</option>
+                        <option value="Regular">Regular</option>
+                    </select>
+                </div>
+
                 <!-- Dynamic Source Field -->
-                <div>
+                <div id="sourceFieldSection">
                     <label class="block text-purple-300 text-sm font-bold mb-2" id="sourceLabel">
                         Source
                     </label>
@@ -205,48 +218,38 @@
                     </select>
                 </div>
 
-                <!-- Consolidation Hub: Hub Source Field -->
+                <!-- Consolidation Hub: Hub Location -->
                 <div id="hubSourceSection" class="hidden">
                     <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Hub Source
+                        Consolidation Hub location
                     </label>
                     <select id="hubSource"
                             class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select hub source...</option>
+                        <option value="">Select hub location...</option>
                         <option value="Viberloop India Hub">Viberloop India Hub</option>
                     </select>
                 </div>
 
-                <!-- Consolidation Hub: NX Reference Code -->
-                <div id="nxReferenceSection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        NX Reference Code
-                    </label>
-                    <input type="text" id="nxReference"
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="Enter NX reference...">
-                </div>
-
-                <!-- Spinning Mill: India Consolidation Hub -->
+                <!-- Spinning Mill: Consolidation Hub Location -->
                 <div id="indiaConsolidationSection" class="hidden">
                     <label class="block text-purple-300 text-sm font-bold mb-2">
-                        India Consolidation Hub
+                        Consolidation Hub location
                     </label>
                     <select id="indiaConsolidation"
                             class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select India Consolidation Hub...</option>
+                        <option value="">Select hub location...</option>
                         <option value="India Consolidation Hub">India Consolidation Hub</option>
                     </select>
                 </div>
 
-                <!-- Weaving Unit: Spinning Prabu -->
+                <!-- Weaving Unit: Spinning Location -->
                 <div id="spinningPrabuSection" class="hidden">
                     <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Spinning Prabu
+                        Spinning location
                     </label>
                     <select id="spinningPrabu"
                             class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select Spinning Prabu...</option>
+                        <option value="">Select spinning location...</option>
                         <option value="Spinning Prabu">Spinning Prabu</option>
                     </select>
                 </div>
@@ -293,8 +296,8 @@
                            placeholder="e.g., 10">
                 </div>
 
-                <!-- Material Type -->
-                <div>
+                <!-- Material Type (Late - for other roles) -->
+                <div id="materialLateSection">
                     <label class="block text-purple-300 text-sm font-bold mb-2">
                         Material Type
                     </label>
@@ -311,14 +314,21 @@
                     <label class="block text-purple-300 text-sm font-bold mb-2">
                         Photo Evidence (Optional)
                     </label>
-                    <div class="flex gap-3">
-                        <label class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
                             <i class="fas fa-camera mr-2"></i>
-                            <span id="photoButtonText">Take Photo</span>
-                            <input type="file" id="photoInput" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoUpload(event)">
+                            <span>Take Photo</span>
+                            <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoUpload(event)">
                         </label>
-                        <button type="button" onclick="clearPhoto()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 rounded-xl">
-                            <i class="fas fa-times"></i>
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-upload mr-2"></i>
+                            <span>Upload Photo</span>
+                            <input type="file" id="photoInputUpload" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                        </label>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="clearPhoto()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm">
+                            <i class="fas fa-times mr-2"></i>Clear Photo
                         </button>
                     </div>
                     <canvas id="photoCanvas" class="hidden"></canvas>
@@ -406,8 +416,7 @@
                 sourceLabel: 'Waste/Hub Source',
                 sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
                 allowConsolidation: true,
-                showHubSource: true,
-                showNxReference: true
+                showHubSource: true
             },
             'SPINNER': {
                 display: 'Spinning Mill',
@@ -503,18 +512,41 @@
 
             // Hide all conditional fields first
             document.getElementById('hubSourceSection').classList.add('hidden');
-            document.getElementById('nxReferenceSection').classList.add('hidden');
             document.getElementById('indiaConsolidationSection').classList.add('hidden');
             document.getElementById('spinningPrabuSection').classList.add('hidden');
             document.getElementById('textileFactorySection').classList.add('hidden');
             document.getElementById('consolidationSection').classList.add('hidden');
 
+            // Handle Material Type positioning
+            const isSpinningOrWeaving = currentRole === 'SPINNER' || currentRole === 'WEAVER';
+            if (isSpinningOrWeaving) {
+                // Show material type early, hide late version
+                document.getElementById('materialEarlySection').classList.remove('hidden');
+                document.getElementById('materialLateSection').classList.add('hidden');
+                // Make early material field required
+                document.getElementById('materialEarly').setAttribute('required', 'required');
+                document.getElementById('material').removeAttribute('required');
+            } else {
+                // Show material type late, hide early version
+                document.getElementById('materialEarlySection').classList.add('hidden');
+                document.getElementById('materialLateSection').classList.remove('hidden');
+                // Make late material field required
+                document.getElementById('material').setAttribute('required', 'required');
+                document.getElementById('materialEarly').removeAttribute('required');
+            }
+
+            // Hide source field for Spinning Mill
+            if (currentRole === 'SPINNER') {
+                document.getElementById('sourceFieldSection').classList.add('hidden');
+                document.getElementById('wasteSource').removeAttribute('required');
+            } else {
+                document.getElementById('sourceFieldSection').classList.remove('hidden');
+                document.getElementById('wasteSource').setAttribute('required', 'required');
+            }
+
             // Show role-specific fields
             if (config.showHubSource) {
                 document.getElementById('hubSourceSection').classList.remove('hidden');
-            }
-            if (config.showNxReference) {
-                document.getElementById('nxReferenceSection').classList.remove('hidden');
             }
             if (config.showIndiaConsolidation) {
                 document.getElementById('indiaConsolidationSection').classList.remove('hidden');
@@ -602,9 +634,9 @@
 
         function clearPhoto() {
             currentPhotoData = null;
-            document.getElementById('photoInput').value = '';
+            document.getElementById('photoInputCamera').value = '';
+            document.getElementById('photoInputUpload').value = '';
             document.getElementById('photoPreview').classList.add('hidden');
-            document.getElementById('photoButtonText').textContent = 'Take Photo';
         }
 
         // ==================== HUB MIXED CONSOLIDATION ====================
@@ -650,12 +682,22 @@
             const config = roleConfig[currentRole];
             const assetId = document.getElementById('assetId').value.trim();
             const batchId = document.getElementById('batchId').value.trim();
-            const wasteSource = document.getElementById('wasteSource').value.trim();
+            const wasteSource = currentRole === 'SPINNER' ? 'N/A' : document.getElementById('wasteSource').value.trim();
             const weight = document.getElementById('weight').value;
             const batchSize = document.getElementById('batchSize').value;
-            const material = document.getElementById('material').value;
 
-            if (!assetId || !batchId || !wasteSource || !weight || !batchSize || !material) {
+            // Get material from the correct field based on role
+            const isSpinningOrWeaving = currentRole === 'SPINNER' || currentRole === 'WEAVER';
+            const material = isSpinningOrWeaving
+                ? document.getElementById('materialEarly').value
+                : document.getElementById('material').value;
+
+            // Validation
+            if (!assetId || !batchId || !weight || !batchSize || !material) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            if (currentRole !== 'SPINNER' && !wasteSource) {
                 alert('Please fill in all required fields');
                 return;
             }
@@ -671,7 +713,6 @@
 
                 // Collect optional fields
                 const hubSource = document.getElementById('hubSource') ? document.getElementById('hubSource').value : '';
-                const nxReference = document.getElementById('nxReference') ? document.getElementById('nxReference').value : '';
                 const indiaConsolidation = document.getElementById('indiaConsolidation') ? document.getElementById('indiaConsolidation').value : '';
                 const spinningPrabu = document.getElementById('spinningPrabu') ? document.getElementById('spinningPrabu').value : '';
                 const textileFactory = document.getElementById('textileFactory') ? document.getElementById('textileFactory').value : '';
@@ -694,7 +735,6 @@
 
                 // Add optional fields if present
                 if (hubSource) transaction.hubSource = hubSource;
-                if (nxReference) transaction.nxReference = nxReference;
                 if (indiaConsolidation) transaction.indiaConsolidation = indiaConsolidation;
                 if (spinningPrabu) transaction.spinningPrabu = spinningPrabu;
                 if (textileFactory) transaction.textileFactory = textileFactory;
