@@ -88,8 +88,8 @@
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('RECYCLING_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-layer-group mr-3"></i>Recycling Hub</span>
+                    <button onclick="login('CONSOLIDATION_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Consolidation Hub</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -103,8 +103,8 @@
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('FACTORY')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-industry mr-3"></i>Factory</span>
+                    <button onclick="login('TEXTILE_FACTORY')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-industry mr-3"></i>Textile Factory</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -234,6 +234,64 @@
                     </select>
                 </div>
 
+                <!-- Consolidation Hub: Hub Source Field -->
+                <div id="hubSourceSection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Hub Source
+                    </label>
+                    <select id="hubSource"
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select hub source...</option>
+                        <option value="Viberloop India Hub">Viberloop India Hub</option>
+                    </select>
+                </div>
+
+                <!-- Consolidation Hub: NX Reference Code -->
+                <div id="nxReferenceSection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        NX Reference Code
+                    </label>
+                    <input type="text" id="nxReference"
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="Enter NX reference...">
+                </div>
+
+                <!-- Spinning Mill: India Consolidation Hub -->
+                <div id="indiaConsolidationSection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        India Consolidation Hub
+                    </label>
+                    <select id="indiaConsolidation"
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select hub...</option>
+                        <option value="India Consolidation Hub">India Consolidation Hub</option>
+                    </select>
+                </div>
+
+                <!-- Weaving Unit: Spinning Prabu -->
+                <div id="spinningPrabuSection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Spinning Prabu
+                    </label>
+                    <select id="spinningPrabu"
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select spinning...</option>
+                        <option value="Spinning Prabu">Spinning Prabu</option>
+                    </select>
+                </div>
+
+                <!-- Textile Factory: JK -->
+                <div id="textileFactorySection" class="hidden">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Textile Factory
+                    </label>
+                    <select id="textileFactory"
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select factory...</option>
+                        <option value="JK">JK</option>
+                    </select>
+                </div>
+
                 <!-- Photo Upload -->
                 <div>
                     <label class="block text-purple-300 text-sm font-bold mb-2">
@@ -343,16 +401,20 @@
                 location: 'RECYCLER HUB',
                 idLabel: 'NX Reference Code',
                 idPrefix: 'NX-',
-                sourceLabel: 'Waste/Hub Source'
+                sourceLabel: 'Waste/Hub Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
             },
-            'RECYCLING_HUB': {
-                display: 'Recycling Hub',
+            'CONSOLIDATION_HUB': {
+                display: 'Consolidation Hub',
                 action: 'Bale Consolidation',
-                location: 'RECYCLING HUB',
+                location: 'CONSOLIDATION HUB',
                 idLabel: 'NX Reference Code',
                 idPrefix: 'NX-',
                 sourceLabel: 'Waste/Hub Source',
-                allowConsolidation: true
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
+                allowConsolidation: true,
+                showHubSource: true,
+                showNxReference: true
             },
             'SPINNER': {
                 display: 'Spinning Mill',
@@ -360,7 +422,9 @@
                 location: 'SPINNING MILL',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
+                showIndiaConsolidation: true
             },
             'WEAVER': {
                 display: 'Weaving Unit',
@@ -368,15 +432,19 @@
                 location: 'WEAVING UNIT',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
+                showSpinningPrabu: true
             },
-            'FACTORY': {
-                display: 'Manufacturing Factory',
+            'TEXTILE_FACTORY': {
+                display: 'Textile Factory',
                 action: 'Garment Production',
-                location: 'FACTORY',
+                location: 'TEXTILE FACTORY',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills', 'Milan Tex'],
+                showTextileFactory: true
             },
             'POL': {
                 display: 'Point of Loading',
@@ -384,7 +452,8 @@
                 location: 'POINT OF LOADING',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
             },
             'POD': {
                 display: 'Point of Destination',
@@ -392,7 +461,8 @@
                 location: 'POINT OF DESTINATION',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
             },
             'DISTRIBUTION_CENTER': {
                 display: 'Distribution Center',
@@ -400,7 +470,8 @@
                 location: 'DISTRIBUTION CENTER',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
-                sourceLabel: 'Partner Source'
+                sourceLabel: 'Partner Source',
+                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
             }
         };
 
@@ -414,6 +485,42 @@
             document.getElementById('idLabel').textContent = config.idLabel;
             document.getElementById('sourceLabel').textContent = config.sourceLabel;
             document.getElementById('assetId').placeholder = `e.g., ${config.idPrefix}12345`;
+
+            // Populate source options
+            const wasteSourceSelect = document.getElementById('wasteSource');
+            wasteSourceSelect.innerHTML = '<option value="">Select source...</option>';
+            if (config.sourceOptions) {
+                config.sourceOptions.forEach(option => {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option;
+                    optionEl.textContent = option;
+                    wasteSourceSelect.appendChild(optionEl);
+                });
+            }
+
+            // Hide all conditional fields first
+            document.getElementById('hubSourceSection').classList.add('hidden');
+            document.getElementById('nxReferenceSection').classList.add('hidden');
+            document.getElementById('indiaConsolidationSection').classList.add('hidden');
+            document.getElementById('spinningPrabuSection').classList.add('hidden');
+            document.getElementById('textileFactorySection').classList.add('hidden');
+
+            // Show role-specific fields
+            if (config.showHubSource) {
+                document.getElementById('hubSourceSection').classList.remove('hidden');
+            }
+            if (config.showNxReference) {
+                document.getElementById('nxReferenceSection').classList.remove('hidden');
+            }
+            if (config.showIndiaConsolidation) {
+                document.getElementById('indiaConsolidationSection').classList.remove('hidden');
+            }
+            if (config.showSpinningPrabu) {
+                document.getElementById('spinningPrabuSection').classList.remove('hidden');
+            }
+            if (config.showTextileFactory) {
+                document.getElementById('textileFactorySection').classList.remove('hidden');
+            }
 
             // Show/hide consolidation section
             if (config.allowConsolidation) {
@@ -566,6 +673,13 @@
             const batchSize = document.getElementById('batchSize').value;
             const material = document.getElementById('material').value;
 
+            // Optional conditional fields
+            const hubSource = document.getElementById('hubSource').value.trim();
+            const nxReference = document.getElementById('nxReference').value.trim();
+            const indiaConsolidation = document.getElementById('indiaConsolidation').value.trim();
+            const spinningPrabu = document.getElementById('spinningPrabu').value.trim();
+            const textileFactory = document.getElementById('textileFactory').value.trim();
+
             // Validation
             if (!assetId || !batchId || !wasteSource || !weight || !batchSize || !material) {
                 alert('Please fill in all required fields');
@@ -600,6 +714,13 @@
                         consolidatedBales: selectedBalesForConsolidation.length > 0 ? selectedBalesForConsolidation : null,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
+
+                    // Add optional fields if they have values
+                    if (hubSource) transaction.hubSource = hubSource;
+                    if (nxReference) transaction.nxReference = nxReference;
+                    if (indiaConsolidation) transaction.indiaConsolidation = indiaConsolidation;
+                    if (spinningPrabu) transaction.spinningPrabu = spinningPrabu;
+                    if (textileFactory) transaction.textileFactory = textileFactory;
 
                     // Save to Firebase
                     await database.ref('transactions').push(transaction);
