@@ -102,8 +102,8 @@
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('HUB_MIXED')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-layer-group mr-3"></i>Hub Mixed</span>
+                    <button onclick="login('RECYCLING_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Recycling Hub</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -122,8 +122,18 @@
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('RETAILER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-store mr-3"></i>Retailer</span>
+                    <button onclick="login('POL')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-shipping-fast mr-3"></i>Point of Loading</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('POD')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-truck-loading mr-3"></i>Point of Destination</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('DISTRIBUTION_CENTER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-store mr-3"></i>Distribution Center</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
@@ -186,9 +196,13 @@
                     <label class="block text-purple-300 text-sm font-bold mb-2" id="sourceLabel">
                         Source
                     </label>
-                    <input type="text" id="wasteSource" required
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="Enter source...">
+                    <select id="wasteSource" required
+                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">Select source...</option>
+                        <option value="Jayanti Group">Jayanti Group</option>
+                        <option value="Vardhman Textiles">Vardhman Textiles</option>
+                        <option value="Arvind Mills">Arvind Mills</option>
+                    </select>
                 </div>
 
                 <!-- Hub Mixed Consolidation -->
@@ -211,6 +225,16 @@
                            placeholder="e.g., 200">
                 </div>
 
+                <!-- Batch Size -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Batch Size (Bales)
+                    </label>
+                    <input type="number" id="batchSize" required
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           placeholder="e.g., 10">
+                </div>
+
                 <!-- Material Type -->
                 <div>
                     <label class="block text-purple-300 text-sm font-bold mb-2">
@@ -218,9 +242,9 @@
                     </label>
                     <select id="material" required
                             class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="Bio Cotton">Bio Cotton</option>
-                        <option value="Processing Output">Processing Output</option>
-                        <option value="Finished Goods">Finished Goods</option>
+                        <option value="">Select type...</option>
+                        <option value="BIO">BIO</option>
+                        <option value="Regular">Regular</option>
                     </select>
                 </div>
 
@@ -314,10 +338,10 @@
                 idPrefix: 'NX-',
                 sourceLabel: 'Waste/Hub Source'
             },
-            'HUB_MIXED': {
-                display: 'Hub Mixed',
+            'RECYCLING_HUB': {
+                display: 'Recycling Hub',
                 action: 'Bale Consolidation',
-                location: 'HUB MIXED',
+                location: 'RECYCLING HUB',
                 idLabel: 'NX Reference Code',
                 idPrefix: 'NX-',
                 sourceLabel: 'Waste/Hub Source',
@@ -347,10 +371,26 @@
                 idPrefix: 'PL-',
                 sourceLabel: 'Partner Source'
             },
-            'RETAILER': {
-                display: 'Retail Point',
-                action: 'Product Sale',
-                location: 'RETAILER',
+            'POL': {
+                display: 'Point of Loading',
+                action: 'Shipment Loading',
+                location: 'POINT OF LOADING',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            },
+            'POD': {
+                display: 'Point of Destination',
+                action: 'Shipment Receiving',
+                location: 'POINT OF DESTINATION',
+                idLabel: 'Packing List Number',
+                idPrefix: 'PL-',
+                sourceLabel: 'Partner Source'
+            },
+            'DISTRIBUTION_CENTER': {
+                display: 'Distribution Center',
+                action: 'Product Distribution',
+                location: 'DISTRIBUTION CENTER',
                 idLabel: 'Packing List Number',
                 idPrefix: 'PL-',
                 sourceLabel: 'Partner Source'
@@ -510,9 +550,10 @@
             const batchId = document.getElementById('batchId').value.trim();
             const wasteSource = document.getElementById('wasteSource').value.trim();
             const weight = document.getElementById('weight').value;
+            const batchSize = document.getElementById('batchSize').value;
             const material = document.getElementById('material').value;
 
-            if (!assetId || !batchId || !wasteSource || !weight) {
+            if (!assetId || !batchId || !wasteSource || !weight || !batchSize || !material) {
                 alert('Please fill in all required fields');
                 return;
             }
@@ -534,6 +575,7 @@
                     location: config.location,
                     time: new Date().toLocaleString(),
                     weight: `${weight} kg`,
+                    batchSize: `${batchSize} bales`,
                     material: material,
                     hash: hash,
                     photoUrl: currentPhotoData || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E',

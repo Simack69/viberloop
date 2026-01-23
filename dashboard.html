@@ -182,6 +182,8 @@
                             <path id="connector3" class="flow-connector" d="M 520 80 L 620 80"></path>
                             <path id="connector4" class="flow-connector" d="M 720 80 L 820 80"></path>
                             <path id="connector5" class="flow-connector" d="M 920 80 L 1020 80"></path>
+                            <path id="connector6" class="flow-connector" d="M 1120 80 L 1220 80"></path>
+                            <path id="connector7" class="flow-connector" d="M 1320 80 L 1420 80"></path>
                         </svg>
 
                         <!-- Nodes -->
@@ -191,10 +193,10 @@
                             <div id="countRecycler" class="text-purple-400 text-xs mt-1">0</div>
                         </div>
 
-                        <div id="nodeHubMixed" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                        <div id="nodeRecyclingHub" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
                             <i class="fas fa-layer-group text-slate-400 text-2xl mb-2"></i>
-                            <div class="text-white text-xs font-bold">Hub Mixed</div>
-                            <div id="countHubMixed" class="text-purple-400 text-xs mt-1">0</div>
+                            <div class="text-white text-xs font-bold">Recycling Hub</div>
+                            <div id="countRecyclingHub" class="text-purple-400 text-xs mt-1">0</div>
                         </div>
 
                         <div id="nodeSpinner" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
@@ -215,10 +217,22 @@
                             <div id="countFactory" class="text-purple-400 text-xs mt-1">0</div>
                         </div>
 
-                        <div id="nodeRetailer" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                        <div id="nodePOL" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-shipping-fast text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">PoL</div>
+                            <div id="countPOL" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodePOD" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-truck-loading text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">PoD</div>
+                            <div id="countPOD" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeDistributionCenter" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
                             <i class="fas fa-store text-slate-400 text-2xl mb-2"></i>
-                            <div class="text-white text-xs font-bold">Retailer</div>
-                            <div id="countRetailer" class="text-purple-400 text-xs mt-1">0</div>
+                            <div class="text-white text-xs font-bold">Dist. Center</div>
+                            <div id="countDistributionCenter" class="text-purple-400 text-xs mt-1">0</div>
                         </div>
                     </div>
                 </div>
@@ -449,20 +463,24 @@
         function updateFlowMap() {
             const locationMap = {
                 'RECYCLER HUB': 'nodeRecycler',
-                'HUB MIXED': 'nodeHubMixed',
+                'RECYCLING HUB': 'nodeRecyclingHub',
                 'SPINNING MILL': 'nodeSpinner',
                 'WEAVING UNIT': 'nodeWeaver',
                 'FACTORY': 'nodeFactory',
-                'RETAILER': 'nodeRetailer'
+                'POINT OF LOADING': 'nodePOL',
+                'POINT OF DESTINATION': 'nodePOD',
+                'DISTRIBUTION CENTER': 'nodeDistributionCenter'
             };
 
             const counts = {
                 'RECYCLER HUB': 0,
-                'HUB MIXED': 0,
+                'RECYCLING HUB': 0,
                 'SPINNING MILL': 0,
                 'WEAVING UNIT': 0,
                 'FACTORY': 0,
-                'RETAILER': 0
+                'POINT OF LOADING': 0,
+                'POINT OF DESTINATION': 0,
+                'DISTRIBUTION CENTER': 0
             };
 
             // Count transactions per location
