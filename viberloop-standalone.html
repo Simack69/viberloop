@@ -60,6 +60,16 @@
             80%, 100% { content: '...'; }
         }
 
+        .tab-active {
+            background: linear-gradient(135deg, #9333ea, #7e22ce);
+            color: white;
+        }
+
+        .tab-inactive {
+            background: rgba(255, 255, 255, 0.05);
+            color: #d8b4fe;
+        }
+
         .demo-badge {
             position: fixed;
             top: 10px;
@@ -97,13 +107,13 @@
                 <h2 class="text-white text-xl font-bold mb-6">Select Your Role</h2>
 
                 <div class="space-y-3">
-                    <button onclick="login('RECYCLER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-warehouse mr-3"></i>Recycler</span>
+                    <button onclick="login('WASTE_SOURCE')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-warehouse mr-3"></i>Waste Source</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('CONSOLIDATION_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-layer-group mr-3"></i>Consolidation Hub</span>
+                    <button onclick="login('RECYCLING_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Recycling Hub</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -117,8 +127,8 @@
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('TEXTILE_FACTORY')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
-                        <span><i class="fas fa-industry mr-3"></i>Textile Factory</span>
+                    <button onclick="login('MANUFACTURING')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-industry mr-3"></i>Manufacturing</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
@@ -163,150 +173,64 @@
             </div>
         </div>
 
+        <!-- Tab Buttons (for roles with split screens) -->
+        <div id="tabButtons" class="hidden mb-6 grid grid-cols-2 gap-3">
+            <button onclick="switchFormTab('incoming')" id="tabIncoming" class="tab-active py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-down mr-2"></i>Incoming Goods
+            </button>
+            <button onclick="switchFormTab('outgoing')" id="tabOutgoing" class="tab-inactive py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-up mr-2"></i>Outgoing Goods
+            </button>
+        </div>
+
         <!-- Transaction Form -->
         <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 mb-6">
             <h2 class="text-white text-xl font-bold mb-6 flex items-center">
                 <i class="fas fa-plus-circle mr-3 text-purple-400"></i>
-                New Transaction
+                <span id="formTitle">New Transaction</span>
             </h2>
 
             <form id="transactionForm" class="space-y-4">
-                <!-- Dynamic ID Field -->
-                <div>
-                    <label class="block text-purple-300 text-sm font-bold mb-2" id="idLabel">
-                        Reference Code
-                    </label>
-                    <input type="text" id="assetId" required
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="Enter code...">
-                </div>
+                <!-- Universal Fields Section -->
+                <div class="bg-purple-900/30 rounded-xl p-4 mb-4 border border-purple-500/30">
+                    <h3 class="text-purple-200 font-bold mb-3 text-sm uppercase">Universal Fields</h3>
 
-                <!-- Batch/Truck ID -->
-                <div>
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Batch/Truck ID
-                    </label>
-                    <input type="text" id="batchId" required
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="e.g., TRK-A1B2">
-                </div>
+                    <!-- Customer -->
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Customer <span class="text-red-400">*</span>
+                        </label>
+                        <select id="customer" required
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Select customer...</option>
+                            <option value="EkoPlaza">EkoPlaza</option>
+                            <option value="Norma">Norma</option>
+                        </select>
+                    </div>
 
-                <!-- Material Type (Early - for Spinning Mill and Weaving Unit) -->
-                <div id="materialEarlySection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Material Type
-                    </label>
-                    <select id="materialEarly"
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select type...</option>
-                        <option value="BIO">BIO</option>
-                        <option value="Regular">Regular</option>
-                    </select>
-                </div>
+                    <!-- Date -->
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Date <span class="text-red-400">*</span>
+                        </label>
+                        <input type="date" id="transactionDate" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
 
-                <!-- Dynamic Source Field -->
-                <div id="sourceFieldSection">
-                    <label class="block text-purple-300 text-sm font-bold mb-2" id="sourceLabel">
-                        Source
-                    </label>
-                    <select id="wasteSource" required
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select source...</option>
-                        <option value="Jayanti Group">Jayanti Group</option>
-                        <option value="Vardhman Textiles">Vardhman Textiles</option>
-                        <option value="Arvind Mills">Arvind Mills</option>
-                    </select>
-                </div>
-
-                <!-- Consolidation Hub: Hub Location -->
-                <div id="hubSourceSection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Consolidation Hub location
-                    </label>
-                    <select id="hubSource"
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select hub location...</option>
-                        <option value="Viberloop India Hub">Viberloop India Hub</option>
-                    </select>
-                </div>
-
-                <!-- Spinning Mill: Consolidation Hub Location -->
-                <div id="indiaConsolidationSection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Consolidation Hub location
-                    </label>
-                    <select id="indiaConsolidation"
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select hub location...</option>
-                        <option value="India Consolidation Hub">India Consolidation Hub</option>
-                    </select>
-                </div>
-
-                <!-- Weaving Unit: Spinning Location -->
-                <div id="spinningPrabuSection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Spinning location
-                    </label>
-                    <select id="spinningPrabu"
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select spinning location...</option>
-                        <option value="Spinning Prabu">Spinning Prabu</option>
-                    </select>
-                </div>
-
-                <!-- Textile Factory: Textile Factory Field -->
-                <div id="textileFactorySection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Textile Factory
-                    </label>
-                    <select id="textileFactory"
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select Textile Factory...</option>
-                        <option value="JK">JK</option>
-                    </select>
-                </div>
-
-                <!-- Consolidation Hub Consolidation -->
-                <div id="consolidationSection" class="hidden">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        <i class="fas fa-layer-group mr-2"></i>Consolidate Existing Bales
-                    </label>
-                    <div id="existingBalesList" class="space-y-2 max-h-48 overflow-y-auto bg-black/20 rounded-xl p-3">
-                        <!-- Dynamically populated -->
+                    <!-- Purchase Order -->
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Purchase Order <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="purchaseOrder" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter purchase order...">
                     </div>
                 </div>
 
-                <!-- Weight -->
-                <div>
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Net Weight (kg)
-                    </label>
-                    <input type="number" id="weight" required
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="e.g., 200">
-                </div>
-
-                <!-- Batch Size -->
-                <div>
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Batch Size (Bales)
-                    </label>
-                    <input type="number" id="batchSize" required
-                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                           placeholder="e.g., 10">
-                </div>
-
-                <!-- Material Type (Late - for other roles) -->
-                <div id="materialLateSection">
-                    <label class="block text-purple-300 text-sm font-bold mb-2">
-                        Material Type
-                    </label>
-                    <select id="material" required
-                            class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        <option value="">Select type...</option>
-                        <option value="BIO">BIO</option>
-                        <option value="Regular">Regular</option>
-                    </select>
+                <!-- Dynamic Form Fields Container -->
+                <div id="dynamicFields">
+                    <!-- Fields will be inserted here dynamically -->
                 </div>
 
                 <!-- Photo Upload -->
@@ -393,89 +317,9 @@
 
         // ==================== STATE MANAGEMENT ====================
         let currentRole = null;
+        let currentTab = 'incoming'; // 'incoming' or 'outgoing'
         let currentPhotoData = null;
-        let selectedBalesForConsolidation = [];
-
-        // ==================== ROLE CONFIGURATION ====================
-        const roleConfig = {
-            'RECYCLER': {
-                display: 'Recycler Hub',
-                action: 'Bale Creation',
-                location: 'RECYCLER HUB',
-                idLabel: 'NX Reference Code',
-                idPrefix: 'NX-',
-                sourceLabel: 'Waste/Hub Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
-            },
-            'CONSOLIDATION_HUB': {
-                display: 'Consolidation Hub',
-                action: 'Bale Consolidation',
-                location: 'CONSOLIDATION HUB',
-                idLabel: 'NX Reference Code',
-                idPrefix: 'NX-',
-                sourceLabel: 'Waste/Hub Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
-                allowConsolidation: true,
-                showHubSource: true
-            },
-            'SPINNER': {
-                display: 'Spinning Mill',
-                action: 'Yarn Production',
-                location: 'SPINNING MILL',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
-                showIndiaConsolidation: true
-            },
-            'WEAVER': {
-                display: 'Weaving Unit',
-                action: 'Fabric Weaving',
-                location: 'WEAVING UNIT',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'],
-                showSpinningPrabu: true
-            },
-            'TEXTILE_FACTORY': {
-                display: 'Textile Factory',
-                action: 'Garment Production',
-                location: 'TEXTILE FACTORY',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills', 'Milan Tex'],
-                showTextileFactory: true
-            },
-            'POL': {
-                display: 'Point of Loading',
-                action: 'Shipment Loading',
-                location: 'POINT OF LOADING',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
-            },
-            'POD': {
-                display: 'Point of Destination',
-                action: 'Shipment Receiving',
-                location: 'POINT OF DESTINATION',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
-            },
-            'DISTRIBUTION_CENTER': {
-                display: 'Distribution Center',
-                action: 'Product Distribution',
-                location: 'DISTRIBUTION CENTER',
-                idLabel: 'Packing List Number',
-                idPrefix: 'PL-',
-                sourceLabel: 'Partner Source',
-                sourceOptions: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills']
-            }
-        };
+        let incomingNXCodes = []; // For multi-select in RECYCLING_HUB outgoing
 
         // ==================== LOCALSTORAGE HELPERS ====================
         function getTransactions() {
@@ -489,6 +333,217 @@
             localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
         }
 
+        // ==================== ROLE CONFIGURATION ====================
+        const roleConfig = {
+            'WASTE_SOURCE': {
+                display: 'Waste Source',
+                hasTabs: false,
+                location: 'WASTE_SOURCE',
+                fields: {
+                    single: [
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'RECYCLING_HUB': {
+                display: 'Recycling Hub',
+                hasTabs: true,
+                location: 'RECYCLING_HUB',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'multiselect', required: true, placeholder: 'Select from incoming NX codes' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'SPINNER': {
+                display: 'Spinner',
+                hasTabs: true,
+                location: 'SPINNER',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'WEAVER': {
+                display: 'Weaver',
+                hasTabs: true,
+                location: 'WEAVER',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'MANUFACTURING': {
+                display: 'Manufacturing',
+                hasTabs: true,
+                location: 'MANUFACTURING',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POL': {
+                display: 'Point of Loading',
+                hasTabs: true,
+                location: 'POL',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'container', label: 'Container', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POD': {
+                display: 'Point of Destination',
+                hasTabs: true,
+                location: 'POD',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'DISTRIBUTION_CENTER': {
+                display: 'Distribution Center',
+                hasTabs: true,
+                location: 'DISTRIBUTION_CENTER',
+                fields: {
+                    incoming: [
+                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [] // Distribution Center typically doesn't have outgoing
+                }
+            }
+        };
+
         // ==================== AUTHENTICATION ====================
         function login(role) {
             currentRole = role;
@@ -496,71 +551,20 @@
 
             const config = roleConfig[role];
             document.getElementById('roleDisplay').textContent = config.display;
-            document.getElementById('idLabel').textContent = config.idLabel;
-            document.getElementById('sourceLabel').textContent = config.sourceLabel;
-            document.getElementById('assetId').placeholder = `e.g., ${config.idPrefix}12345`;
 
-            // Populate source dropdown with role-specific options
-            const sourceSelect = document.getElementById('wasteSource');
-            sourceSelect.innerHTML = '<option value="">Select source...</option>';
-            config.sourceOptions.forEach(option => {
-                const opt = document.createElement('option');
-                opt.value = option;
-                opt.textContent = option;
-                sourceSelect.appendChild(opt);
-            });
-
-            // Hide all conditional fields first
-            document.getElementById('hubSourceSection').classList.add('hidden');
-            document.getElementById('indiaConsolidationSection').classList.add('hidden');
-            document.getElementById('spinningPrabuSection').classList.add('hidden');
-            document.getElementById('textileFactorySection').classList.add('hidden');
-            document.getElementById('consolidationSection').classList.add('hidden');
-
-            // Handle Material Type positioning
-            const isSpinningOrWeaving = currentRole === 'SPINNER' || currentRole === 'WEAVER';
-            if (isSpinningOrWeaving) {
-                // Show material type early, hide late version
-                document.getElementById('materialEarlySection').classList.remove('hidden');
-                document.getElementById('materialLateSection').classList.add('hidden');
-                // Make early material field required
-                document.getElementById('materialEarly').setAttribute('required', 'required');
-                document.getElementById('material').removeAttribute('required');
+            // Show/hide tabs
+            if (config.hasTabs) {
+                document.getElementById('tabButtons').classList.remove('hidden');
+                currentTab = 'incoming';
+                switchFormTab('incoming');
             } else {
-                // Show material type late, hide early version
-                document.getElementById('materialEarlySection').classList.add('hidden');
-                document.getElementById('materialLateSection').classList.remove('hidden');
-                // Make late material field required
-                document.getElementById('material').setAttribute('required', 'required');
-                document.getElementById('materialEarly').removeAttribute('required');
+                document.getElementById('tabButtons').classList.add('hidden');
+                renderForm();
             }
 
-            // Hide source field for Spinning Mill
-            if (currentRole === 'SPINNER') {
-                document.getElementById('sourceFieldSection').classList.add('hidden');
-                document.getElementById('wasteSource').removeAttribute('required');
-            } else {
-                document.getElementById('sourceFieldSection').classList.remove('hidden');
-                document.getElementById('wasteSource').setAttribute('required', 'required');
-            }
-
-            // Show role-specific fields
-            if (config.showHubSource) {
-                document.getElementById('hubSourceSection').classList.remove('hidden');
-            }
-            if (config.showIndiaConsolidation) {
-                document.getElementById('indiaConsolidationSection').classList.remove('hidden');
-            }
-            if (config.showSpinningPrabu) {
-                document.getElementById('spinningPrabuSection').classList.remove('hidden');
-            }
-            if (config.showTextileFactory) {
-                document.getElementById('textileFactorySection').classList.remove('hidden');
-            }
-            if (config.allowConsolidation) {
-                document.getElementById('consolidationSection').classList.remove('hidden');
-                loadExistingBales();
-            }
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('transactionDate').value = today;
 
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
@@ -577,6 +581,102 @@
                 document.getElementById('transactionForm').reset();
                 clearPhoto();
             }
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchFormTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            if (tab === 'incoming') {
+                document.getElementById('tabIncoming').classList.remove('tab-inactive');
+                document.getElementById('tabIncoming').classList.add('tab-active');
+                document.getElementById('tabOutgoing').classList.remove('tab-active');
+                document.getElementById('tabOutgoing').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Incoming Goods';
+            } else {
+                document.getElementById('tabOutgoing').classList.remove('tab-inactive');
+                document.getElementById('tabOutgoing').classList.add('tab-active');
+                document.getElementById('tabIncoming').classList.remove('tab-active');
+                document.getElementById('tabIncoming').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Outgoing Goods';
+            }
+
+            renderForm();
+        }
+
+        // ==================== FORM RENDERING ====================
+        function renderForm() {
+            const config = roleConfig[currentRole];
+            const fieldsContainer = document.getElementById('dynamicFields');
+            fieldsContainer.innerHTML = '';
+
+            let fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(field => {
+                const fieldDiv = document.createElement('div');
+
+                const label = document.createElement('label');
+                label.className = 'block text-purple-300 text-sm font-bold mb-2';
+                label.textContent = field.label;
+                if (field.required) {
+                    const required = document.createElement('span');
+                    required.className = 'text-red-400';
+                    required.textContent = ' *';
+                    label.appendChild(required);
+                }
+                fieldDiv.appendChild(label);
+
+                if (field.type === 'select') {
+                    const select = document.createElement('select');
+                    select.id = field.id;
+                    select.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    if (field.required) select.required = true;
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = `Select ${field.label.toLowerCase()}...`;
+                    select.appendChild(defaultOption);
+
+                    field.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        select.appendChild(option);
+                    });
+
+                    fieldDiv.appendChild(select);
+                } else if (field.type === 'multiselect') {
+                    // For RECYCLING_HUB outgoing NX codes
+                    const info = document.createElement('div');
+                    info.className = 'text-purple-400 text-xs mb-2';
+                    info.textContent = 'Multi-select available NX codes from incoming transactions';
+                    fieldDiv.appendChild(info);
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = field.type;
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                }
+
+                fieldsContainer.appendChild(fieldDiv);
+            });
         }
 
         // ==================== PHOTO HANDLING ====================
@@ -624,7 +724,6 @@
                 currentPhotoData = compressed;
                 document.getElementById('photoPreview').src = compressed;
                 document.getElementById('photoPreview').classList.remove('hidden');
-                document.getElementById('photoButtonText').textContent = 'Photo Added ✓';
             };
             img.onerror = function() {
                 alert('Error processing image. Please try another photo.');
@@ -639,68 +738,49 @@
             document.getElementById('photoPreview').classList.add('hidden');
         }
 
-        // ==================== HUB MIXED CONSOLIDATION ====================
-        function loadExistingBales() {
-            const listEl = document.getElementById('existingBalesList');
-            const allTransactions = getTransactions();
-            const bales = allTransactions.filter(tx => tx.location === 'RECYCLER HUB').slice(-20);
-
-            if (bales.length === 0) {
-                listEl.innerHTML = '<p class="text-purple-300 text-sm">No existing bales found</p>';
-                return;
-            }
-
-            listEl.innerHTML = '';
-            bales.forEach((bale, index) => {
-                const checkbox = document.createElement('label');
-                checkbox.className = 'flex items-center gap-3 bg-white/5 p-3 rounded-lg cursor-pointer hover:bg-white/10 transition';
-                checkbox.innerHTML = `
-                    <input type="checkbox" value="${index}" onchange="toggleBaleSelection(${index})"
-                           class="w-5 h-5 text-purple-600 rounded">
-                    <div class="flex-1 text-sm">
-                        <div class="text-white font-bold">${bale.id}</div>
-                        <div class="text-purple-300">${bale.weight} - ${bale.wasteSource}</div>
-                    </div>
-                `;
-                listEl.appendChild(checkbox);
-            });
-        }
-
-        function toggleBaleSelection(index) {
-            const idx = selectedBalesForConsolidation.indexOf(index);
-            if (idx > -1) {
-                selectedBalesForConsolidation.splice(idx, 1);
-            } else {
-                selectedBalesForConsolidation.push(index);
-            }
-        }
-
         // ==================== FORM SUBMISSION ====================
         document.getElementById('transactionForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const config = roleConfig[currentRole];
-            const assetId = document.getElementById('assetId').value.trim();
-            const batchId = document.getElementById('batchId').value.trim();
-            const wasteSource = currentRole === 'SPINNER' ? 'N/A' : document.getElementById('wasteSource').value.trim();
-            const weight = document.getElementById('weight').value;
-            const batchSize = document.getElementById('batchSize').value;
 
-            // Get material from the correct field based on role
-            const isSpinningOrWeaving = currentRole === 'SPINNER' || currentRole === 'WEAVER';
-            const material = isSpinningOrWeaving
-                ? document.getElementById('materialEarly').value
-                : document.getElementById('material').value;
+            // Collect universal fields
+            const customer = document.getElementById('customer').value.trim();
+            const transactionDate = document.getElementById('transactionDate').value;
+            const purchaseOrder = document.getElementById('purchaseOrder').value.trim();
 
-            // Validation
-            if (!assetId || !batchId || !weight || !batchSize || !material) {
-                alert('Please fill in all required fields');
+            if (!customer || !transactionDate || !purchaseOrder) {
+                alert('Please fill in all universal fields (Customer, Date, Purchase Order)');
                 return;
             }
-            if (currentRole !== 'SPINNER' && !wasteSource) {
-                alert('Please fill in all required fields');
-                return;
+
+            // Collect dynamic fields
+            const formData = {
+                customer,
+                transactionDate,
+                purchaseOrder,
+                role: currentRole,
+                location: config.location
+            };
+
+            if (config.hasTabs) {
+                formData.transactionType = currentTab; // incoming or outgoing
             }
+
+            // Get all field values
+            let fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    formData[field.id] = element.value.trim();
+                }
+            });
 
             // Show mining modal
             document.getElementById('miningModal').classList.remove('hidden');
@@ -711,33 +791,13 @@
                 const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
                              Math.random().toString(36).substring(2, 15);
 
-                // Collect optional fields
-                const hubSource = document.getElementById('hubSource') ? document.getElementById('hubSource').value : '';
-                const indiaConsolidation = document.getElementById('indiaConsolidation') ? document.getElementById('indiaConsolidation').value : '';
-                const spinningPrabu = document.getElementById('spinningPrabu') ? document.getElementById('spinningPrabu').value : '';
-                const textileFactory = document.getElementById('textileFactory') ? document.getElementById('textileFactory').value : '';
-
                 const transaction = {
-                    id: assetId,
-                    batchId: batchId,
-                    wasteSource: wasteSource,
-                    action: config.action,
-                    location: config.location,
-                    time: new Date().toLocaleString(),
-                    weight: `${weight} kg`,
-                    batchSize: `${batchSize} bales`,
-                    material: material,
+                    ...formData,
                     hash: hash,
+                    time: new Date().toLocaleString(),
                     photoUrl: currentPhotoData || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E',
-                    consolidatedBales: selectedBalesForConsolidation.length > 0 ? selectedBalesForConsolidation : null,
                     timestamp: Date.now()
                 };
-
-                // Add optional fields if present
-                if (hubSource) transaction.hubSource = hubSource;
-                if (indiaConsolidation) transaction.indiaConsolidation = indiaConsolidation;
-                if (spinningPrabu) transaction.spinningPrabu = spinningPrabu;
-                if (textileFactory) transaction.textileFactory = textileFactory;
 
                 saveTransaction(transaction);
 
@@ -747,7 +807,10 @@
 
                 document.getElementById('transactionForm').reset();
                 clearPhoto();
-                selectedBalesForConsolidation = [];
+
+                // Reset to today's date
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('transactionDate').value = today;
 
                 loadRecentTransactions();
             }, miningDelay);
@@ -767,15 +830,19 @@
                 return;
             }
 
-            container.innerHTML = transactions.map(tx => `
-                <div class="bg-black/30 rounded-xl p-4 border border-purple-500/30">
+            container.innerHTML = '';
+            transactions.forEach(tx => {
+                const card = document.createElement('div');
+                card.className = 'bg-black/30 rounded-xl p-4 border border-purple-500/30';
+                card.innerHTML = `
                     <div class="flex justify-between items-start mb-2">
                         <div>
-                            <div class="text-white font-bold">${tx.id}</div>
+                            <div class="text-white font-bold">${tx.nxReference || tx.packingList || 'N/A'}</div>
                             <div class="text-purple-300 text-sm">${tx.location}</div>
+                            <div class="text-purple-400 text-xs">${tx.customer || 'N/A'} - ${tx.transactionType || 'Single'}</div>
                         </div>
                         <div class="bg-purple-600 px-3 py-1 rounded-lg text-white text-xs">
-                            ${tx.weight}
+                            ${tx.netWeight || 'N/A'} kg
                         </div>
                     </div>
                     <div class="text-purple-400 text-xs">
@@ -784,8 +851,9 @@
                     <div class="text-purple-400 text-xs mt-1 truncate">
                         <i class="fas fa-link mr-1"></i>${tx.hash}
                     </div>
-                </div>
-            `).join('');
+                `;
+                container.appendChild(card);
+            });
         }
 
         // ==================== AUTO-LOGIN IF ROLE EXISTS ====================
