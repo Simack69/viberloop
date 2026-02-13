@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop Version Check</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h1 class="text-4xl font-bold text-white mb-6">
+                <i class="fas fa-check-circle mr-3"></i>Version Check
+            </h1>
+
+            <div class="bg-purple-500/20 rounded-xl p-6 mb-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Current Page Information</h2>
+                <div class="space-y-3 text-white">
+                    <div class="bg-white/10 p-3 rounded-lg">
+                        <div class="text-sm text-purple-300 mb-1">Current URL:</div>
+                        <div class="font-mono text-sm break-all" id="currentUrl"></div>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-lg">
+                        <div class="text-sm text-purple-300 mb-1">Protocol:</div>
+                        <div class="font-mono text-sm" id="protocol"></div>
+                    </div>
+                    <div class="bg-white/10 p-3 rounded-lg">
+                        <div class="text-sm text-purple-300 mb-1">Host:</div>
+                        <div class="font-mono text-sm" id="host"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="status" class="mb-6"></div>
+
+            <div class="bg-blue-500/20 rounded-xl p-6 border border-blue-400">
+                <h3 class="text-2xl font-bold text-white mb-4">Test Navigation</h3>
+                <p class="text-white/90 mb-4">Click the button below to test the Field App link:</p>
+                <button onclick="testFieldAppLink()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-xl w-full mb-4">
+                    <i class="fas fa-play-circle mr-2"></i>Test "Launch Field App" Button
+                </button>
+                <div id="testResult" class="hidden mt-4"></div>
+            </div>
+
+            <div class="mt-6 bg-yellow-500/20 rounded-xl p-6 border border-yellow-500/30">
+                <h3 class="text-xl font-bold text-yellow-300 mb-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>How to Access Correctly
+                </h3>
+                <div class="text-white/90 space-y-2">
+                    <p>✅ <strong>Correct way:</strong> Access via Firebase URL</p>
+                    <div class="bg-green-500/20 p-3 rounded-lg font-mono text-sm break-all">
+                        https://viberloop-bio.web.app/
+                    </div>
+                    <p class="mt-4">❌ <strong>Wrong way:</strong> Opening local file</p>
+                    <div class="bg-red-500/20 p-3 rounded-lg font-mono text-sm break-all">
+                        file:///C:/Users/.../index.html
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Display current page info
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('protocol').textContent = window.location.protocol;
+        document.getElementById('host').textContent = window.location.host || 'localhost (local file)';
+
+        // Check if we're on the right version
+        const isFirebase = window.location.hostname === 'viberloop-bio.web.app' ||
+                          window.location.hostname === 'viberloop-bio.firebaseapp.com';
+        const isLocalhost = window.location.protocol === 'http:' &&
+                           window.location.hostname === 'localhost';
+        const isLocalFile = window.location.protocol === 'file:';
+
+        const statusDiv = document.getElementById('status');
+
+        if (isFirebase) {
+            statusDiv.innerHTML = `
+                <div class="bg-green-500/30 rounded-xl p-6 border-2 border-green-400">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-green-300 text-6xl mb-4"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">✅ Correct!</h3>
+                        <p class="text-white/90 text-lg">You're viewing the deployed Firebase version</p>
+                        <p class="text-green-300 mt-2">All links should work correctly</p>
+                    </div>
+                </div>
+            `;
+        } else if (isLocalhost) {
+            statusDiv.innerHTML = `
+                <div class="bg-blue-500/30 rounded-xl p-6 border-2 border-blue-400">
+                    <div class="text-center">
+                        <i class="fas fa-info-circle text-blue-300 text-6xl mb-4"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">ℹ️ Testing Mode</h3>
+                        <p class="text-white/90 text-lg">You're using firebase serve (localhost)</p>
+                        <p class="text-blue-300 mt-2">Links should work correctly for testing</p>
+                    </div>
+                </div>
+            `;
+        } else if (isLocalFile) {
+            statusDiv.innerHTML = `
+                <div class="bg-red-500/30 rounded-xl p-6 border-2 border-red-400">
+                    <div class="text-center">
+                        <i class="fas fa-times-circle text-red-300 text-6xl mb-4"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">❌ Wrong Method!</h3>
+                        <p class="text-white/90 text-lg">You're viewing a local file</p>
+                        <p class="text-red-300 mt-2">Links will NOT work correctly</p>
+                        <div class="mt-4 bg-yellow-500/20 p-4 rounded-lg">
+                            <p class="text-white font-bold mb-2">Solution:</p>
+                            <p class="text-white/90 text-sm">Access the app via Firebase hosting:</p>
+                            <a href="https://viberloop-bio.web.app/" class="text-blue-300 underline break-all">
+                                https://viberloop-bio.web.app/
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            statusDiv.innerHTML = `
+                <div class="bg-yellow-500/30 rounded-xl p-6 border-2 border-yellow-400">
+                    <div class="text-center">
+                        <i class="fas fa-question-circle text-yellow-300 text-6xl mb-4"></i>
+                        <h3 class="text-3xl font-bold text-white mb-2">⚠️ Unknown Source</h3>
+                        <p class="text-white/90 text-lg">Accessing from: ${window.location.hostname}</p>
+                        <p class="text-yellow-300 mt-2">For best results, use the Firebase URL</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Test function
+        function testFieldAppLink() {
+            const testResult = document.getElementById('testResult');
+            testResult.classList.remove('hidden');
+
+            // Simulate what the button does
+            const targetUrl = '/app';
+            const fullUrl = window.location.protocol + '//' + window.location.host + targetUrl;
+
+            testResult.innerHTML = `
+                <div class="bg-white/10 p-4 rounded-lg">
+                    <p class="text-white font-bold mb-2">Button will navigate to:</p>
+                    <div class="bg-purple-500/30 p-3 rounded font-mono text-sm break-all text-white">
+                        ${fullUrl}
+                    </div>
+                    ${isFirebase || isLocalhost ?
+                        '<p class="text-green-300 mt-3">✅ This should work correctly!</p>' :
+                        '<p class="text-red-300 mt-3">❌ This will not work from a local file. Use Firebase URL instead.</p>'
+                    }
+                </div>
+            `;
+        }
+
+        // Create a copy button for the Firebase URL
+        function copyFirebaseUrl() {
+            const url = 'https://viberloop-bio.web.app/';
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Firebase URL copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
