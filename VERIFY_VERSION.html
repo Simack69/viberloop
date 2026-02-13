@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop Version Verification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h1 class="text-4xl font-bold text-white mb-6">
+                <i class="fas fa-check-circle mr-3"></i>Viberloop Version Checker
+            </h1>
+
+            <div class="bg-purple-500/20 rounded-xl p-6 mb-6">
+                <h2 class="text-2xl font-bold text-white mb-4">📋 How to Use This Tool</h2>
+                <ol class="text-white/90 space-y-2 ml-6 list-decimal">
+                    <li>Download the ZIP file from GitHub</li>
+                    <li>Extract the ZIP file</li>
+                    <li>Open <strong>VERIFY_VERSION.html</strong> (this file) in your browser</li>
+                    <li>Click "Select viberloop.html File" below</li>
+                    <li>Select the viberloop.html file from your extracted folder</li>
+                    <li>The tool will verify if you have the latest version</li>
+                </ol>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <button onclick="document.getElementById('fileInput').click()"
+                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-xl w-full transition">
+                        <i class="fas fa-file-upload mr-3"></i>Select viberloop.html File
+                    </button>
+                    <input type="file" id="fileInput" accept=".html" style="display: none;" onchange="verifyFile(event)">
+                </div>
+
+                <div id="results" class="hidden">
+                    <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                        <h3 class="text-2xl font-bold text-white mb-4">Verification Results</h3>
+                        <div id="resultsContent" class="space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-yellow-500/20 rounded-xl p-6 border border-yellow-500/30">
+                <h3 class="text-xl font-bold text-yellow-300 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i>Download from Correct Branch
+                </h3>
+                <p class="text-white/90 mb-4">
+                    The latest changes are on branch: <code class="bg-black/30 px-2 py-1 rounded">claude/viberloop-bio-dapp-ios-671QR</code>
+                </p>
+                <p class="text-white/90 mb-4">
+                    <strong>Steps to download:</strong>
+                </p>
+                <ol class="text-white/90 space-y-2 ml-6 list-decimal">
+                    <li>Go to: <a href="https://github.com/Simack69/viberloop" target="_blank" class="text-blue-300 underline">https://github.com/Simack69/viberloop</a></li>
+                    <li>Click the branch dropdown (may say "main" or "master")</li>
+                    <li>Type or select: <strong>claude/viberloop-bio-dapp-ios-671QR</strong></li>
+                    <li>Click "Code" → "Download ZIP"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Expected content markers for the latest version
+        const checks = [
+            {
+                name: 'Home Button Added',
+                pattern: /href="index\.html".*?fa-home/s,
+                description: 'Home button in header'
+            },
+            {
+                name: 'Weaver Field in Spinner Outgoing',
+                pattern: /id:\s*'weaver'.*?label:\s*'Weaver'/s,
+                description: 'Weaver field added to Spinner outgoing form'
+            },
+            {
+                name: 'Recycling Hub Location Removed from Spinner',
+                pattern: /SPINNER.*?outgoing.*?\[/s,
+                antiPattern: /id:\s*'recyclingHubLocation'/,
+                description: 'Recycling Hub location NOT in Spinner outgoing'
+            },
+            {
+                name: 'Split Screen Structure',
+                pattern: /role !== 'WASTE_SOURCE'.*?incoming-tab.*?outgoing-tab/s,
+                description: 'Split screen tabs for 7 roles'
+            },
+            {
+                name: 'Universal Fields',
+                pattern: /universalFields.*?customer.*?date.*?purchaseOrder/s,
+                description: 'Customer, Date, Purchase Order fields present'
+            },
+            {
+                name: 'Firebase Central Storage',
+                pattern: /databaseURL.*?europe-west1/s,
+                description: 'Firebase configured for central data storage'
+            }
+        ];
+
+        async function verifyFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('resultsContent');
+
+            resultsDiv.classList.remove('hidden');
+            resultsContent.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Analyzing file...</div>';
+
+            try {
+                const text = await file.text();
+                let allPassed = true;
+                let html = '';
+
+                checks.forEach(check => {
+                    const passed = check.pattern.test(text) &&
+                                 (!check.antiPattern || !check.antiPattern.test(text));
+
+                    allPassed = allPassed && passed;
+
+                    const icon = passed ?
+                        '<i class="fas fa-check-circle text-green-400"></i>' :
+                        '<i class="fas fa-times-circle text-red-400"></i>';
+
+                    const bgColor = passed ? 'bg-green-500/20 border-green-500/30' : 'bg-red-500/20 border-red-500/30';
+
+                    html += `
+                        <div class="${bgColor} rounded-lg p-4 border">
+                            <div class="flex items-start">
+                                <div class="text-2xl mr-4">${icon}</div>
+                                <div class="flex-1">
+                                    <h4 class="text-white font-bold text-lg">${check.name}</h4>
+                                    <p class="text-white/80 text-sm mt-1">${check.description}</p>
+                                    ${!passed ? '<p class="text-red-300 text-sm mt-2"><strong>Issue:</strong> This feature is missing or incorrect</p>' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                // Overall result
+                if (allPassed) {
+                    html = `
+                        <div class="bg-green-500/30 rounded-xl p-6 border-2 border-green-400 mb-6">
+                            <div class="text-center">
+                                <i class="fas fa-check-circle text-green-300 text-6xl mb-4"></i>
+                                <h3 class="text-3xl font-bold text-white mb-2">✅ Correct Version!</h3>
+                                <p class="text-white/90 text-lg">You have the latest version with all updates.</p>
+                            </div>
+                        </div>
+                    ` + html;
+                } else {
+                    html = `
+                        <div class="bg-red-500/30 rounded-xl p-6 border-2 border-red-400 mb-6">
+                            <div class="text-center">
+                                <i class="fas fa-times-circle text-red-300 text-6xl mb-4"></i>
+                                <h3 class="text-3xl font-bold text-white mb-2">❌ Incorrect Version</h3>
+                                <p class="text-white/90 text-lg mb-3">You have an outdated version. Please download from the correct branch.</p>
+                                <p class="text-yellow-300 font-bold">Branch: claude/viberloop-bio-dapp-ios-671QR</p>
+                            </div>
+                        </div>
+                    ` + html;
+                }
+
+                resultsContent.innerHTML = html;
+
+            } catch (error) {
+                resultsContent.innerHTML = `
+                    <div class="bg-red-500/30 rounded-xl p-6 border border-red-400">
+                        <i class="fas fa-exclamation-triangle text-red-300 text-2xl mr-3"></i>
+                        <span class="text-white">Error reading file: ${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
