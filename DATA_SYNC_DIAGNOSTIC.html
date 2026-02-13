@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop Data Sync Diagnostic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 shadow-2xl">
+            <h1 class="text-4xl font-bold text-white mb-6">
+                <i class="fas fa-database mr-3"></i>Data Sync Diagnostic Tool
+            </h1>
+
+            <div class="bg-yellow-500/20 rounded-xl p-6 border-2 border-yellow-400 mb-6">
+                <h2 class="text-2xl font-bold text-white mb-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>Problem Identified
+                </h2>
+                <p class="text-white/90 text-lg">
+                    Two laptops are showing different data. This tool will help identify why.
+                </p>
+            </div>
+
+            <button onclick="runDiagnostic()"
+                    class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-8 rounded-xl w-full mb-6 text-xl">
+                <i class="fas fa-play-circle mr-3"></i>Run Diagnostic on This Device
+            </button>
+
+            <!-- Results Container -->
+            <div id="results" class="hidden space-y-6">
+                <!-- Device Info -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-laptop mr-2"></i>Device Information
+                    </h3>
+                    <div id="deviceInfo" class="space-y-2"></div>
+                </div>
+
+                <!-- Connection Status -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-wifi mr-2"></i>Connection Status
+                    </h3>
+                    <div id="connectionStatus" class="space-y-2"></div>
+                </div>
+
+                <!-- Firebase Status -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-fire mr-2"></i>Firebase Configuration
+                    </h3>
+                    <div id="firebaseStatus" class="space-y-2"></div>
+                </div>
+
+                <!-- Data Status -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-chart-bar mr-2"></i>Data Status
+                    </h3>
+                    <div id="dataStatus" class="space-y-2"></div>
+                </div>
+
+                <!-- Transaction Preview -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-list mr-2"></i>Recent Transactions (Firebase)
+                    </h3>
+                    <div id="transactionPreview" class="space-y-2"></div>
+                </div>
+
+                <!-- localStorage Check -->
+                <div class="bg-white/10 rounded-xl p-6 border border-white/20">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-hard-drive mr-2"></i>Local Storage Check
+                    </h3>
+                    <div id="localStorageCheck" class="space-y-2"></div>
+                </div>
+
+                <!-- Recommendations -->
+                <div id="recommendations" class="bg-blue-500/20 rounded-xl p-6 border-2 border-blue-400">
+                    <h3 class="text-2xl font-bold text-white mb-4">
+                        <i class="fas fa-lightbulb mr-2"></i>Recommendations
+                    </h3>
+                    <div id="recommendationsContent"></div>
+                </div>
+
+                <!-- Copy Results Button -->
+                <button onclick="copyResults()"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl w-full">
+                    <i class="fas fa-copy mr-2"></i>Copy Results to Share
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEoQ3mA8wMTeVlBnhTJ8zjHBTYRzV8Oo0",
+            authDomain: "viberloop-bio.firebaseapp.com",
+            databaseURL: "https://viberloop-bio-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "viberloop-bio",
+            storageBucket: "viberloop-bio.firebasestorage.app",
+            messagingSenderId: "172363538293",
+            appId: "1:172363538293:web:58cf090d43fc9667fa3d3c"
+        };
+
+        let diagnosticResults = {};
+
+        async function runDiagnostic() {
+            document.getElementById('results').classList.remove('hidden');
+
+            diagnosticResults = {
+                timestamp: new Date().toISOString(),
+                device: {},
+                connection: {},
+                firebase: {},
+                data: {},
+                localStorage: {},
+                recommendations: []
+            };
+
+            // Device Info
+            const deviceInfo = document.getElementById('deviceInfo');
+            deviceInfo.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Collecting device info...</div>';
+
+            diagnosticResults.device = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                online: navigator.onLine,
+                url: window.location.href,
+                pageTitle: document.title
+            };
+
+            deviceInfo.innerHTML = `
+                <div class="text-white/90 space-y-2">
+                    <div class="flex justify-between p-2 bg-white/5 rounded">
+                        <span>Browser:</span>
+                        <span class="font-mono text-sm">${getBrowserName()}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-white/5 rounded">
+                        <span>Platform:</span>
+                        <span class="font-mono text-sm">${diagnosticResults.device.platform}</span>
+                    </div>
+                    <div class="flex justify-between p-2 bg-white/5 rounded">
+                        <span>Page URL:</span>
+                        <span class="font-mono text-xs break-all">${diagnosticResults.device.url}</span>
+                    </div>
+                </div>
+            `;
+
+            // Connection Status
+            const connectionStatus = document.getElementById('connectionStatus');
+            connectionStatus.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Checking connection...</div>';
+
+            diagnosticResults.connection = {
+                online: navigator.onLine,
+                timestamp: new Date().toISOString()
+            };
+
+            const onlineStatus = navigator.onLine;
+            connectionStatus.innerHTML = `
+                <div class="p-4 rounded-lg ${onlineStatus ? 'bg-green-500/20' : 'bg-red-500/20'}">
+                    <div class="flex items-center justify-between">
+                        <span class="text-white text-xl">Internet Connection:</span>
+                        <span class="text-3xl">${onlineStatus ? '✅ Online' : '❌ Offline'}</span>
+                    </div>
+                    ${!onlineStatus ? '<p class="text-red-300 mt-2">⚠️ You are offline. Firebase data cannot sync.</p>' : ''}
+                </div>
+            `;
+
+            if (!onlineStatus) {
+                diagnosticResults.recommendations.push({
+                    severity: 'critical',
+                    issue: 'Device is offline',
+                    solution: 'Connect to internet to sync with Firebase'
+                });
+            }
+
+            // Firebase Status
+            const firebaseStatus = document.getElementById('firebaseStatus');
+            firebaseStatus.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Checking Firebase...</div>';
+
+            try {
+                const app = firebase.initializeApp(firebaseConfig);
+                const database = firebase.database();
+
+                diagnosticResults.firebase = {
+                    initialized: true,
+                    projectId: firebaseConfig.projectId,
+                    databaseURL: firebaseConfig.databaseURL,
+                    connected: false,
+                    error: null
+                };
+
+                firebaseStatus.innerHTML = `
+                    <div class="text-white/90 space-y-2">
+                        <div class="flex justify-between p-2 bg-green-500/20 rounded">
+                            <span>Firebase Initialized:</span>
+                            <span class="text-green-300">✅ Yes</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-white/5 rounded">
+                            <span>Project ID:</span>
+                            <span class="font-mono text-sm">${firebaseConfig.projectId}</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-white/5 rounded">
+                            <span>Database:</span>
+                            <span class="font-mono text-xs break-all">${firebaseConfig.databaseURL}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Test Firebase Connection
+                const connectedRef = database.ref('.info/connected');
+                connectedRef.on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    diagnosticResults.firebase.connected = connected;
+
+                    const connDiv = document.createElement('div');
+                    connDiv.className = `flex justify-between p-2 rounded ${connected ? 'bg-green-500/20' : 'bg-red-500/20'}`;
+                    connDiv.innerHTML = `
+                        <span>Firebase Connected:</span>
+                        <span class="${connected ? 'text-green-300' : 'text-red-300'}">${connected ? '✅ Connected' : '❌ Disconnected'}</span>
+                    `;
+                    firebaseStatus.appendChild(connDiv);
+
+                    if (!connected) {
+                        diagnosticResults.recommendations.push({
+                            severity: 'critical',
+                            issue: 'Firebase not connected',
+                            solution: 'Check internet connection and Firebase configuration'
+                        });
+                    }
+                });
+
+                // Get Transaction Data
+                const dataStatus = document.getElementById('dataStatus');
+                dataStatus.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Loading transaction data...</div>';
+
+                const transactionsRef = database.ref('transactions');
+                transactionsRef.once('value', (snapshot) => {
+                    const transactions = snapshot.val();
+                    const transactionArray = transactions ? Object.values(transactions) : [];
+
+                    diagnosticResults.data = {
+                        source: 'Firebase',
+                        count: transactionArray.length,
+                        hasData: transactionArray.length > 0,
+                        firstTransactionId: transactionArray[0]?.id || null,
+                        lastTransactionId: transactionArray[transactionArray.length - 1]?.id || null
+                    };
+
+                    dataStatus.innerHTML = `
+                        <div class="p-4 rounded-lg ${transactionArray.length > 0 ? 'bg-green-500/20' : 'bg-yellow-500/20'}">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-white text-xl">Firebase Transactions:</span>
+                                <span class="text-3xl font-bold ${transactionArray.length > 0 ? 'text-green-300' : 'text-yellow-300'}">${transactionArray.length}</span>
+                            </div>
+                            <div class="text-white/70 text-sm space-y-1">
+                                <div>Data Source: <span class="text-white font-bold">Firebase Realtime Database</span></div>
+                                ${transactionArray.length > 0 ? `
+                                    <div>First Transaction ID: <span class="font-mono text-xs">${transactionArray[0].id}</span></div>
+                                    <div>Last Transaction ID: <span class="font-mono text-xs">${transactionArray[transactionArray.length - 1].id}</span></div>
+                                ` : '<div class="text-yellow-300 mt-2">⚠️ No transactions found in Firebase</div>'}
+                            </div>
+                        </div>
+                    `;
+
+                    // Transaction Preview
+                    const transactionPreview = document.getElementById('transactionPreview');
+                    if (transactionArray.length > 0) {
+                        const recentTransactions = transactionArray.slice(-5).reverse();
+                        let html = '<div class="space-y-2">';
+                        recentTransactions.forEach(tx => {
+                            html += `
+                                <div class="bg-white/5 rounded-lg p-3">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <span class="text-purple-300 font-bold">${tx.location || 'Unknown'}</span>
+                                        <span class="text-white/60 text-xs font-mono">${tx.id.substring(0, 8)}...</span>
+                                    </div>
+                                    <div class="text-white/70 text-sm">
+                                        ${tx.customer ? `Customer: ${tx.customer}` : ''}
+                                        ${tx.netWeight ? ` | Weight: ${tx.netWeight}kg` : ''}
+                                    </div>
+                                    <div class="text-white/50 text-xs mt-1">${new Date(tx.timestamp).toLocaleString()}</div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        transactionPreview.innerHTML = html;
+                    } else {
+                        transactionPreview.innerHTML = '<div class="text-yellow-300">No transactions found</div>';
+                    }
+
+                    // Compare with localStorage
+                    checkLocalStorage(transactionArray.length);
+
+                    // Generate recommendations
+                    generateRecommendations();
+                });
+
+            } catch (error) {
+                diagnosticResults.firebase = {
+                    initialized: false,
+                    error: error.message
+                };
+
+                firebaseStatus.innerHTML = `
+                    <div class="bg-red-500/20 rounded-lg p-4">
+                        <div class="text-red-300 text-lg mb-2">❌ Firebase Error</div>
+                        <div class="text-white/80 text-sm">${error.message}</div>
+                    </div>
+                `;
+
+                diagnosticResults.recommendations.push({
+                    severity: 'critical',
+                    issue: 'Firebase initialization failed',
+                    solution: 'Check Firebase configuration and internet connection'
+                });
+
+                generateRecommendations();
+            }
+        }
+
+        function checkLocalStorage(firebaseCount) {
+            const localStorageCheck = document.getElementById('localStorageCheck');
+
+            const hasLocalTransactions = localStorage.getItem('transactions') !== null;
+            const localTransactions = hasLocalTransactions ? JSON.parse(localStorage.getItem('transactions')) : [];
+            const localCount = localTransactions.length;
+
+            diagnosticResults.localStorage = {
+                hasTransactions: hasLocalTransactions,
+                count: localCount,
+                matches: localCount === firebaseCount
+            };
+
+            let html = `
+                <div class="space-y-2">
+                    <div class="flex justify-between p-2 ${hasLocalTransactions ? 'bg-yellow-500/20' : 'bg-green-500/20'} rounded">
+                        <span class="text-white">localStorage Has Transactions:</span>
+                        <span class="${hasLocalTransactions ? 'text-yellow-300' : 'text-green-300'}">${hasLocalTransactions ? '⚠️ Yes (' + localCount + ')' : '✅ No'}</span>
+                    </div>
+            `;
+
+            if (hasLocalTransactions) {
+                html += `
+                    <div class="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                        <div class="text-red-300 font-bold mb-2">⚠️ WARNING: localStorage Data Detected</div>
+                        <div class="text-white/80 text-sm mb-3">
+                            This device has ${localCount} transactions in localStorage, but Firebase has ${firebaseCount} transactions.
+                        </div>
+                        ${localCount !== firebaseCount ? `
+                            <div class="text-yellow-300 text-sm mb-3">
+                                ⚠️ MISMATCH: Different data counts suggest you might be using standalone version or have old cached data.
+                            </div>
+                        ` : ''}
+                        <button onclick="clearLocalStorage()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                            <i class="fas fa-trash mr-2"></i>Clear localStorage
+                        </button>
+                    </div>
+                `;
+
+                diagnosticResults.recommendations.push({
+                    severity: hasLocalTransactions && localCount !== firebaseCount ? 'high' : 'medium',
+                    issue: 'localStorage contains transaction data',
+                    solution: 'Clear localStorage or ensure you are using the Firebase version (viberloop.html, not viberloop-standalone.html)'
+                });
+            }
+
+            html += '</div>';
+            localStorageCheck.innerHTML = html;
+        }
+
+        function generateRecommendations() {
+            const recommendationsContent = document.getElementById('recommendationsContent');
+
+            if (diagnosticResults.recommendations.length === 0) {
+                recommendationsContent.innerHTML = `
+                    <div class="bg-green-500/20 rounded-lg p-4">
+                        <div class="text-green-300 text-lg">✅ Everything looks good!</div>
+                        <div class="text-white/80 text-sm mt-2">All devices should be syncing correctly with Firebase.</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="space-y-3">';
+            diagnosticResults.recommendations.forEach((rec, index) => {
+                const colorClass = rec.severity === 'critical' ? 'bg-red-500/20 border-red-500/30' :
+                                  rec.severity === 'high' ? 'bg-orange-500/20 border-orange-500/30' :
+                                  'bg-yellow-500/20 border-yellow-500/30';
+                html += `
+                    <div class="${colorClass} border rounded-lg p-4">
+                        <div class="text-white font-bold mb-2">${index + 1}. ${rec.issue}</div>
+                        <div class="text-white/80 text-sm">💡 ${rec.solution}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            recommendationsContent.innerHTML = html;
+        }
+
+        function getBrowserName() {
+            const ua = navigator.userAgent;
+            if (ua.includes('Firefox')) return 'Firefox';
+            if (ua.includes('Chrome')) return 'Chrome';
+            if (ua.includes('Safari')) return 'Safari';
+            if (ua.includes('Edge')) return 'Edge';
+            return 'Unknown';
+        }
+
+        function clearLocalStorage() {
+            if (confirm('Are you sure you want to clear all localStorage data? This will remove any locally stored transactions.')) {
+                localStorage.clear();
+                alert('localStorage cleared! Please refresh the page and run the diagnostic again.');
+                location.reload();
+            }
+        }
+
+        function copyResults() {
+            const text = `
+Viberloop Data Sync Diagnostic Results
+=======================================
+Timestamp: ${diagnosticResults.timestamp}
+
+DEVICE INFO:
+- Browser: ${getBrowserName()}
+- Platform: ${diagnosticResults.device?.platform}
+- URL: ${diagnosticResults.device?.url}
+
+CONNECTION:
+- Online: ${diagnosticResults.connection?.online ? 'Yes' : 'No'}
+
+FIREBASE:
+- Initialized: ${diagnosticResults.firebase?.initialized ? 'Yes' : 'No'}
+- Connected: ${diagnosticResults.firebase?.connected ? 'Yes' : 'No'}
+- Project: ${diagnosticResults.firebase?.projectId || 'N/A'}
+
+DATA:
+- Source: ${diagnosticResults.data?.source || 'Unknown'}
+- Transaction Count: ${diagnosticResults.data?.count || 0}
+- First ID: ${diagnosticResults.data?.firstTransactionId || 'N/A'}
+- Last ID: ${diagnosticResults.data?.lastTransactionId || 'N/A'}
+
+LOCAL STORAGE:
+- Has Transactions: ${diagnosticResults.localStorage?.hasTransactions ? 'Yes' : 'No'}
+- Count: ${diagnosticResults.localStorage?.count || 0}
+
+ISSUES FOUND: ${diagnosticResults.recommendations?.length || 0}
+${diagnosticResults.recommendations?.map((r, i) => `${i + 1}. [${r.severity}] ${r.issue}\n   Solution: ${r.solution}`).join('\n') || 'None'}
+            `.trim();
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Results copied to clipboard! You can now paste this in a text document or share it.');
+            });
+        }
+    </script>
+</body>
+</html>
