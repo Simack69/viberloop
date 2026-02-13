@@ -153,9 +153,14 @@
                     <h1 class="text-white text-2xl font-black uppercase tracking-wider">Viberloop</h1>
                     <p class="text-purple-300 text-sm" id="roleDisplay"></p>
                 </div>
-                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+                <div class="flex gap-2">
+                    <a href="index.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -394,8 +399,8 @@
                         { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
                         { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
                         { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
-                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
                         { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'e.g., Weaver Int.' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ]
