@@ -4,7 +4,7 @@
       ".read": true,
       ".write": true,
       "$transactionId": {
-        ".validate": "newData.hasChildren(['id', 'batchId', 'wasteSource', 'action', 'location', 'time', 'weight', 'material', 'hash', 'photoUrl'])"
+        ".validate": "newData.hasChildren(['customer', 'transactionDate', 'purchaseOrder', 'role', 'location', 'hash', 'time', 'photoUrl']) && newData.child('timestamp').exists()"
       }
     }
   }
