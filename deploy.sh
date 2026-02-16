@@ -47,11 +47,16 @@ echo ""
 
 # Deploy
 echo "🚀 Deploying to Firebase..."
-firebase deploy --only hosting
+echo "   📋 Deploying database rules..."
+echo "   📦 Deploying hosting files..."
+firebase deploy --only hosting,database
 
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ Deployment successful!"
+    echo ""
+    echo "📊 Database rules deployed:"
+    echo "   - /transactions: read/write enabled"
     echo ""
     echo "🌐 Your app is live at:"
     echo "   Landing:   https://viberloop-bio.web.app/"
