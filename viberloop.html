@@ -741,6 +741,13 @@
         document.getElementById('transactionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            // Check if Firebase is initialized
+            if (!database) {
+                alert('Firebase database is not initialized. Please refresh the page and try again.');
+                console.error('❌ Database not initialized');
+                return;
+            }
+
             const config = roleConfig[currentRole];
 
             // Collect universal fields
@@ -788,6 +795,11 @@
 
             setTimeout(async () => {
                 try {
+                    // Debug logging
+                    console.log('🔍 Starting transaction submission...');
+                    console.log('📊 Database object:', database);
+                    console.log('📊 Firebase initialized:', !!firebase);
+
                     const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
                                  Math.random().toString(36).substring(2, 15);
 
@@ -799,7 +811,12 @@
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
 
+                    console.log('📦 Transaction data:', transaction);
+                    console.log('🚀 Attempting to push to Firebase...');
+
                     await database.ref('transactions').push(transaction);
+
+                    console.log('✅ Transaction saved successfully!');
 
                     document.getElementById('miningModal').classList.add('hidden');
                     document.getElementById('successHash').textContent = `Hash: ${hash}`;
