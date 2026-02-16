@@ -606,6 +606,16 @@
         function viewPassport(txData) {
             const content = document.getElementById('passportContent');
 
+            // Map correct field names from transaction data
+            const nxReference = txData.nxReference || 'N/A';
+            const packingList = txData.packingList || 'N/A';
+            const netWeight = txData.netWeight || 'N/A';
+            const materialType = txData.materialType || 'N/A';
+            const wasteSource = txData.wasteSource || 'N/A';
+            const transactionType = txData.transactionType ? txData.transactionType.toUpperCase() : 'N/A';
+            const role = txData.role ? txData.role.replace(/_/g, ' ') : 'N/A';
+            const location = txData.location ? txData.location.replace(/_/g, ' ') : 'N/A';
+
             content.innerHTML = `
                 <div class="mb-6">
                     <img src="${txData.photoUrl}" alt="Product Photo"
@@ -614,40 +624,40 @@
 
                 <div class="space-y-4">
                     <div>
-                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Asset ID</div>
-                        <div class="text-white text-lg font-black">${txData.id}</div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">NX Reference</div>
+                        <div class="text-white text-lg font-black">${nxReference}</div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Batch ID</div>
-                            <div class="text-white font-bold">${txData.batchId}</div>
+                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Packing List</div>
+                            <div class="text-white font-bold">${packingList}</div>
                         </div>
                         <div>
-                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Weight</div>
-                            <div class="text-white font-bold">${txData.weight}</div>
+                            <div class="text-purple-300 text-xs uppercase font-bold mb-1">Net Weight (kg)</div>
+                            <div class="text-white font-bold">${netWeight}</div>
                         </div>
                     </div>
 
                     <div>
-                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Source</div>
-                        <div class="text-white">${txData.wasteSource}</div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Waste Source</div>
+                        <div class="text-white">${wasteSource}</div>
                     </div>
 
                     <div>
-                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Material</div>
-                        <div class="text-white">${txData.material}</div>
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-1">Material Type</div>
+                        <div class="text-white">${materialType}</div>
                     </div>
 
                     <div>
                         <div class="text-purple-300 text-xs uppercase font-bold mb-1">Process Action</div>
-                        <div class="text-white">${txData.action}</div>
+                        <div class="text-white">${transactionType} - ${role}</div>
                     </div>
 
                     <div>
                         <div class="text-purple-300 text-xs uppercase font-bold mb-1">Location</div>
                         <div class="bg-purple-600 inline-block px-3 py-1 rounded-lg text-white text-sm">
-                            ${txData.location}
+                            ${location}
                         </div>
                     </div>
 
