@@ -816,8 +816,13 @@
 
                 } catch (error) {
                     console.error('Error saving transaction:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        code: error.code,
+                        stack: error.stack
+                    });
                     document.getElementById('miningModal').classList.add('hidden');
-                    alert('Error submitting transaction. Please try again.');
+                    alert('Error submitting transaction. Please try again.\n\nError: ' + (error.message || error.code || 'Unknown error') + '\n\nCheck browser console for details.');
                 }
             }, miningDelay);
         });

@@ -2,10 +2,7 @@
   "rules": {
     "transactions": {
       ".read": true,
-      ".write": true,
-      "$transactionId": {
-        ".validate": "newData.hasChildren(['customer', 'transactionDate', 'purchaseOrder', 'role', 'location', 'hash', 'time', 'photoUrl']) && newData.child('timestamp').exists()"
-      }
+      ".write": true
     }
   }
 }
