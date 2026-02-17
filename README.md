@@ -76,20 +76,15 @@ const firebaseConfig = {
 
 ### Step 4: Configure the App
 
-#### Update `viberloop.html`
-1. Open `viberloop.html` in your code editor
-2. Find the `firebaseConfig` section (around line 408)
-3. Replace the placeholder values with your actual Firebase config:
+Firebase credentials are stored in a **gitignored** file `firebase-config.js` to keep them out of the public repository.
+
+1. Copy the example template:
+   ```bash
+   cp firebase-config.example.js firebase-config.js
+   ```
+2. Open `firebase-config.js` and replace the placeholder values with your actual Firebase config:
 
 ```javascript
-// BEFORE (Line 408)
-const firebaseConfig = {
-    apiKey: "YOUR_API_KEY_HERE",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    // ... etc
-};
-
-// AFTER
 const firebaseConfig = {
     apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     authDomain: "viberloop-bio.firebaseapp.com",
@@ -101,10 +96,9 @@ const firebaseConfig = {
 };
 ```
 
-#### Update `dashboard.html`
-1. Open `dashboard.html`
-2. Find the `firebaseConfig` section (around line 289)
-3. Replace with the **SAME** Firebase config from above
+> **Important:** `firebase-config.js` is listed in `.gitignore` and must never be committed to git.
+> All HTML files load this config automatically via `<script src="firebase-config.js"></script>`.
+> When deploying with `firebase deploy`, this file is included in the deployment but stays out of version control.
 
 ### Step 5: Deploy to Firebase
 

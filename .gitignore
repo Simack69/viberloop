@@ -1,0 +1,10 @@
+# Firebase credentials - never commit the real config to git
+# Use firebase-config.example.js as a template and deploy firebase-config.js separately
+firebase-config.js
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
