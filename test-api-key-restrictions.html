@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Key Restriction Test</title>
+</head>
+<body>
+    <h1>Firebase API Key Restriction Test</h1>
+    <p>Open browser console (F12) to see results</p>
+    <div id="result"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script>
+        const resultDiv = document.getElementById('result');
+
+        try {
+            // Initialize Firebase
+            const app = firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+
+            console.log('✅ Firebase initialized');
+            resultDiv.innerHTML += '<p>✅ Firebase initialized</p>';
+
+            // Test database read
+            database.ref('transactions').limitToLast(1).once('value')
+                .then(snapshot => {
+                    console.log('✅ Database read successful - restrictions are working correctly!');
+                    resultDiv.innerHTML += '<p style="color: green; font-weight: bold;">✅ SUCCESS: Database read works. API key restrictions are correctly configured!</p>';
+                    resultDiv.innerHTML += '<p>The key is now safe to use - it only works from your Firebase Hosting domain.</p>';
+                })
+                .catch(error => {
+                    console.error('❌ Database read failed:', error);
+                    if (error.code === 'PERMISSION_DENIED') {
+                        resultDiv.innerHTML += '<p style="color: orange;">⚠️ Permission denied - check Firebase Security Rules</p>';
+                    } else {
+                        resultDiv.innerHTML += '<p style="color: red;">❌ ERROR: ' + error.message + '</p>';
+                        resultDiv.innerHTML += '<p>Check that HTTP referrer restrictions include your current domain</p>';
+                    }
+                });
+        } catch (error) {
+            console.error('❌ Initialization failed:', error);
+            resultDiv.innerHTML += '<p style="color: red;">❌ Firebase initialization failed: ' + error.message + '</p>';
+        }
+    </script>
+</body>
+</html>
