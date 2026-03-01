@@ -148,6 +148,7 @@
                         <thead>
                             <tr class="border-b border-purple-500/30">
                                 <th class="text-left text-purple-300 font-bold py-3 px-2">ID</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Type</th>
                                 <th class="text-left text-purple-300 font-bold py-3 px-2">Source</th>
                                 <th class="text-left text-purple-300 font-bold py-3 px-2">Batch</th>
                                 <th class="text-left text-purple-300 font-bold py-3 px-2">Location</th>
@@ -158,7 +159,7 @@
                         </thead>
                         <tbody id="ledgerBody">
                             <tr>
-                                <td colspan="7" class="text-center text-purple-300 py-8">
+                                <td colspan="8" class="text-center text-purple-300 py-8">
                                     <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                                     <div>Loading transactions...</div>
                                 </td>
@@ -375,7 +376,7 @@
             if (filteredTransactions.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-purple-300 py-8">
+                        <td colspan="8" class="text-center text-purple-300 py-8">
                             No transactions found
                         </td>
                     </tr>
@@ -383,11 +384,21 @@
                 return;
             }
 
-            tbody.innerHTML = filteredTransactions.map(tx => `
+            tbody.innerHTML = filteredTransactions.map(tx => {
+                const txType = tx.data.transactionType || 'N/A';
+                const typeLabel = txType === 'incoming' ? 'Incoming' : txType === 'outgoing' ? 'Outgoing' : 'Single';
+                const typeBadgeColor = txType === 'incoming' ? 'bg-green-600' : txType === 'outgoing' ? 'bg-blue-600' : 'bg-gray-600';
+
+                return `
                 <tr class="border-b border-purple-500/20 hover:bg-white/5 transition">
                     <td class="py-3 px-2">
                         <div class="text-white font-bold text-sm">${tx.data.nxReference || 'N/A'}</div>
                         <div class="text-purple-400 text-xs">${tx.data.materialType || 'N/A'}</div>
+                    </td>
+                    <td class="py-3 px-2">
+                        <span class="${typeBadgeColor} px-2 py-1 rounded text-white text-xs">
+                            ${typeLabel}
+                        </span>
                     </td>
                     <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.wasteSource || 'N/A'}</td>
                     <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.packingList || 'N/A'}</td>
@@ -405,7 +416,8 @@
                         </button>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function filterLedger() {
