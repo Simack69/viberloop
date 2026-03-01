@@ -386,17 +386,17 @@
             tbody.innerHTML = filteredTransactions.map(tx => `
                 <tr class="border-b border-purple-500/20 hover:bg-white/5 transition">
                     <td class="py-3 px-2">
-                        <div class="text-white font-bold text-sm">${tx.data.id}</div>
-                        <div class="text-purple-400 text-xs">${tx.data.material}</div>
+                        <div class="text-white font-bold text-sm">${tx.data.nxReference || 'N/A'}</div>
+                        <div class="text-purple-400 text-xs">${tx.data.materialType || 'N/A'}</div>
                     </td>
-                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.wasteSource}</td>
-                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.batchId}</td>
+                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.wasteSource || 'N/A'}</td>
+                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.data.packingList || 'N/A'}</td>
                     <td class="py-3 px-2">
                         <span class="bg-purple-600 px-2 py-1 rounded text-white text-xs">
                             ${tx.data.location}
                         </span>
                     </td>
-                    <td class="py-3 px-2 text-white font-bold text-sm">${tx.data.weight}</td>
+                    <td class="py-3 px-2 text-white font-bold text-sm">${tx.data.netWeight ? tx.data.netWeight + ' kg' : 'N/A'}</td>
                     <td class="py-3 px-2 text-purple-300 text-xs">${tx.data.time}</td>
                     <td class="py-3 px-2">
                         <button onclick='viewPassport(${JSON.stringify(tx.data).replace(/'/g, "&#39;")})'
@@ -414,11 +414,11 @@
             filteredTransactions = allTransactions.filter(tx => {
                 const data = tx.data;
                 return (
-                    data.id.toLowerCase().includes(searchTerm) ||
-                    data.wasteSource.toLowerCase().includes(searchTerm) ||
-                    data.batchId.toLowerCase().includes(searchTerm) ||
-                    data.location.toLowerCase().includes(searchTerm) ||
-                    data.hash.toLowerCase().includes(searchTerm)
+                    (data.nxReference || '').toLowerCase().includes(searchTerm) ||
+                    (data.wasteSource || '').toLowerCase().includes(searchTerm) ||
+                    (data.packingList || '').toLowerCase().includes(searchTerm) ||
+                    (data.location || '').toLowerCase().includes(searchTerm) ||
+                    (data.hash || '').toLowerCase().includes(searchTerm)
                 );
             });
 
@@ -437,7 +437,7 @@
             // Total weight
             let totalWeight = 0;
             allTransactions.forEach(tx => {
-                const weight = parseFloat(tx.data.weight.replace(' kg', ''));
+                const weight = parseFloat(tx.data.netWeight);
                 if (!isNaN(weight)) totalWeight += weight;
             });
             document.getElementById('totalWeight').textContent = `${totalWeight.toFixed(0)} kg`;
@@ -566,13 +566,13 @@
                                 <div class="text-purple-400 text-xs uppercase mb-1">Borsh Data</div>
                                 <div class="bg-black/40 rounded-lg p-3 text-purple-300 font-mono text-xs overflow-x-auto">
                                     {<br>
-                                    &nbsp;&nbsp;"id": "${tx.data.id}",<br>
-                                    &nbsp;&nbsp;"batch": "${tx.data.batchId}",<br>
-                                    &nbsp;&nbsp;"source": "${tx.data.wasteSource}",<br>
-                                    &nbsp;&nbsp;"action": "${tx.data.action}",<br>
+                                    &nbsp;&nbsp;"nxReference": "${tx.data.nxReference || 'N/A'}",<br>
+                                    &nbsp;&nbsp;"packingList": "${tx.data.packingList || 'N/A'}",<br>
+                                    &nbsp;&nbsp;"source": "${tx.data.wasteSource || 'N/A'}",<br>
+                                    &nbsp;&nbsp;"transactionType": "${tx.data.transactionType || 'N/A'}",<br>
                                     &nbsp;&nbsp;"location": "${tx.data.location}",<br>
-                                    &nbsp;&nbsp;"weight": "${tx.data.weight}",<br>
-                                    &nbsp;&nbsp;"material": "${tx.data.material}"<br>
+                                    &nbsp;&nbsp;"weight": "${tx.data.netWeight || 'N/A'} kg",<br>
+                                    &nbsp;&nbsp;"material": "${tx.data.materialType || 'N/A'}"<br>
                                     }
                                 </div>
                             </div>
