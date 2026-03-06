@@ -137,6 +137,9 @@
             <button onclick="switchTab('explorer')" id="tabExplorer" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
                 <i class="fas fa-search mr-2"></i>Block Explorer
             </button>
+            <button onclick="switchTab('report')" id="tabReport" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-file-invoice mr-2"></i>Customer Report
+            </button>
         </div>
 
         <!-- Ledger Tab -->
@@ -287,6 +290,81 @@
                 </div>
             </div>
         </div>
+
+        <!-- Customer Report Tab -->
+        <div id="reportTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-file-invoice mr-3 text-purple-400"></i>
+                    Customer Report
+                </h2>
+
+                <!-- Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Filter by Customer</label>
+                        <select id="customerFilter" onchange="filterReport()" class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Customers</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Filter by Purchase Order</label>
+                        <select id="purchaseOrderFilter" onchange="filterReport()" class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Purchase Orders</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="clearReportFilters()" class="w-full bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-redo mr-2"></i>Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-purple-500/30">
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Date</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Customer</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Purchase Order</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Type</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Location</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Weight</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-purple-300 py-8">
+                                    No transactions found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Summary -->
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Filtered Count</div>
+                        <div class="text-white text-2xl font-bold" id="reportCount">0</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Total Weight</div>
+                        <div class="text-white text-2xl font-bold" id="reportWeight">0 kg</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Customers</div>
+                        <div class="text-white text-2xl font-bold" id="reportCustomers">0</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Orders</div>
+                        <div class="text-white text-2xl font-bold" id="reportOrders">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Passport Modal -->
@@ -340,6 +418,11 @@
                 document.getElementById('explorerTab').classList.remove('hidden');
                 document.getElementById('tabExplorer').classList.add('bg-purple-600', 'text-white');
                 document.getElementById('tabExplorer').classList.remove('bg-white/10', 'text-purple-300');
+            } else if (tabName === 'report') {
+                document.getElementById('reportTab').classList.remove('hidden');
+                document.getElementById('tabReport').classList.add('bg-purple-600', 'text-white');
+                document.getElementById('tabReport').classList.remove('bg-white/10', 'text-purple-300');
+                loadCustomerReport();
             }
         }
 
@@ -656,6 +739,134 @@
 
         function closePassport() {
             document.getElementById('passportModal').classList.add('hidden');
+        }
+
+        // ==================== CUSTOMER REPORT ====================
+        let reportTransactions = [];
+
+        function loadCustomerReport() {
+            reportTransactions = [...allTransactions];
+            populateReportFilters();
+            renderReport();
+        }
+
+        function populateReportFilters() {
+            // Get unique customers
+            const customers = new Set();
+            const purchaseOrders = new Set();
+
+            allTransactions.forEach(tx => {
+                if (tx.customer) customers.add(tx.customer);
+                if (tx.purchaseOrder) purchaseOrders.add(tx.purchaseOrder);
+            });
+
+            // Populate customer dropdown
+            const customerFilter = document.getElementById('customerFilter');
+            customerFilter.innerHTML = '<option value="">All Customers</option>';
+            Array.from(customers).sort().forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer;
+                option.textContent = customer;
+                customerFilter.appendChild(option);
+            });
+
+            // Populate purchase order dropdown
+            const poFilter = document.getElementById('purchaseOrderFilter');
+            poFilter.innerHTML = '<option value="">All Purchase Orders</option>';
+            Array.from(purchaseOrders).sort().forEach(po => {
+                const option = document.createElement('option');
+                option.value = po;
+                option.textContent = po;
+                poFilter.appendChild(option);
+            });
+        }
+
+        function filterReport() {
+            const customerFilter = document.getElementById('customerFilter').value;
+            const poFilter = document.getElementById('purchaseOrderFilter').value;
+
+            reportTransactions = allTransactions.filter(tx => {
+                let matches = true;
+                if (customerFilter && tx.customer !== customerFilter) matches = false;
+                if (poFilter && tx.purchaseOrder !== poFilter) matches = false;
+                return matches;
+            });
+
+            renderReport();
+        }
+
+        function clearReportFilters() {
+            document.getElementById('customerFilter').value = '';
+            document.getElementById('purchaseOrderFilter').value = '';
+            filterReport();
+        }
+
+        function renderReport() {
+            const tbody = document.getElementById('reportBody');
+
+            if (reportTransactions.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center text-purple-300 py-8">
+                            No transactions found with selected filters
+                        </td>
+                    </tr>
+                `;
+                updateReportStats([], [], 0);
+                return;
+            }
+
+            // Sort by date (newest first)
+            const sorted = [...reportTransactions].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            tbody.innerHTML = sorted.map(tx => {
+                const txType = tx.transactionType || 'N/A';
+                const typeLabel = txType === 'incoming' ? 'Incoming' : txType === 'outgoing' ? 'Outgoing' : 'Single';
+                const typeBadgeColor = txType === 'incoming' ? 'bg-green-600' : txType === 'outgoing' ? 'bg-blue-600' : 'bg-gray-600';
+
+                return `
+                <tr class="border-b border-purple-500/20 hover:bg-white/5 transition">
+                    <td class="py-3 px-2 text-purple-300 text-sm">${tx.transactionDate || 'N/A'}</td>
+                    <td class="py-3 px-2 text-white text-sm">${tx.customer || 'N/A'}</td>
+                    <td class="py-3 px-2 text-white font-bold text-sm">${tx.purchaseOrder || 'N/A'}</td>
+                    <td class="py-3 px-2">
+                        <span class="${typeBadgeColor} px-2 py-1 rounded text-white text-xs">
+                            ${typeLabel}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2">
+                        <span class="bg-purple-600 px-2 py-1 rounded text-white text-xs">
+                            ${tx.location}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2 text-white font-bold text-sm">${tx.netWeight ? tx.netWeight + ' kg' : 'N/A'}</td>
+                    <td class="py-3 px-2">
+                        <button onclick='viewPassport(${JSON.stringify(tx).replace(/'/g, "&#39;")})'
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs">
+                            <i class="fas fa-id-card"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+
+            // Update stats
+            const customers = new Set(sorted.map(tx => tx.customer).filter(Boolean));
+            const orders = new Set(sorted.map(tx => tx.purchaseOrder).filter(Boolean));
+            let totalWeight = 0;
+            sorted.forEach(tx => {
+                const weight = parseFloat(tx.netWeight);
+                if (!isNaN(weight)) totalWeight += weight;
+            });
+
+            updateReportStats(customers, orders, totalWeight);
+        }
+
+        function updateReportStats(customers, orders, totalWeight) {
+            document.getElementById('reportCount').textContent = reportTransactions.length;
+            document.getElementById('reportWeight').textContent = `${totalWeight.toFixed(0)} kg`;
+            document.getElementById('reportCustomers').textContent = customers.size || 0;
+            document.getElementById('reportOrders').textContent = orders.size || 0;
         }
 
         // ==================== INITIALIZATION ====================
