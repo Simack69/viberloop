@@ -3,7 +3,7 @@
     "rules": "database.rules.json"
   },
   "hosting": {
-    "predeploy": ["npm install --production=false", "npm run build:css"],
+    "predeploy": ["npm install", "npm run build:css"],
     "public": ".",
     "ignore": [
       "firebase.json",
