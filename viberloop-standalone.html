@@ -647,11 +647,6 @@
                     fieldDiv.appendChild(select);
                 } else if (field.type === 'multiselect') {
                     // For RECYCLING_HUB outgoing NX codes
-                    const info = document.createElement('div');
-                    info.className = 'text-purple-400 text-xs mb-2';
-                    info.textContent = 'Multi-select available NX codes from incoming transactions';
-                    fieldDiv.appendChild(info);
-
                     const input = document.createElement('input');
                     input.type = 'text';
                     input.id = field.id;
