@@ -5,6 +5,9 @@ firebase-config.js
 # Node modules
 node_modules/
 
+# Build artifacts
+css/tailwind.css
+
 # OS files
 .DS_Store
 Thumbs.db

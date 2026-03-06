@@ -3,6 +3,7 @@
     "rules": "database.rules.json"
   },
   "hosting": {
+    "predeploy": "npm run build:css",
     "public": ".",
     "ignore": [
       "firebase.json",
@@ -28,6 +29,15 @@
       }
     ],
     "headers": [
+      {
+        "source": "/css/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
       {
         "source": "**/*.@(jpg|jpeg|gif|png|webp|svg)",
         "headers": [
