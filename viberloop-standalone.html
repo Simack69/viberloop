@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="application-name" content="Viberloop Bio">
     <title>Viberloop Bio - Field App (Demo)</title>
 
     <!-- Tailwind CSS -->
@@ -289,7 +291,7 @@
     </div>
 
     <!-- Mining Modal -->
-    <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div id="miningModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="miningTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
             <div class="mb-6">
                 <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
@@ -305,7 +307,7 @@
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div id="successModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="successTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
             <div class="mb-6">
                 <div class="inline-block bg-green-500 p-6 rounded-full">
@@ -321,7 +323,7 @@
     </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirmationModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div id="confirmationModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="glassmorphism rounded-[2rem] p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-white text-xl font-bold">Confirm Transaction</h3>
