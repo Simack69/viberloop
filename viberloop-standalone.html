@@ -148,7 +148,11 @@
                     </button>
                 </div>
 
-                <div class="mt-6 pt-6 border-t border-white/20">
+                <div class="mt-6 pt-6 border-t border-white/20 space-y-3">
+                    <a href="index.html" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-home mr-2"></i>
+                        Go to Home Screen
+                    </a>
                     <a href="dashboard-standalone.html" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
                         <i class="fas fa-chart-line mr-2"></i>
                         Go to Dashboard
@@ -374,9 +378,9 @@
                     single: [
                         { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
                         { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
                         { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
-                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ]
@@ -391,18 +395,18 @@
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
                         { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
                         { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
                         { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
-                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'multiselect', required: true, placeholder: 'Select from incoming NX codes' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'multiselect', required: true, placeholder: 'Select NX codes' },
                         { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
-                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
                         { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
@@ -415,22 +419,17 @@
                 location: 'SPINNER',
                 fields: {
                     incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
                         { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
                         { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
-                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['India Hub'] },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
                         { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
                         { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'e.g., Weaver Int.' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
@@ -444,22 +443,14 @@
                 location: 'WEAVER',
                 fields: {
                     incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
                         { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
                         { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
@@ -473,22 +464,14 @@
                 location: 'MANUFACTURING',
                 fields: {
                     incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
                         { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
                         { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
@@ -502,22 +485,14 @@
                 location: 'POL',
                 fields: {
                     incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
                         { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
                         { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
@@ -531,22 +506,14 @@
                 location: 'POD',
                 fields: {
                     incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
                         { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
                         { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
                     ],
                     outgoing: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
                         { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
@@ -556,21 +523,17 @@
             },
             'DISTRIBUTION_CENTER': {
                 display: 'Distribution Center',
-                hasTabs: true,
+                hasTabs: false,
                 location: 'DISTRIBUTION_CENTER',
                 fields: {
-                    incoming: [
-                        { id: 'purchaseOrderNumber', label: 'Purchase Order number', type: 'text', required: true, placeholder: 'e.g., PO123456' },
+                    single: [
                         { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
-                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
-                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
-                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO'] },
                         { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
                         { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
                         { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
-                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
-                    ],
-                    outgoing: [] // Distribution Center typically doesn't have outgoing
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' },
+                        { id: 'cmrCopy', label: 'CMR copy', type: 'file', required: false, placeholder: 'Upload CMR documents', multiple: true }
+                    ]
                 }
             }
         };
