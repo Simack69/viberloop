@@ -7,13 +7,18 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Viberloop Bio - Field App (Demo)</title>
 
-    <!-- Nxtile Design System -->
-    <link rel="stylesheet" href="nxtile.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
         body {
             -webkit-tap-highlight-color: transparent;
@@ -80,7 +85,7 @@
         }
     </style>
 </head>
-<body style="background-color: var(--nx-bg); min-height: 100vh;">
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
 
     <!-- Demo Badge -->
     <div class="demo-badge">
@@ -201,11 +206,11 @@
 
                     <!-- Customer -->
                     <div class="mb-3">
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Customer <span class="text-red-400">*</span>
                         </label>
                         <select id="customer" required
-                                class="nx-select">
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <option value="">Select customer...</option>
                             <option value="EkoPlaza">EkoPlaza</option>
                             <option value="Norma">Norma</option>
@@ -214,20 +219,20 @@
 
                     <!-- Date -->
                     <div class="mb-3">
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Date <span class="text-red-400">*</span>
                         </label>
                         <input type="date" id="transactionDate" required
-                               class="nx-select">
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <!-- Purchase Order -->
                     <div>
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Purchase Order <span class="text-red-400">*</span>
                         </label>
                         <input type="text" id="purchaseOrder" required
-                               class="nx-input"
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                placeholder="Enter purchase order...">
                     </div>
                 </div>
@@ -239,7 +244,7 @@
 
                 <!-- Photo Upload -->
                 <div>
-                    <label class="nx-label">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
                         Photo Evidence (Optional)
                     </label>
                     <div class="grid grid-cols-2 gap-3 mb-3">
@@ -285,7 +290,7 @@
 
     <!-- Mining Modal -->
     <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="nx-card rounded-[2rem] p-8 max-w-sm w-full text-center">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
             <div class="mb-6">
                 <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
                     <i class="fas fa-cubes text-white text-4xl"></i>
@@ -301,7 +306,7 @@
 
     <!-- Success Modal -->
     <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="nx-card rounded-[2rem] p-8 max-w-sm w-full text-center">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
             <div class="mb-6">
                 <div class="inline-block bg-green-500 p-6 rounded-full">
                     <i class="fas fa-check text-white text-4xl"></i>
@@ -317,7 +322,7 @@
 
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="nx-card rounded-[2rem] p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="glassmorphism rounded-[2rem] p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-white text-xl font-bold">Confirm Transaction</h3>
                 <button onclick="closeConfirmation()" class="text-purple-300 hover:text-white">

@@ -7,8 +7,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Viberloop Bio - Field App</title>
 
-    <!-- Nxtile Design System -->
-    <link rel="stylesheet" href="nxtile.css">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,6 +19,11 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
         body {
             -webkit-tap-highlight-color: transparent;
@@ -30,6 +35,13 @@
         input, textarea, select {
             -webkit-user-select: text;
             user-select: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .pulse-animation {
@@ -54,86 +66,77 @@
         }
 
         .tab-active {
-            background: var(--nx-primary);
-            color: var(--nx-text-white);
-            border: 2px solid var(--nx-primary);
+            background: linear-gradient(135deg, #9333ea, #7e22ce);
+            color: white;
         }
 
         .tab-inactive {
-            background: var(--nx-text-white);
-            color: var(--nx-text-secondary);
-            border: 2px solid var(--nx-border);
-        }
-
-        /* Mobile optimizations */
-        #app {
-            max-width: 100%;
-            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.05);
+            color: #d8b4fe;
         }
     </style>
 </head>
-<body style="background-color: var(--nx-bg); min-height: 100vh;">
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
 
     <!-- Login Screen -->
-    <div id="loginScreen" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem;">
-        <div style="width: 100%; max-width: 28rem;">
-            <div style="text-center; margin-bottom: 3rem;">
-                <div style="display: inline-block; background-color: var(--nx-green); padding: 1.5rem; border-radius: var(--nx-radius-md); margin-bottom: 1.5rem;">
-                    <i class="fas fa-recycle" style="color: white; font-size: 2.5rem;"></i>
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-purple-600 p-4 rounded-[2rem] mb-4">
+                    <i class="fas fa-recycle text-white text-4xl"></i>
                 </div>
-                <h1 class="nx-headline" style="font-size: 2.5rem; margin-bottom: 0.5rem; color: var(--nx-primary);"><strong>Viber</strong>loop</h1>
-                <p style="color: var(--nx-text-secondary); font-size: 0.875rem;">Bio Cotton Supply Chain</p>
+                <h1 class="text-white text-3xl font-black uppercase tracking-widest mb-2">Viberloop</h1>
+                <p class="text-purple-300 text-sm">Bio Cotton Supply Chain</p>
             </div>
 
-            <div class="nx-card" style="padding: 2.5rem;">
-                <div class="nx-section-label">GET STARTED</div>
-                <h2 class="nx-headline" style="margin-bottom: 2rem; color: var(--nx-primary);">Select Your Role</h2>
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6">Select Your Role</h2>
 
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <button onclick="login('WASTE_SOURCE')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-warehouse" style="margin-right: 0.75rem;"></i>Waste Source</span>
+                <div class="space-y-3">
+                    <button onclick="login('WASTE_SOURCE')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-warehouse mr-3"></i>Waste Source</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('RECYCLING_HUB')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-layer-group" style="margin-right: 0.75rem;"></i>Recycling Hub</span>
+                    <button onclick="login('RECYCLING_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Recycling Hub</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('SPINNER')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-cog" style="margin-right: 0.75rem;"></i>Spinner</span>
+                    <button onclick="login('SPINNER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-cog mr-3"></i>Spinner</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('WEAVER')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-th" style="margin-right: 0.75rem;"></i>Weaver</span>
+                    <button onclick="login('WEAVER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-th mr-3"></i>Weaver</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('MANUFACTURING')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-industry" style="margin-right: 0.75rem;"></i>Manufacturing</span>
+                    <button onclick="login('MANUFACTURING')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-industry mr-3"></i>Manufacturing</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('POL')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-shipping-fast" style="margin-right: 0.75rem;"></i>Point of Loading</span>
+                    <button onclick="login('POL')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-shipping-fast mr-3"></i>Point of Loading</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('POD')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-truck-loading" style="margin-right: 0.75rem;"></i>Point of Destination</span>
+                    <button onclick="login('POD')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-truck-loading mr-3"></i>Point of Destination</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
 
-                    <button onclick="login('DISTRIBUTION_CENTER')" class="nx-btn nx-btn-primary" style="width: 100%; padding: 1.25rem 1.5rem; justify-content: space-between;">
-                        <span><i class="fas fa-store" style="margin-right: 0.75rem;"></i>Distribution Center</span>
+                    <button onclick="login('DISTRIBUTION_CENTER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-store mr-3"></i>Distribution Center</span>
                         <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
 
-                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--nx-border); display: flex; flex-direction: column; gap: 1rem;">
-                    <a href="/" style="color: var(--nx-text-secondary); text-decoration: none; font-size: 0.875rem; display: flex; align-items: center; justify-content: center; transition: color 0.2s ease;">
-                        <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
+                <div class="mt-6 pt-6 border-t border-white/20 space-y-3">
+                    <a href="/" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-home mr-2"></i>
                         Go to Home Screen
                     </a>
                     <a href="/dashboard" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
@@ -146,19 +149,19 @@
     </div>
 
     <!-- Main App Screen -->
-    <div id="appScreen" class="hidden" style="min-height: 100vh; padding: 1.5rem; padding-bottom: 6rem;">
+    <div id="appScreen" class="hidden min-h-screen p-4 pb-24">
         <!-- Header -->
-        <div style="margin-bottom: 2rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h1 class="nx-headline" style="font-size: 1.75rem; margin-bottom: 0.25rem; color: var(--nx-primary);"><strong>Viber</strong>loop</h1>
-                    <p style="color: var(--nx-text-secondary); font-size: 0.875rem;" id="roleDisplay"></p>
+                    <h1 class="text-white text-2xl font-black uppercase tracking-wider">Viberloop</h1>
+                    <p class="text-purple-300 text-sm" id="roleDisplay"></p>
                 </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <a href="/" class="nx-btn nx-btn-sm nx-btn-outline">
+                <div class="flex gap-2">
+                    <a href="/" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
                         <i class="fas fa-home"></i>
                     </a>
-                    <button onclick="logout()" class="nx-btn nx-btn-sm" style="background: #dc2626; border-color: #dc2626; color: white;">
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
                 </div>
@@ -166,17 +169,17 @@
         </div>
 
         <!-- Tab Buttons (for roles with split screens) -->
-        <div id="tabButtons" class="hidden" style="margin-bottom: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <button onclick="switchFormTab('incoming')" id="tabIncoming" class="tab-active nx-btn" style="padding: 1rem 1.5rem;">
-                <i class="fas fa-arrow-down" style="margin-right: 0.5rem;"></i>Incoming Goods
+        <div id="tabButtons" class="hidden mb-6 grid grid-cols-2 gap-3">
+            <button onclick="switchFormTab('incoming')" id="tabIncoming" class="tab-active py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-down mr-2"></i>Incoming Goods
             </button>
-            <button onclick="switchFormTab('outgoing')" id="tabOutgoing" class="tab-inactive nx-btn" style="padding: 1rem 1.5rem;">
-                <i class="fas fa-arrow-up" style="margin-right: 0.5rem;"></i>Outgoing Goods
+            <button onclick="switchFormTab('outgoing')" id="tabOutgoing" class="tab-inactive py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-up mr-2"></i>Outgoing Goods
             </button>
         </div>
 
         <!-- Transaction Form -->
-        <div class="nx-card" style="margin-bottom: 2rem;">
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 mb-6">
             <h2 class="text-white text-xl font-bold mb-6 flex items-center">
                 <i class="fas fa-plus-circle mr-3 text-purple-400"></i>
                 <span id="formTitle">New Transaction</span>
@@ -189,11 +192,11 @@
 
                     <!-- Customer -->
                     <div class="mb-3">
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Customer <span class="text-red-400">*</span>
                         </label>
                         <select id="customer" required
-                                class="nx-select">
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                             <option value="">Select customer...</option>
                             <option value="EkoPlaza">EkoPlaza</option>
                             <option value="Norma">Norma</option>
@@ -202,20 +205,20 @@
 
                     <!-- Date -->
                     <div class="mb-3">
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Date <span class="text-red-400">*</span>
                         </label>
                         <input type="date" id="transactionDate" required
-                               class="nx-select">
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
                     </div>
 
                     <!-- Purchase Order -->
                     <div>
-                        <label class="nx-label">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
                             Purchase Order <span class="text-red-400">*</span>
                         </label>
                         <input type="text" id="purchaseOrder" required
-                               class="nx-input"
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
                                placeholder="Enter purchase order...">
                     </div>
                 </div>
@@ -227,7 +230,7 @@
 
                 <!-- Photo Upload -->
                 <div>
-                    <label class="nx-label">
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
                         Photo Evidence (Optional)
                     </label>
                     <div class="grid grid-cols-2 gap-3 mb-3">
@@ -252,8 +255,8 @@
                 </div>
 
                 <!-- Submit Button -->
-                <button type="submit" class="nx-btn nx-btn-primary nx-btn-lg" style="width: 100%;">
-                    <i class="fas fa-cubes"></i>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-black py-4 px-6 rounded-2xl uppercase tracking-wider transition-all transform hover:scale-105">
+                    <i class="fas fa-cubes mr-2"></i>
                     Submit to Chain
                 </button>
             </form>
@@ -272,32 +275,32 @@
     </div>
 
     <!-- Mining Modal -->
-    <div id="miningModal" class="hidden nx-modal-overlay" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1.5rem;">
-        <div class="nx-card" style="padding: 3rem; max-width: 28rem; width: 100%; text-align: center;">
-            <div style="margin-bottom: 2rem;">
-                <div style="display: inline-block; background-color: var(--nx-primary); padding: 2rem; border-radius: 50%;" class="pulse-animation">
-                    <i class="fas fa-cubes" style="color: white; font-size: 2.5rem;"></i>
+    <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
+                    <i class="fas fa-cubes text-white text-4xl"></i>
                 </div>
             </div>
-            <h3 class="nx-headline" style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--nx-primary);">Mining Transaction</h3>
-            <p style="color: var(--nx-text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem;" class="mining-dots">Broadcasting to Solana Network</p>
-            <div style="background-color: var(--nx-bg-alt); border-radius: var(--nx-radius-pill); height: 0.5rem; overflow: hidden;">
-                <div style="background-color: var(--nx-primary); height: 100%; width: 75%;" class="pulse-animation"></div>
+            <h3 class="text-white text-xl font-bold mb-2">Mining Transaction</h3>
+            <p class="text-purple-300 text-sm mb-4 mining-dots">Broadcasting to Solana Network</p>
+            <div class="bg-purple-600/30 rounded-full h-2 overflow-hidden">
+                <div class="bg-purple-500 h-full w-3/4 animate-pulse"></div>
             </div>
         </div>
     </div>
 
     <!-- Success Modal -->
-    <div id="successModal" class="hidden nx-modal-overlay" style="position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 50; padding: 1.5rem;">
-        <div class="nx-card" style="padding: 3rem; max-width: 28rem; width: 100%; text-align: center;">
-            <div style="margin-bottom: 2rem;">
-                <div style="display: inline-block; background-color: var(--nx-green); padding: 2rem; border-radius: 50%;">
-                    <i class="fas fa-check" style="color: white; font-size: 2.5rem;"></i>
+    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-green-500 p-6 rounded-full">
+                    <i class="fas fa-check text-white text-4xl"></i>
                 </div>
             </div>
-            <h3 class="nx-headline" style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--nx-primary);">Transaction Confirmed!</h3>
-            <p style="color: var(--nx-text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem;" id="successHash"></p>
-            <button onclick="closeSuccessModal()" class="nx-btn nx-btn-primary nx-btn-lg">
+            <h3 class="text-white text-xl font-bold mb-2">Transaction Confirmed!</h3>
+            <p class="text-purple-300 text-sm mb-4" id="successHash"></p>
+            <button onclick="closeSuccessModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl">
                 Continue
             </button>
         </div>
