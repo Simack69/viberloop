@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="application-name" content="Viberloop Bio">
+    <title>Viberloop Bio - Field App (Demo)</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mining-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        .tab-active {
+            background: linear-gradient(135deg, #9333ea, #7e22ce);
+            color: white;
+        }
+
+        .tab-inactive {
+            background: rgba(255, 255, 255, 0.05);
+            color: #d8b4fe;
+        }
+
+        .demo-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <!-- Demo Badge -->
+    <div class="demo-badge">
+        <i class="fas fa-flask mr-1"></i>DEMO - localStorage
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-purple-600 p-4 rounded-[2rem] mb-4">
+                    <i class="fas fa-recycle text-white text-4xl"></i>
+                </div>
+                <h1 class="text-white text-3xl font-black uppercase tracking-widest mb-2">Viberloop</h1>
+                <p class="text-purple-300 text-sm">Bio Cotton Supply Chain</p>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6">Select Your Role</h2>
+
+                <div class="space-y-3">
+                    <button onclick="login('WASTE_SOURCE')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-warehouse mr-3"></i>Waste Source</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('RECYCLING_HUB')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-layer-group mr-3"></i>Recycling Hub</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('SPINNER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-cog mr-3"></i>Spinner</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('WEAVER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-th mr-3"></i>Weaver</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('MANUFACTURING')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-industry mr-3"></i>Manufacturing</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('POL')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-shipping-fast mr-3"></i>Point of Loading</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('POD')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-truck-loading mr-3"></i>Point of Destination</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <button onclick="login('DISTRIBUTION_CENTER')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-between">
+                        <span><i class="fas fa-store mr-3"></i>Distribution Center</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-white/20 space-y-3">
+                    <a href="index.html" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-home mr-2"></i>
+                        Go to Home Screen
+                    </a>
+                    <a href="dashboard-standalone.html" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="appScreen" class="hidden min-h-screen p-4 pb-24">
+        <!-- Header -->
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-white text-2xl font-black uppercase tracking-wider">Viberloop</h1>
+                    <p class="text-purple-300 text-sm" id="roleDisplay"></p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="index.html" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Buttons (for roles with split screens) -->
+        <div id="tabButtons" class="hidden mb-6 grid grid-cols-2 gap-3">
+            <button onclick="switchFormTab('incoming')" id="tabIncoming" class="tab-active py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-down mr-2"></i>Incoming Goods
+            </button>
+            <button onclick="switchFormTab('outgoing')" id="tabOutgoing" class="tab-inactive py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-up mr-2"></i>Outgoing Goods
+            </button>
+        </div>
+
+        <!-- Transaction Form -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 mb-6">
+            <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-plus-circle mr-3 text-purple-400"></i>
+                <span id="formTitle">New Transaction</span>
+            </h2>
+
+            <form id="transactionForm" class="space-y-4">
+                <!-- Universal Fields Section -->
+                <div class="bg-purple-900/30 rounded-xl p-4 mb-4 border border-purple-500/30">
+                    <h3 class="text-purple-200 font-bold mb-3 text-sm uppercase">Universal Fields</h3>
+
+                    <!-- Customer -->
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Customer <span class="text-red-400">*</span>
+                        </label>
+                        <select id="customer" required
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Select customer...</option>
+                            <option value="EkoPlaza">EkoPlaza</option>
+                            <option value="Norma">Norma</option>
+                        </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Date <span class="text-red-400">*</span>
+                        </label>
+                        <input type="date" id="transactionDate" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <!-- Purchase Order -->
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Purchase Order <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="purchaseOrder" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter purchase order...">
+                    </div>
+                </div>
+
+                <!-- Dynamic Form Fields Container -->
+                <div id="dynamicFields">
+                    <!-- Fields will be inserted here dynamically -->
+                </div>
+
+                <!-- Photo Upload -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Photo Evidence (Optional)
+                    </label>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-camera mr-2"></i>
+                            <span>Take Photo</span>
+                            <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="hidden" onchange="handlePhotoUpload(event)">
+                        </label>
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-upload mr-2"></i>
+                            <span>Upload Photo</span>
+                            <input type="file" id="photoInputUpload" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                        </label>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" onclick="clearPhoto()" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-sm">
+                            <i class="fas fa-times mr-2"></i>Clear Photo
+                        </button>
+                    </div>
+                    <canvas id="photoCanvas" class="hidden"></canvas>
+                    <img id="photoPreview" class="hidden mt-3 w-full rounded-xl border-2 border-purple-400">
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-black py-4 px-6 rounded-2xl uppercase tracking-wider transition-all transform hover:scale-105">
+                    <i class="fas fa-cubes mr-2"></i>
+                    Submit to Chain
+                </button>
+            </form>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+            <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-history mr-3 text-purple-400"></i>
+                Recent Transactions
+            </h2>
+            <div id="recentTransactions" class="space-y-3">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mining Modal -->
+    <div id="miningModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="miningTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
+                    <i class="fas fa-cubes text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Mining Transaction</h3>
+            <p class="text-purple-300 text-sm mb-4 mining-dots">Broadcasting to Solana Network</p>
+            <div class="bg-purple-600/30 rounded-full h-2 overflow-hidden">
+                <div class="bg-purple-500 h-full w-3/4 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="successTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-green-500 p-6 rounded-full">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Transaction Confirmed!</h3>
+            <p class="text-purple-300 text-sm mb-4" id="successHash"></p>
+            <button onclick="closeSuccessModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-white text-xl font-bold">Confirm Transaction</h3>
+                <button onclick="closeConfirmation()" class="text-purple-300 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="confirmationContent" class="space-y-3 mb-6">
+                <!-- Dynamically populated -->
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeConfirmation()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button onclick="confirmSubmission()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition">
+                    <i class="fas fa-check mr-2"></i>Submit to Chain
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== LOCALSTORAGE (DEMO MODE) ====================
+        const STORAGE_KEY = 'viberloop_demo_data';
+
+        // ==================== STATE MANAGEMENT ====================
+        let currentRole = null;
+        let currentTab = 'incoming'; // 'incoming' or 'outgoing'
+        let currentPhotoData = null;
+        let pendingFormData = null; // For confirmation modal
+        let incomingNXCodes = []; // For multi-select in RECYCLING_HUB outgoing
+
+        // ==================== LOCALSTORAGE HELPERS ====================
+        function getTransactions() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveTransaction(transaction) {
+            const transactions = getTransactions();
+            transactions.push(transaction);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+        }
+
+        // ==================== ROLE CONFIGURATION ====================
+        const roleConfig = {
+            'WASTE_SOURCE': {
+                display: 'Waste Source',
+                hasTabs: false,
+                location: 'WASTE_SOURCE',
+                fields: {
+                    single: [
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'RECYCLING_HUB': {
+                display: 'Recycling Hub',
+                hasTabs: true,
+                location: 'RECYCLING_HUB',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'multiselect', required: true, placeholder: 'Select NX codes' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'SPINNER': {
+                display: 'Spinner',
+                hasTabs: true,
+                location: 'SPINNER',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'e.g., Weaver Int.' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'WEAVER': {
+                display: 'Weaver',
+                hasTabs: true,
+                location: 'WEAVER',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'MANUFACTURING': {
+                display: 'Manufacturing',
+                hasTabs: true,
+                location: 'MANUFACTURING',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POL': {
+                display: 'Point of Loading',
+                hasTabs: true,
+                location: 'POL',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'container', label: 'Container', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POD': {
+                display: 'Point of Destination',
+                hasTabs: true,
+                location: 'POD',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'DISTRIBUTION_CENTER': {
+                display: 'Distribution Center',
+                hasTabs: false,
+                location: 'DISTRIBUTION_CENTER',
+                fields: {
+                    single: [
+                        { id: 'packingList', label: 'Packing List number', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' },
+                        { id: 'cmrCopy', label: 'CMR copy', type: 'file', required: false, placeholder: 'Upload CMR documents', multiple: true }
+                    ]
+                }
+            }
+        };
+
+        // ==================== AUTHENTICATION ====================
+        function login(role) {
+            currentRole = role;
+            localStorage.setItem('viberloop_role', role);
+
+            const config = roleConfig[role];
+            document.getElementById('roleDisplay').textContent = config.display;
+
+            // Show/hide tabs
+            if (config.hasTabs) {
+                document.getElementById('tabButtons').classList.remove('hidden');
+                currentTab = 'incoming';
+                switchFormTab('incoming');
+            } else {
+                document.getElementById('tabButtons').classList.add('hidden');
+                renderForm();
+            }
+
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('transactionDate').value = today;
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+
+            loadRecentTransactions();
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentRole = null;
+                localStorage.removeItem('viberloop_role');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('transactionForm').reset();
+                clearPhoto();
+            }
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchFormTab(tab) {
+            currentTab = tab;
+
+            // Update tab buttons
+            if (tab === 'incoming') {
+                document.getElementById('tabIncoming').classList.remove('tab-inactive');
+                document.getElementById('tabIncoming').classList.add('tab-active');
+                document.getElementById('tabOutgoing').classList.remove('tab-active');
+                document.getElementById('tabOutgoing').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Incoming Goods';
+            } else {
+                document.getElementById('tabOutgoing').classList.remove('tab-inactive');
+                document.getElementById('tabOutgoing').classList.add('tab-active');
+                document.getElementById('tabIncoming').classList.remove('tab-active');
+                document.getElementById('tabIncoming').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Outgoing Goods';
+            }
+
+            renderForm();
+        }
+
+        // ==================== FORM RENDERING ====================
+        function renderForm() {
+            const config = roleConfig[currentRole];
+            const fieldsContainer = document.getElementById('dynamicFields');
+            fieldsContainer.innerHTML = '';
+
+            let fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(field => {
+                const fieldDiv = document.createElement('div');
+
+                const label = document.createElement('label');
+                label.className = 'block text-purple-300 text-sm font-bold mb-2';
+                label.textContent = field.label;
+                if (field.required) {
+                    const required = document.createElement('span');
+                    required.className = 'text-red-400';
+                    required.textContent = ' *';
+                    label.appendChild(required);
+                }
+                fieldDiv.appendChild(label);
+
+                if (field.type === 'select') {
+                    const select = document.createElement('select');
+                    select.id = field.id;
+                    select.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    if (field.required) select.required = true;
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = `Select ${field.label.toLowerCase()}...`;
+                    select.appendChild(defaultOption);
+
+                    field.options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        select.appendChild(option);
+                    });
+
+                    fieldDiv.appendChild(select);
+                } else if (field.type === 'multiselect') {
+                    // For RECYCLING_HUB outgoing NX codes
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = field.type;
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                }
+
+                fieldsContainer.appendChild(fieldDiv);
+            });
+        }
+
+        // ==================== PHOTO HANDLING ====================
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function compressImage(dataUrl) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('photoCanvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = img.width;
+                let height = img.height;
+                const maxDimension = 400;
+
+                if (width > height && width > maxDimension) {
+                    height = (height / width) * maxDimension;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width / height) * maxDimension;
+                    height = maxDimension;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                let quality = 0.6;
+                let compressed = canvas.toDataURL('image/jpeg', quality);
+
+                while (compressed.length > 20000 && quality > 0.1) {
+                    quality -= 0.1;
+                    compressed = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                currentPhotoData = compressed;
+                document.getElementById('photoPreview').src = compressed;
+                document.getElementById('photoPreview').classList.remove('hidden');
+            };
+            img.onerror = function() {
+                alert('Error processing image. Please try another photo.');
+            };
+            img.src = dataUrl;
+        }
+
+        function clearPhoto() {
+            currentPhotoData = null;
+            document.getElementById('photoInputCamera').value = '';
+            document.getElementById('photoInputUpload').value = '';
+            document.getElementById('photoPreview').classList.add('hidden');
+        }
+
+        // ==================== FORM SUBMISSION ====================
+        document.getElementById('transactionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const config = roleConfig[currentRole];
+
+            // Collect universal fields
+            const customer = document.getElementById('customer').value.trim();
+            const transactionDate = document.getElementById('transactionDate').value;
+            const purchaseOrder = document.getElementById('purchaseOrder').value.trim();
+
+            if (!customer || !transactionDate || !purchaseOrder) {
+                alert('Please fill in all universal fields (Customer, Date, Purchase Order)');
+                return;
+            }
+
+            // Collect dynamic fields
+            const formData = {
+                customer,
+                transactionDate,
+                purchaseOrder,
+                role: currentRole,
+                location: config.location
+            };
+
+            if (config.hasTabs) {
+                formData.transactionType = currentTab; // incoming or outgoing
+            }
+
+            // Get all field values
+            let fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    formData[field.id] = element.value.trim();
+                }
+            });
+
+            // Store pending data
+            pendingFormData = formData;
+
+            // Show confirmation modal with all data
+            showConfirmationModal(formData, config);
+        });
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        function showConfirmationModal(formData, config) {
+            const content = document.getElementById('confirmationContent');
+
+            // Build confirmation HTML
+            let html = '';
+
+            // Photo preview
+            if (currentPhotoData) {
+                html += `
+                    <div class="mb-4">
+                        <img src="${currentPhotoData}" alt="Transaction Photo" class="w-full h-32 object-cover rounded-xl border-2 border-purple-400">
+                    </div>
+                `;
+            }
+
+            // Universal fields
+            html += `
+                <div class="bg-black/20 rounded-xl p-3 space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-purple-300 text-xs uppercase font-bold">Customer</span>
+                        <span class="text-white text-sm font-bold">${formData.customer}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-purple-300 text-xs uppercase font-bold">Date</span>
+                        <span class="text-white text-sm">${formData.transactionDate}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-purple-300 text-xs uppercase font-bold">Purchase Order</span>
+                        <span class="text-white text-sm">${formData.purchaseOrder}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-purple-300 text-xs uppercase font-bold">Role</span>
+                        <span class="text-white text-sm">${config.display}</span>
+                    </div>
+                    ${formData.transactionType ? `
+                    <div class="flex justify-between">
+                        <span class="text-purple-300 text-xs uppercase font-bold">Type</span>
+                        <span class="text-white text-sm">${formData.transactionType.toUpperCase()}</span>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Dynamic fields
+            let fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            if (fields.length > 0) {
+                html += `<div class="bg-black/20 rounded-xl p-3 space-y-2">`;
+                fields.forEach(field => {
+                    const value = formData[field.id] || 'N/A';
+                    html += `
+                        <div class="flex justify-between">
+                            <span class="text-purple-300 text-xs uppercase font-bold">${field.label}</span>
+                            <span class="text-white text-sm">${value}</span>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            content.innerHTML = html;
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+            pendingFormData = null;
+        }
+
+        function confirmSubmission() {
+            if (!pendingFormData) {
+                alert('No pending transaction data');
+                return;
+            }
+
+            // Hide confirmation modal
+            document.getElementById('confirmationModal').classList.add('hidden');
+
+            // Show mining modal
+            document.getElementById('miningModal').classList.remove('hidden');
+
+            const miningDelay = Math.floor(Math.random() * 700) + 800;
+
+            setTimeout(() => {
+                const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
+                             Math.random().toString(36).substring(2, 15);
+
+                const transaction = {
+                    ...pendingFormData,
+                    hash: hash,
+                    time: new Date().toLocaleString(),
+                    photoUrl: currentPhotoData || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E',
+                    timestamp: Date.now()
+                };
+
+                saveTransaction(transaction);
+
+                document.getElementById('miningModal').classList.add('hidden');
+                document.getElementById('successHash').textContent = `Hash: ${hash}`;
+                document.getElementById('successModal').classList.remove('hidden');
+
+                document.getElementById('transactionForm').reset();
+                clearPhoto();
+
+                // Reset to today's date
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('transactionDate').value = today;
+
+                loadRecentTransactions();
+
+                // Clear pending data
+                pendingFormData = null;
+            }, miningDelay);
+        }
+
+        // ==================== RECENT TRANSACTIONS ====================
+        function loadRecentTransactions() {
+            const container = document.getElementById('recentTransactions');
+            const transactions = getTransactions().slice(-10).reverse();
+
+            if (transactions.length === 0) {
+                container.innerHTML = '<p class="text-purple-300 text-sm text-center py-4">No transactions yet</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            transactions.forEach(tx => {
+                const card = document.createElement('div');
+                card.className = 'bg-black/30 rounded-xl p-4 border border-purple-500/30';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="text-white font-bold">${tx.nxReference || tx.packingList || 'N/A'}</div>
+                            <div class="text-purple-300 text-sm">${tx.location}</div>
+                            <div class="text-purple-400 text-xs">${tx.customer || 'N/A'} - ${tx.transactionType || 'Single'}</div>
+                        </div>
+                        <div class="bg-purple-600 px-3 py-1 rounded-lg text-white text-xs">
+                            ${tx.netWeight || 'N/A'} kg
+                        </div>
+                    </div>
+                    <div class="text-purple-400 text-xs">
+                        <i class="fas fa-clock mr-1"></i>${tx.time}
+                    </div>
+                    <div class="text-purple-400 text-xs mt-1 truncate">
+                        <i class="fas fa-link mr-1"></i>${tx.hash}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ==================== AUTO-LOGIN IF ROLE EXISTS ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedRole = localStorage.getItem('viberloop_role');
+            if (savedRole && roleConfig[savedRole]) {
+                login(savedRole);
+            }
+        });
+    </script>
+</body>
+</html>
