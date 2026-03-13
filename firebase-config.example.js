@@ -3,7 +3,7 @@
 // Get your credentials from the Firebase Console: https://console.firebase.google.com
 // IMPORTANT: Never commit firebase-config.js to git.
 
-const firebaseConfig = {
+var firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
     databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.europe-west1.firebasedatabase.app",
