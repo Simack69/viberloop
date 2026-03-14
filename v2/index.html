@@ -83,6 +83,12 @@
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
 
+    <!-- Solana Status Banner -->
+    <div id="solanaStatusBanner" class="fixed top-0 left-0 right-0 bg-orange-500 text-white text-center py-2 text-sm z-50">
+        <i class="fas fa-circle-notch fa-spin mr-2"></i>
+        <span id="solanaStatusText">Initializing Solana Devnet... Please wait</span>
+    </div>
+
     <!-- Login Screen -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md">
@@ -393,10 +399,12 @@
         }
 
         // ==================== SOLANA DEVNET CONFIGURATION ====================
-        let solanaConnection, solanaKeypair;
+        let solanaConnection, solanaKeypair, solanaReady = false;
 
         async function initializeSolana() {
             try {
+                console.log('🔄 Initializing Solana Devnet...');
+
                 // Connect to Solana Devnet
                 solanaConnection = new solanaWeb3.Connection(
                     solanaWeb3.clusterApiUrl('devnet'),
@@ -406,20 +414,52 @@
                 // Create a new keypair for this session (in production, use a persistent wallet)
                 solanaKeypair = solanaWeb3.Keypair.generate();
 
-                console.log('✅ Solana Devnet initialized');
+                console.log('✅ Solana Devnet connected');
                 console.log('🔑 Wallet address:', solanaKeypair.publicKey.toBase58());
 
                 // Airdrop SOL for transaction fees (Devnet only)
-                console.log('💧 Requesting devnet airdrop...');
+                console.log('💧 Requesting devnet airdrop (this may take 10-30 seconds)...');
                 const airdropSignature = await solanaConnection.requestAirdrop(
                     solanaKeypair.publicKey,
-                    solanaWeb3.LAMPORTS_PER_SOL
+                    solanaWeb3.LAMPORTS_PER_SOL * 2  // Request 2 SOL for multiple transactions
                 );
-                await solanaConnection.confirmTransaction(airdropSignature);
-                console.log('✅ Airdrop successful');
+
+                console.log('⏳ Waiting for airdrop confirmation...');
+                await solanaConnection.confirmTransaction(airdropSignature, 'confirmed');
+
+                // Verify balance
+                const balance = await solanaConnection.getBalance(solanaKeypair.publicKey);
+                const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                console.log(`✅ Airdrop successful! Balance: ${sol} SOL`);
+
+                solanaReady = true;
+                console.log('🚀 Solana is ready for transactions!');
+
+                // Update UI banner
+                const banner = document.getElementById('solanaStatusBanner');
+                const statusText = document.getElementById('solanaStatusText');
+                if (banner && statusText) {
+                    banner.className = 'fixed top-0 left-0 right-0 bg-green-500 text-white text-center py-2 text-sm z-50';
+                    statusText.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Solana Devnet Ready! You can submit transactions now.';
+
+                    // Hide banner after 5 seconds
+                    setTimeout(() => {
+                        banner.style.display = 'none';
+                    }, 5000);
+                }
 
             } catch (error) {
                 console.error('❌ Solana initialization error:', error);
+                console.error('⚠️ Transactions will use fallback mode');
+                solanaReady = false;
+
+                // Update UI banner with error
+                const banner = document.getElementById('solanaStatusBanner');
+                const statusText = document.getElementById('solanaStatusText');
+                if (banner && statusText) {
+                    banner.className = 'fixed top-0 left-0 right-0 bg-red-500 text-white text-center py-2 text-sm z-50';
+                    statusText.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Solana initialization failed. Transactions will use fallback mode.';
+                }
             }
         }
 
@@ -433,7 +473,31 @@
          */
         async function submitToSolanaDevnet(memoData) {
             try {
+                // Check if Solana is ready
+                if (!solanaReady) {
+                    console.warn('⚠️ Solana not ready yet, waiting...');
+                    // Wait up to 30 seconds for Solana to be ready
+                    for (let i = 0; i < 30; i++) {
+                        if (solanaReady) break;
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        console.log(`⏳ Waiting for Solana... (${i + 1}s)`);
+                    }
+
+                    if (!solanaReady) {
+                        throw new Error('Solana initialization timeout. Please refresh and wait for airdrop.');
+                    }
+                }
+
                 console.log('📡 Submitting to Solana Devnet...');
+
+                // Check balance
+                const balance = await solanaConnection.getBalance(solanaKeypair.publicKey);
+                const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                console.log(`💰 Current balance: ${sol} SOL`);
+
+                if (balance < 5000) {  // Minimum 0.000005 SOL for transaction
+                    throw new Error('Insufficient balance. Please wait for airdrop or request more funds.');
+                }
 
                 // Create transaction with memo
                 const transaction = new solanaWeb3.Transaction().add(
@@ -444,11 +508,14 @@
                     })
                 );
 
+                console.log('📝 Transaction created, sending...');
+
                 // Send and confirm transaction
                 const signature = await solanaWeb3.sendAndConfirmTransaction(
                     solanaConnection,
                     transaction,
-                    [solanaKeypair]
+                    [solanaKeypair],
+                    { commitment: 'confirmed' }
                 );
 
                 console.log('✅ Solana transaction confirmed!');
@@ -458,8 +525,13 @@
                 return signature;
             } catch (error) {
                 console.error('❌ Solana transaction error:', error);
+                console.error('📋 Error details:', error.message);
+                console.error('⚠️ Using fallback hash (not on blockchain)');
+
                 // Fallback to mock hash if blockchain fails
-                return 'SOL-DEVNET-' + Math.random().toString(36).substring(2, 15);
+                const fallbackHash = 'SOL-DEVNET-FALLBACK-' + Math.random().toString(36).substring(2, 15);
+                console.warn('🔴 FALLBACK HASH (NOT REAL):', fallbackHash);
+                return fallbackHash;
             }
         }
 
