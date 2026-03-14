@@ -4,11 +4,11 @@
 // IMPORTANT: Never commit firebase-config.js to git.
 
 var firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    projectId: "viberloop-bio",
+    apiKey: "AIzaSyDEoQ3mA8wMTeVlBnhTJ8zjHBTYRzV8Oo0",
+    authDomain: "viberloop-bio.firebaseapp.com",
+    databaseURL: "https://viberloop-bio-default-rtdb.europe-west1.firebasedatabase.app",
+    storageBucket: "viberloop-bio.firebasestorage.app",
+    messagingSenderId: "172363538293",
+    appId: "1:172363538293:web:58cf090d43fc9667fa3d3c"
 };
