@@ -97,7 +97,8 @@
         </div>
     </div>
 
-    <script src="firebase-config.js"></script>
+    <!-- Firebase Auto-Configuration (from Firebase Hosting) -->
+    <script src="/__/firebase/init.js?useService=database"></script>
     <script>
         let diagnosticResults = {};
 
@@ -177,13 +178,15 @@
             firebaseStatus.innerHTML = '<div class="text-white"><i class="fas fa-spinner fa-spin mr-2"></i>Checking Firebase...</div>';
 
             try {
-                const app = firebase.initializeApp(firebaseConfig);
+                // Use auto-initialized Firebase
+                const app = firebase.app();
                 const database = firebase.database();
+                const config = app.options;
 
                 diagnosticResults.firebase = {
                     initialized: true,
-                    projectId: firebaseConfig.projectId,
-                    databaseURL: firebaseConfig.databaseURL,
+                    projectId: config.projectId,
+                    databaseURL: config.databaseURL,
                     connected: false,
                     error: null
                 };
@@ -196,11 +199,11 @@
                         </div>
                         <div class="flex justify-between p-2 bg-white/5 rounded">
                             <span>Project ID:</span>
-                            <span class="font-mono text-sm">${firebaseConfig.projectId}</span>
+                            <span class="font-mono text-sm">${config.projectId}</span>
                         </div>
                         <div class="flex justify-between p-2 bg-white/5 rounded">
                             <span>Database:</span>
-                            <span class="font-mono text-xs break-all">${firebaseConfig.databaseURL}</span>
+                            <span class="font-mono text-xs break-all">${config.databaseURL}</span>
                         </div>
                     </div>
                 `;

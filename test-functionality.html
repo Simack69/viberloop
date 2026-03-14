@@ -88,7 +88,8 @@
         </div>
     </div>
 
-    <script src="firebase-config.js"></script>
+    <!-- Firebase Auto-Configuration (from Firebase Hosting) -->
+    <script src="/__/firebase/init.js?useService=database"></script>
     <script>
         let app, database;
         let testResults = [];
@@ -114,11 +115,22 @@
         // Initialize Firebase
         function initFirebase() {
             try {
-                app = firebase.initializeApp(firebaseConfig);
+                // Try to use auto-initialized Firebase first
+                app = firebase.app();
                 database = firebase.database();
                 return true;
             } catch (error) {
                 console.error("Firebase init error:", error);
+                // Fallback for local development
+                try {
+                    if (typeof firebaseConfig !== 'undefined') {
+                        app = firebase.initializeApp(firebaseConfig);
+                        database = firebase.database();
+                        return true;
+                    }
+                } catch (fallbackError) {
+                    console.error("Fallback init error:", fallbackError);
+                }
                 return false;
             }
         }

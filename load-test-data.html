@@ -102,16 +102,27 @@
         </div>
     </div>
 
-    <script src="firebase-config.js"></script>
+    <!-- Firebase Auto-Configuration (from Firebase Hosting) -->
+    <script src="/__/firebase/init.js?useService=database"></script>
     <script>
-        // Initialize Firebase
+        // Get Firebase services (Firebase is auto-initialized by Firebase Hosting)
         let app, database;
         try {
-            app = firebase.initializeApp(firebaseConfig);
+            app = firebase.app();
             database = firebase.database();
-            console.log("✅ Firebase initialized successfully");
+            console.log("✅ Firebase initialized successfully via Firebase Hosting");
         } catch (error) {
             console.error("❌ Firebase initialization error:", error);
+            // Fallback for local development
+            fetch('firebase-config.js')
+                .then(response => response.text())
+                .then(scriptText => {
+                    eval(scriptText);
+                    app = firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    console.log("✅ Firebase initialized with local config");
+                })
+                .catch(err => console.error("❌ Fallback failed:", err));
         }
 
         // Generate mock hash
