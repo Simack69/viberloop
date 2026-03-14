@@ -1045,10 +1045,17 @@
                     const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
                                  Math.random().toString(36).substring(2, 15);
 
-                    // Upload photos and files to Firebase Storage
+                    // ⚠️ TEMPORARY: Photo/file uploads disabled until Firebase Storage is enabled
+                    // To enable: Go to Firebase Console > Storage > Get Started
                     const photoUrls = [];
                     const fileUrls = [];
 
+                    console.log('⚠️ Photo/file uploads temporarily disabled (Firebase Storage not enabled)');
+                    console.log(`📸 Skipped ${uploadedPhotos.length} photos`);
+                    console.log(`📎 Skipped ${uploadedFiles.length} files`);
+
+                    // TODO: Uncomment below when Firebase Storage is enabled
+                    /*
                     // Upload photos
                     for (let i = 0; i < uploadedPhotos.length; i++) {
                         const photo = uploadedPhotos[i];
@@ -1113,6 +1120,7 @@
                             // Continue with other files
                         }
                     }
+                    */
 
                     // Prepare transaction data
                     const transaction = {
