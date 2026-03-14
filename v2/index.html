@@ -92,18 +92,22 @@
     <!-- Wallet Info Box (hidden initially) -->
     <div id="walletInfoBox" style="display:none;" class="fixed bottom-4 right-4 bg-black/80 backdrop-blur-lg text-white p-4 rounded-xl border border-purple-500 z-50 max-w-sm">
         <div class="flex justify-between items-start mb-2">
-            <h4 class="font-bold text-sm"><i class="fas fa-wallet mr-2"></i>Devnet Wallet</h4>
+            <h4 class="font-bold text-sm"><i class="fas fa-wallet mr-2"></i>Devnet Wallet <span class="text-green-400 text-xs">(Persistent)</span></h4>
             <button onclick="document.getElementById('walletInfoBox').style.display='none'" class="text-gray-400 hover:text-white">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="bg-black/50 p-2 rounded text-xs font-mono break-all mb-2" id="walletAddressDisplay"></div>
+        <div class="text-xs text-gray-400 mb-2">This wallet is saved in your browser</div>
         <button onclick="copyWalletAddress()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded">
             <i class="fas fa-copy mr-1"></i>Copy Address
         </button>
-        <a href="https://faucet.solana.com" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1 rounded ml-2 inline-block">
+        <a href="https://faucet.solana.com" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1 rounded ml-1 inline-block">
             <i class="fas fa-faucet mr-1"></i>Get SOL
         </a>
+        <button onclick="resetWallet()" class="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1 rounded mt-2 w-full">
+            <i class="fas fa-trash mr-1"></i>Reset Wallet
+        </button>
     </div>
 
     <!-- Login Screen -->
@@ -428,12 +432,24 @@
                     'confirmed'
                 );
 
-                // Create a new keypair for this session (in production, use a persistent wallet)
-                solanaKeypair = solanaWeb3.Keypair.generate();
+                // Create or restore persistent keypair from localStorage
+                const storedKeypair = localStorage.getItem('viberloop_solana_keypair');
+                if (storedKeypair) {
+                    // Restore existing keypair
+                    const secretKey = Uint8Array.from(JSON.parse(storedKeypair));
+                    solanaKeypair = solanaWeb3.Keypair.fromSecretKey(secretKey);
+                    console.log('🔄 Restored existing wallet from storage');
+                } else {
+                    // Generate new keypair and save it
+                    solanaKeypair = solanaWeb3.Keypair.generate();
+                    localStorage.setItem('viberloop_solana_keypair', JSON.stringify(Array.from(solanaKeypair.secretKey)));
+                    console.log('🆕 Generated new wallet (saved to browser)');
+                }
 
                 console.log('✅ Solana Devnet connected');
                 console.log('🔑 Wallet address:', solanaKeypair.publicKey.toBase58());
-                console.log('💡 Copy this address to fund it from: https://faucet.solana.com');
+                console.log('💡 This wallet persists across page refreshes');
+                console.log('💡 Fund it at: https://faucet.solana.com');
 
                 // Try automatic airdrop (might fail due to rate limits)
                 try {
@@ -534,6 +550,17 @@
                     console.error('Copy failed:', err);
                     alert('Address: ' + address);
                 });
+            }
+        }
+
+        /**
+         * Reset wallet (generates new keypair)
+         */
+        function resetWallet() {
+            if (confirm('⚠️ This will create a NEW wallet and you will lose access to the current one.\n\nAny SOL in the current wallet will be abandoned.\n\nAre you sure?')) {
+                localStorage.removeItem('viberloop_solana_keypair');
+                alert('✅ Wallet reset! Please refresh the page to generate a new wallet.');
+                location.reload();
             }
         }
 
