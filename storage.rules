@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for Viberloop
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Transaction photos and files
+    match /transactions/{transactionHash}/{allPaths=**} {
+      // Allow anyone to read (public access to view transactions)
+      allow read: if true;
+
+      // Allow anyone to write (for now - should add auth later)
+      // TODO: Restrict to authenticated users only
+      allow write: if true;
+    }
+
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
