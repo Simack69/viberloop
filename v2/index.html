@@ -89,6 +89,23 @@
         <span id="solanaStatusText">Initializing Solana Devnet... Please wait</span>
     </div>
 
+    <!-- Wallet Info Box (hidden initially) -->
+    <div id="walletInfoBox" style="display:none;" class="fixed bottom-4 right-4 bg-black/80 backdrop-blur-lg text-white p-4 rounded-xl border border-purple-500 z-50 max-w-sm">
+        <div class="flex justify-between items-start mb-2">
+            <h4 class="font-bold text-sm"><i class="fas fa-wallet mr-2"></i>Devnet Wallet</h4>
+            <button onclick="document.getElementById('walletInfoBox').style.display='none'" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="bg-black/50 p-2 rounded text-xs font-mono break-all mb-2" id="walletAddressDisplay"></div>
+        <button onclick="copyWalletAddress()" class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 rounded">
+            <i class="fas fa-copy mr-1"></i>Copy Address
+        </button>
+        <a href="https://faucet.solana.com" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white text-xs px-3 py-1 rounded ml-2 inline-block">
+            <i class="fas fa-faucet mr-1"></i>Get SOL
+        </a>
+    </div>
+
     <!-- Login Screen -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="w-full max-w-md">
@@ -416,36 +433,65 @@
 
                 console.log('✅ Solana Devnet connected');
                 console.log('🔑 Wallet address:', solanaKeypair.publicKey.toBase58());
+                console.log('💡 Copy this address to fund it from: https://faucet.solana.com');
 
-                // Airdrop SOL for transaction fees (Devnet only)
-                console.log('💧 Requesting devnet airdrop (this may take 10-30 seconds)...');
-                const airdropSignature = await solanaConnection.requestAirdrop(
-                    solanaKeypair.publicKey,
-                    solanaWeb3.LAMPORTS_PER_SOL * 2  // Request 2 SOL for multiple transactions
-                );
+                // Try automatic airdrop (might fail due to rate limits)
+                try {
+                    console.log('💧 Attempting automatic airdrop...');
+                    const airdropSignature = await solanaConnection.requestAirdrop(
+                        solanaKeypair.publicKey,
+                        solanaWeb3.LAMPORTS_PER_SOL * 0.1  // Request only 0.1 SOL to avoid rate limits
+                    );
 
-                console.log('⏳ Waiting for airdrop confirmation...');
-                await solanaConnection.confirmTransaction(airdropSignature, 'confirmed');
+                    console.log('⏳ Waiting for airdrop confirmation...');
+                    await solanaConnection.confirmTransaction(airdropSignature, 'confirmed');
+                    console.log('✅ Automatic airdrop successful!');
+                } catch (airdropError) {
+                    console.warn('⚠️ Automatic airdrop failed (rate limit or faucet dry)');
+                    console.log('📋 Manual funding required:');
+                    console.log('   1. Copy wallet address:', solanaKeypair.publicKey.toBase58());
+                    console.log('   2. Visit: https://faucet.solana.com');
+                    console.log('   3. Paste address and request SOL');
+                    console.log('   4. Or use mock mode for testing without real SOL');
+                }
 
-                // Verify balance
+                // Check balance
                 const balance = await solanaConnection.getBalance(solanaKeypair.publicKey);
                 const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
-                console.log(`✅ Airdrop successful! Balance: ${sol} SOL`);
+                console.log(`💰 Current balance: ${sol} SOL`);
 
+                // Solana is ready even with 0 balance (will use mock mode if needed)
                 solanaReady = true;
-                console.log('🚀 Solana is ready for transactions!');
+                console.log('🚀 Solana is ready!');
+
+                if (sol > 0) {
+                    console.log('✅ You have SOL! Real blockchain transactions enabled.');
+                } else {
+                    console.log('⚠️ Zero balance - transactions will use mock mode.');
+                    console.log('💡 Fund your wallet at: https://faucet.solana.com');
+
+                    // Show wallet info box for easy funding
+                    setTimeout(() => showWalletInfo(), 2000);
+                }
 
                 // Update UI banner
                 const banner = document.getElementById('solanaStatusBanner');
                 const statusText = document.getElementById('solanaStatusText');
                 if (banner && statusText) {
-                    banner.className = 'fixed top-0 left-0 right-0 bg-green-500 text-white text-center py-2 text-sm z-50';
-                    statusText.innerHTML = '<i class="fas fa-check-circle mr-2"></i>Solana Devnet Ready! You can submit transactions now.';
+                    if (sol > 0) {
+                        banner.className = 'fixed top-0 left-0 right-0 bg-green-500 text-white text-center py-2 text-sm z-50';
+                        statusText.innerHTML = `<i class="fas fa-check-circle mr-2"></i>Solana Ready! Balance: ${sol} SOL`;
+                    } else {
+                        banner.className = 'fixed top-0 left-0 right-0 bg-yellow-500 text-white text-center py-2 text-sm z-50 cursor-pointer';
+                        statusText.innerHTML = '<i class="fas fa-info-circle mr-2"></i>Solana Ready (Mock Mode) - <span class="underline" onclick="showWalletInfo()">Click to get wallet address</span>';
+                    }
 
-                    // Hide banner after 5 seconds
+                    // Auto-hide after 8 seconds
                     setTimeout(() => {
-                        banner.style.display = 'none';
-                    }, 5000);
+                        banner.style.transition = 'opacity 0.5s';
+                        banner.style.opacity = '0';
+                        setTimeout(() => banner.style.display = 'none', 500);
+                    }, 8000);
                 }
 
             } catch (error) {
@@ -465,6 +511,31 @@
 
         // Initialize Solana on page load
         initializeSolana();
+
+        /**
+         * Show wallet info box
+         */
+        function showWalletInfo() {
+            if (solanaKeypair) {
+                document.getElementById('walletAddressDisplay').textContent = solanaKeypair.publicKey.toBase58();
+                document.getElementById('walletInfoBox').style.display = 'block';
+            }
+        }
+
+        /**
+         * Copy wallet address to clipboard
+         */
+        function copyWalletAddress() {
+            if (solanaKeypair) {
+                const address = solanaKeypair.publicKey.toBase58();
+                navigator.clipboard.writeText(address).then(() => {
+                    alert('✅ Wallet address copied!\n\n' + address + '\n\nNow visit https://faucet.solana.com to get devnet SOL.');
+                }).catch(err => {
+                    console.error('Copy failed:', err);
+                    alert('Address: ' + address);
+                });
+            }
+        }
 
         /**
          * Submit a memo transaction to Solana Devnet
@@ -496,7 +567,15 @@
                 console.log(`💰 Current balance: ${sol} SOL`);
 
                 if (balance < 5000) {  // Minimum 0.000005 SOL for transaction
-                    throw new Error('Insufficient balance. Please wait for airdrop or request more funds.');
+                    console.warn('⚠️ Insufficient balance for real blockchain transaction');
+                    console.log('📋 To enable real transactions:');
+                    console.log('   1. Visit: https://faucet.solana.com');
+                    console.log('   2. Paste wallet:', solanaKeypair.publicKey.toBase58());
+                    console.log('   3. Request devnet SOL');
+                    console.log('   4. Refresh page and try again');
+                    console.log('');
+                    console.log('🔄 Using mock mode for now...');
+                    throw new Error('Insufficient balance - using mock mode');
                 }
 
                 // Create transaction with memo
