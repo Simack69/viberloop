@@ -1359,15 +1359,61 @@
                     console.log('📊 Firebase initialized:', !!firebase);
 
                     // Submit to Solana Devnet blockchain
-                    const memoData = JSON.stringify({
+                    // Build comprehensive memo data with all essential supply chain information
+                    const memoData = {
+                        // Application metadata
                         app: 'Viberloop',
-                        role: currentRole,
+                        v: '2.0',
+
+                        // Universal fields (always present)
                         customer: pendingFormData.customer,
+                        date: pendingFormData.transactionDate,
                         po: pendingFormData.purchaseOrder,
-                        timestamp: Date.now()
+                        role: pendingFormData.role,
+                        location: pendingFormData.location,
+
+                        // Dynamic fields (role-specific)
+                        nx: pendingFormData.nxReference || null,
+                        pl: pendingFormData.packingList || null,
+                        weight: pendingFormData.netWeight || null,
+                        batchSize: pendingFormData.batchSize || null,
+                        materialType: pendingFormData.materialType || null,
+                        wasteSource: pendingFormData.wasteSource || null,
+                        recyclingHub: pendingFormData.recyclingHubLocation || null,
+                        spinner: pendingFormData.spinner || null,
+                        weaver: pendingFormData.weaver || null,
+                        manufacturing: pendingFormData.manufacturing || null,
+                        pol: pendingFormData.pol || null,
+                        pod: pendingFormData.pod || null,
+                        distributionCenter: pendingFormData.distributionCenter || null,
+                        truckId: pendingFormData.truckId || null,
+                        containerId: pendingFormData.containerId || null,
+                        container: pendingFormData.container || null,
+
+                        // Transaction metadata
+                        type: pendingFormData.transactionType || 'single',
+                        photoCount: uploadedPhotos.length,
+                        fileCount: uploadedFiles.length,
+                        ts: Date.now()
+                    };
+
+                    // Remove null values to save space
+                    Object.keys(memoData).forEach(key => {
+                        if (memoData[key] === null || memoData[key] === undefined) {
+                            delete memoData[key];
+                        }
                     });
 
-                    const hash = await submitToSolanaDevnet(memoData);
+                    const memoString = JSON.stringify(memoData);
+                    console.log('📝 Memo data size:', memoString.length, 'bytes');
+                    console.log('📝 Memo data:', memoString);
+
+                    // Check size limit
+                    if (memoString.length > 566) {
+                        console.warn('⚠️ Memo data exceeds 566 bytes, may fail on-chain');
+                    }
+
+                    const hash = await submitToSolanaDevnet(memoString);
 
                     // Upload photos and files to Firebase Storage
                     const photoUrls = [];
