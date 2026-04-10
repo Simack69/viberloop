@@ -888,6 +888,7 @@
 
                     // Upload photo to Firebase Storage if exists
                     let photoUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E';
+                    let photoPath = null;
 
                     if (currentPhotoData) {
                         try {
@@ -901,6 +902,7 @@
                             const timestamp = Date.now();
                             const filename = `photo-${timestamp}.jpg`;
                             const storagePath = `transactions/${hash}/photos/${filename}`;
+                            photoPath = storagePath;  // Store relative path
 
                             // Upload to Firebase Storage
                             const storageRef = storage.ref(storagePath);
@@ -909,11 +911,13 @@
                             // Get download URL
                             photoUrl = await storageRef.getDownloadURL();
 
-                            console.log('✅ Photo uploaded to Storage:', photoUrl);
+                            console.log('✅ Photo uploaded to Storage:', storagePath);
+                            console.log('📍 Download URL:', photoUrl);
                         } catch (error) {
                             console.error('❌ Error uploading photo to Storage:', error);
                             // Fall back to base64 if upload fails
                             photoUrl = currentPhotoData;
+                            photoPath = null;
                         }
                     }
 
@@ -922,6 +926,7 @@
                         hash: hash,
                         time: new Date().toLocaleString(),
                         photoUrl: photoUrl,
+                        photoPath: photoPath,  // Store relative path for blockchain immutability
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
 

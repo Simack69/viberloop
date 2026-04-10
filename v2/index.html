@@ -1358,6 +1358,25 @@
                     console.log('📊 Database object:', database);
                     console.log('📊 Firebase initialized:', !!firebase);
 
+                    // Generate transaction hash first (needed for photo paths)
+                    const tempHash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
+                                     Math.random().toString(36).substring(2, 15);
+
+                    // Build photo paths array (relative paths for blockchain)
+                    const photoPaths = [];
+                    const filePaths = [];
+                    const timestamp = Date.now();
+
+                    for (let i = 0; i < uploadedPhotos.length; i++) {
+                        const filename = `photo-${i + 1}-${timestamp}.jpg`;
+                        photoPaths.push(`transactions/${tempHash}/photos/${filename}`);
+                    }
+
+                    for (let i = 0; i < uploadedFiles.length; i++) {
+                        const fileData = uploadedFiles[i];
+                        filePaths.push(`transactions/${tempHash}/files/${fileData.name}`);
+                    }
+
                     // Submit to Solana Devnet blockchain
                     // Build comprehensive memo data with all essential supply chain information
                     const memoData = {
@@ -1392,12 +1411,12 @@
 
                         // Transaction metadata
                         type: pendingFormData.transactionType || 'single',
-                        photoCount: uploadedPhotos.length,
-                        fileCount: uploadedFiles.length,
+                        photos: photoPaths.length > 0 ? photoPaths : null,
+                        files: filePaths.length > 0 ? filePaths : null,
                         ts: Date.now()
                     };
 
-                    // Remove null values to save space
+                    // Remove null/empty values to save space
                     Object.keys(memoData).forEach(key => {
                         if (memoData[key] === null || memoData[key] === undefined) {
                             delete memoData[key];
@@ -1415,11 +1434,11 @@
 
                     const hash = await submitToSolanaDevnet(memoString);
 
-                    // Upload photos and files to Firebase Storage
+                    // Upload photos and files to Firebase Storage using pre-generated paths
                     const photoUrls = [];
                     const fileUrls = [];
 
-                    // Upload photos
+                    // Upload photos to paths that match blockchain memo
                     for (let i = 0; i < uploadedPhotos.length; i++) {
                         const photo = uploadedPhotos[i];
                         try {
@@ -1429,10 +1448,9 @@
                             const response = await fetch(photo.preview);
                             const blob = await response.blob();
 
-                            // Create storage path
-                            const timestamp = Date.now();
-                            const filename = `photo-${i + 1}-${timestamp}.jpg`;
-                            const storagePath = `transactions/${hash}/photos/${filename}`;
+                            // Use pre-generated path from photoPaths array
+                            const storagePath = photoPaths[i];
+                            const filename = storagePath.split('/').pop();
 
                             // Upload to Firebase Storage
                             const storageRef = storage.ref(storagePath);
@@ -1442,26 +1460,26 @@
                             const url = await storageRef.getDownloadURL();
                             photoUrls.push({
                                 url: url,
+                                path: storagePath,
                                 filename: filename,
                                 uploadedAt: timestamp
                             });
 
-                            console.log(`✅ Photo ${i + 1} uploaded: ${url}`);
+                            console.log(`✅ Photo ${i + 1} uploaded to: ${storagePath}`);
                         } catch (error) {
                             console.error(`❌ Error uploading photo ${i + 1}:`, error);
                             // Continue with other photos
                         }
                     }
 
-                    // Upload files
+                    // Upload files to paths that match blockchain memo
                     for (let i = 0; i < uploadedFiles.length; i++) {
                         const fileData = uploadedFiles[i];
                         try {
                             console.log(`📎 Uploading file ${i + 1}/${uploadedFiles.length}...`);
 
-                            // Create storage path
-                            const timestamp = Date.now();
-                            const storagePath = `transactions/${hash}/files/${fileData.name}`;
+                            // Use pre-generated path from filePaths array
+                            const storagePath = filePaths[i];
 
                             // Upload to Firebase Storage
                             const storageRef = storage.ref(storagePath);
@@ -1471,13 +1489,14 @@
                             const url = await storageRef.getDownloadURL();
                             fileUrls.push({
                                 url: url,
+                                path: storagePath,
                                 name: fileData.name,
                                 type: fileData.type,
                                 size: fileData.size,
                                 uploadedAt: timestamp
                             });
 
-                            console.log(`✅ File ${i + 1} uploaded: ${url}`);
+                            console.log(`✅ File ${i + 1} uploaded to: ${storagePath}`);
                         } catch (error) {
                             console.error(`❌ Error uploading file ${i + 1}:`, error);
                             // Continue with other files
