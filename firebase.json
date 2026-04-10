@@ -29,6 +29,14 @@
       {
         "source": "/dashboard",
         "destination": "/dashboard.html"
+      },
+      {
+        "source": "/passport",
+        "destination": "/passport.html"
+      },
+      {
+        "source": "/passport/**",
+        "destination": "/passport.html"
       }
     ],
     "headers": [
