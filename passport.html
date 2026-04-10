@@ -17,28 +17,86 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            /* Brand colors */
+            --nx-forest:       #0A2E21;   /* primary brand, nav bg */
+            --nx-green-mid:    #1A5C3A;   /* hover states, dark sections */
+            --nx-bright-green: #4CAF72;   /* CTA buttons, active states */
+            --nx-teal:         #64A6BE;   /* info, links, process nodes */
+            --nx-teal-light:   #ABD7DB;   /* teal bg tints, secondary */
+            --nx-purple:       #271650;   /* Viberloop brand, headings */
+            --nx-tan:          #C8A885;   /* cotton/organic accents */
+            --nx-tan-light:    #EDE0CF;   /* tan bg tints, cards */
+            --nx-bg:           #EDEDED;   /* page background */
+            --nx-text:         #25221E;   /* primary text */
+            --nx-muted:        #5B5E5E;   /* secondary text, captions */
+            --nx-white:        #FFFFFF;
+
+            /* Typography */
+            --font-display: 'Montserrat', sans-serif;
+            --font-body:    'Open Sans', sans-serif;
+
+            /* Font sizes */
+            --fs-h1:    2rem;       /* 32px */
+            --fs-h2:    1.5rem;     /* 24px */
+            --fs-h3:    1.25rem;    /* 20px */
+            --fs-h4:    1rem;       /* 16px */
+            --fs-body:  0.875rem;   /* 14px */
+            --fs-small: 0.75rem;    /* 12px */
+
+            /* Spacing */
+            --sp-xs:  4px;
+            --sp-sm:  8px;
+            --sp-md:  16px;
+            --sp-lg:  24px;
+            --sp-xl:  40px;
+            --sp-2xl: 64px;
+
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-pill: 999px;
+
+            /* Shadows */
+            --shadow-card: 0 2px 8px rgba(10,46,33,0.08);
+            --shadow-btn:  0 1px 3px rgba(10,46,33,0.15);
+        }
 
         * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: var(--font-body);
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--nx-bg);
             min-height: 100vh;
+            color: var(--nx-text);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--nx-purple);
+        }
+
+        .passport-header {
+            background: linear-gradient(135deg, var(--nx-forest) 0%, var(--nx-green-mid) 100%);
+            padding: var(--sp-xl) var(--sp-md);
+            box-shadow: var(--shadow-card);
         }
 
         .passport-card {
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            background: var(--nx-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
         }
 
         .timeline-item {
             position: relative;
             padding-left: 40px;
-            margin-bottom: 40px;
+            margin-bottom: var(--sp-xl);
         }
 
         .timeline-item::before {
@@ -46,9 +104,9 @@
             position: absolute;
             left: 11px;
             top: 40px;
-            bottom: -40px;
+            bottom: calc(-1 * var(--sp-xl));
             width: 2px;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(180deg, var(--nx-teal) 0%, var(--nx-teal-light) 100%);
         }
 
         .timeline-item:last-child::before {
@@ -62,57 +120,60 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: 4px solid white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            background: var(--nx-bright-green);
+            border: 4px solid var(--nx-white);
+            box-shadow: 0 2px 8px rgba(76, 175, 114, 0.4);
             z-index: 1;
         }
 
         .timeline-card {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            border-radius: 16px;
-            padding: 24px;
+            background: var(--nx-tan-light);
+            border: 1px solid rgba(200, 168, 133, 0.3);
+            border-radius: var(--radius-md);
+            padding: var(--sp-lg);
             transition: all 0.3s ease;
         }
 
         .timeline-card:hover {
             transform: translateX(8px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+            box-shadow: var(--shadow-card);
+            border-color: var(--nx-tan);
         }
 
         .badge {
             display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-pill);
+            font-size: var(--fs-small);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .badge-verified {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
         }
 
         .photo-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 12px;
-            margin-top: 16px;
+            gap: var(--sp-md);
+            margin-top: var(--sp-md);
         }
 
         .photo-item {
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             overflow: hidden;
             aspect-ratio: 1;
             cursor: pointer;
             transition: transform 0.3s ease;
+            border: 2px solid var(--nx-tan-light);
         }
 
         .photo-item:hover {
             transform: scale(1.05);
+            border-color: var(--nx-tan);
         }
 
         .photo-item img {
@@ -122,8 +183,8 @@
         }
 
         .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid #667eea;
+            border: 4px solid var(--nx-teal-light);
+            border-top: 4px solid var(--nx-teal);
             border-radius: 50%;
             width: 48px;
             height: 48px;
@@ -136,56 +197,110 @@
         }
 
         .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
+            background: var(--nx-white);
+            border-radius: var(--radius-md);
+            padding: var(--sp-md);
             text-align: center;
-            border: 2px solid rgba(102, 126, 234, 0.1);
+            border: 2px solid var(--nx-tan-light);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--nx-teal);
+            transform: translateY(-2px);
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: var(--fs-h2);
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--nx-purple);
+            font-family: var(--font-display);
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 4px;
+            font-size: var(--fs-small);
+            color: var(--nx-muted);
+            margin-top: var(--sp-xs);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-btn);
+        }
+
+        .btn-primary:hover {
+            background: var(--nx-green-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 114, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--nx-white);
+            color: var(--nx-forest);
+            border: 2px solid var(--nx-forest);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--nx-forest);
+            color: var(--nx-white);
+        }
+
+        .link-blockchain {
+            color: var(--nx-teal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .link-blockchain:hover {
+            color: var(--nx-forest);
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <div class="text-center mb-8">
-            <h1 class="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
-                <i class="fas fa-leaf mr-3"></i>Viberloop Bio
+    <div class="passport-header">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 style="color: var(--nx-white); font-size: var(--fs-h1); margin-bottom: var(--sp-sm);">
+                <i class="fas fa-leaf" style="margin-right: var(--sp-sm);"></i>Viberloop Bio
             </h1>
-            <p class="text-white/80 text-lg">Digital Product Passport</p>
+            <p style="color: var(--nx-teal-light); font-size: var(--fs-h4);">Digital Product Passport</p>
         </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4" style="margin-top: calc(-1 * var(--sp-xl)); padding-bottom: var(--sp-2xl);">
 
         <!-- Main Card -->
         <div class="passport-card p-8 md:p-12">
             <!-- Loading State -->
-            <div id="loadingState" class="text-center py-12">
-                <div class="loading-spinner mx-auto mb-4"></div>
-                <p class="text-gray-600">Loading passport data...</p>
+            <div id="loadingState" class="text-center" style="padding: var(--sp-2xl) 0;">
+                <div class="loading-spinner mx-auto" style="margin-bottom: var(--sp-md);"></div>
+                <p style="color: var(--nx-muted);">Loading passport data...</p>
             </div>
 
             <!-- Error State -->
             <div id="errorState" class="hidden">
-                <div class="text-center py-12">
-                    <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Product Not Found</h2>
-                    <p class="text-gray-600 mb-6">We couldn't find a product with this purchase order number.</p>
-                    <p class="text-sm text-gray-500">Purchase Order: <span id="errorPO" class="font-mono font-bold"></span></p>
+                <div class="text-center" style="padding: var(--sp-2xl) 0;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--nx-tan); margin-bottom: var(--sp-md); display: block;"></i>
+                    <h2 style="font-size: var(--fs-h2); font-weight: 700; color: var(--nx-purple); margin-bottom: var(--sp-sm);">Product Not Found</h2>
+                    <p style="color: var(--nx-muted); margin-bottom: var(--sp-lg);">We couldn't find a product with this purchase order number.</p>
+                    <p style="font-size: var(--fs-small); color: var(--nx-muted);">Purchase Order: <span id="errorPO" style="font-family: monospace; font-weight: 700; color: var(--nx-text);"></span></p>
                 </div>
             </div>
 
@@ -238,19 +353,19 @@
                 </div>
 
                 <!-- Actions -->
-                <div class="flex flex-wrap gap-4 pt-6 border-t border-gray-200">
-                    <button onclick="window.print()" class="flex-1 md:flex-none bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all">
-                        <i class="fas fa-print mr-2"></i>Print Passport
+                <div class="flex flex-wrap gap-4 pt-6" style="border-top: 1px solid var(--nx-tan-light); margin-top: var(--sp-lg);">
+                    <button onclick="window.print()" class="btn-primary flex-1 md:flex-none">
+                        <i class="fas fa-print" style="margin-right: var(--sp-sm);"></i>Print Passport
                     </button>
-                    <button onclick="sharePassport()" class="flex-1 md:flex-none bg-white border-2 border-purple-600 text-purple-600 px-6 py-3 rounded-xl font-semibold hover:bg-purple-50 transition-all">
-                        <i class="fas fa-share-alt mr-2"></i>Share
+                    <button onclick="sharePassport()" class="btn-secondary flex-1 md:flex-none">
+                        <i class="fas fa-share-alt" style="margin-right: var(--sp-sm);"></i>Share
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-8 text-white/60 text-sm">
+        <div class="text-center" style="margin-top: var(--sp-xl); color: var(--nx-muted); font-size: var(--fs-small);">
             <p>Powered by Solana Blockchain • Verified & Immutable</p>
         </div>
     </div>
@@ -266,16 +381,16 @@
             console.log('✅ Firebase initialized via Firebase Hosting');
         }
 
-        // Role display names and icons
+        // Role display names and icons (using NXTile color scheme)
         const roleConfig = {
-            'WASTE_SOURCE': { name: 'Waste Source', icon: 'fa-recycle', color: '#10b981' },
-            'RECYCLING_HUB': { name: 'Recycling Hub', icon: 'fa-industry', color: '#3b82f6' },
-            'SPINNER': { name: 'Spinner', icon: 'fa-circle-notch', color: '#8b5cf6' },
-            'WEAVER': { name: 'Weaver', icon: 'fa-th', color: '#ec4899' },
-            'MANUFACTURING': { name: 'Manufacturing', icon: 'fa-cogs', color: '#f59e0b' },
-            'POL': { name: 'Port of Loading', icon: 'fa-ship', color: '#06b6d4' },
-            'POD': { name: 'Port of Discharge', icon: 'fa-anchor', color: '#14b8a6' },
-            'DISTRIBUTION_CENTER': { name: 'Distribution Center', icon: 'fa-warehouse', color: '#6366f1' }
+            'WASTE_SOURCE': { name: 'Waste Source', icon: 'fa-recycle', color: '#4CAF72' },
+            'RECYCLING_HUB': { name: 'Recycling Hub', icon: 'fa-industry', color: '#64A6BE' },
+            'SPINNER': { name: 'Spinner', icon: 'fa-circle-notch', color: '#271650' },
+            'WEAVER': { name: 'Weaver', icon: 'fa-th', color: '#C8A885' },
+            'MANUFACTURING': { name: 'Manufacturing', icon: 'fa-cogs', color: '#1A5C3A' },
+            'POL': { name: 'Port of Loading', icon: 'fa-ship', color: '#64A6BE' },
+            'POD': { name: 'Port of Discharge', icon: 'fa-anchor', color: '#ABD7DB' },
+            'DISTRIBUTION_CENTER': { name: 'Distribution Center', icon: 'fa-warehouse', color: '#0A2E21' }
         };
 
         // Role order for timeline
@@ -402,54 +517,54 @@
                 timelineItem.innerHTML = `
                     <div class="timeline-dot" style="background: ${role.color};"></div>
                     <div class="timeline-card">
-                        <div class="flex items-start justify-between mb-3">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--sp-md);">
                             <div>
-                                <div class="flex items-center gap-2 mb-1">
+                                <div style="display: flex; align-items: center; gap: var(--sp-sm); margin-bottom: var(--sp-xs);">
                                     <i class="fas ${role.icon}" style="color: ${role.color};"></i>
-                                    <h4 class="text-xl font-bold text-gray-900">${role.name}</h4>
+                                    <h4 style="font-size: var(--fs-h3); font-weight: 700; color: var(--nx-purple); margin: 0;">${role.name}</h4>
                                 </div>
-                                <p class="text-sm text-gray-600">
-                                    <i class="far fa-calendar mr-1"></i>${formatDate(tx.timestamp)}
+                                <p style="font-size: var(--fs-small); color: var(--nx-muted); margin: 0;">
+                                    <i class="far fa-calendar" style="margin-right: var(--sp-xs);"></i>${formatDate(tx.timestamp)}
                                 </p>
                             </div>
-                            <span class="text-xs font-bold text-gray-400">Step ${index + 1}</span>
+                            <span style="font-size: var(--fs-small); font-weight: 700; color: var(--nx-muted);">Step ${index + 1}</span>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-md); margin-bottom: var(--sp-md);">
                             ${tx.location ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">Location:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.location}</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Location:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.location}</span>
                                 </div>
                             ` : ''}
                             ${tx.netWeight ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">Weight:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.netWeight} kg</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Weight:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.netWeight} kg</span>
                                 </div>
                             ` : ''}
                             ${tx.batchSize ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">Batch Size:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.batchSize}</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Batch Size:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.batchSize}</span>
                                 </div>
                             ` : ''}
                             ${tx.materialType ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">Material:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.materialType}</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Material:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.materialType}</span>
                                 </div>
                             ` : ''}
                             ${tx.packingList ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">Packing List:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.packingList}</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Packing List:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.packingList}</span>
                                 </div>
                             ` : ''}
                             ${tx.nxReference ? `
-                                <div class="text-sm">
-                                    <span class="text-gray-500">NX Reference:</span>
-                                    <span class="font-semibold text-gray-900 ml-1">${tx.nxReference}</span>
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">NX Reference:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.nxReference}</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -459,13 +574,14 @@
                         ` : ''}
 
                         ${tx.hash ? `
-                            <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div style="margin-top: var(--sp-md); padding-top: var(--sp-md); border-top: 1px solid var(--nx-tan-light);">
                                 <a href="https://explorer.solana.com/tx/${tx.hash}?cluster=devnet"
                                    target="_blank"
-                                   class="inline-flex items-center text-sm text-purple-600 hover:text-purple-700 font-semibold">
-                                    <i class="fas fa-link mr-2"></i>
+                                   class="link-blockchain"
+                                   style="display: inline-flex; align-items: center; font-size: var(--fs-small); text-decoration: none;">
+                                    <i class="fas fa-link" style="margin-right: var(--sp-sm);"></i>
                                     Verify on Solana Blockchain
-                                    <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                                    <i class="fas fa-external-link-alt" style="margin-left: var(--sp-xs); font-size: 0.7rem;"></i>
                                 </a>
                             </div>
                         ` : ''}
