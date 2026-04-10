@@ -3,7 +3,7 @@
     "transactions": {
       ".read": true,
       ".write": true,
-      ".indexOn": ["timestamp", "role", "customer"]
+      ".indexOn": ["timestamp", "role", "customer", "purchaseOrder"]
     },
     "users": {
       "$userId": {
