@@ -1,17 +1,14 @@
 {
   "rules": {
     "transactions": {
-      ".read": "auth != null",
-      ".indexOn": ["timestamp", "role", "customer"],
-      "$transactionId": {
-        ".write": "auth != null && !data.exists() && newData.child('role').val() === root.child('users').child(auth.uid).child('role').val()",
-        ".validate": "newData.hasChildren(['customer', 'transactionDate', 'purchaseOrder', 'role', 'location', 'timestamp', 'hash', 'time'])"
-      }
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp", "role", "customer"]
     },
     "users": {
       "$userId": {
-        ".read": "auth != null && auth.uid === $userId",
-        ".write": "auth != null && auth.uid === $userId && (!data.exists() || (!newData.child('role').exists() || newData.child('role').val() === data.child('role').val()))"
+        ".read": true,
+        ".write": true
       }
     }
   }
