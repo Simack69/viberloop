@@ -886,11 +886,42 @@
                     const hash = 'SOL-' + Math.random().toString(36).substring(2, 15) +
                                  Math.random().toString(36).substring(2, 15);
 
+                    // Upload photo to Firebase Storage if exists
+                    let photoUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E';
+
+                    if (currentPhotoData) {
+                        try {
+                            console.log('📸 Uploading photo to Firebase Storage...');
+
+                            // Convert base64 to blob
+                            const response = await fetch(currentPhotoData);
+                            const blob = await response.blob();
+
+                            // Create storage path
+                            const timestamp = Date.now();
+                            const filename = `photo-${timestamp}.jpg`;
+                            const storagePath = `transactions/${hash}/photos/${filename}`;
+
+                            // Upload to Firebase Storage
+                            const storageRef = storage.ref(storagePath);
+                            await storageRef.put(blob);
+
+                            // Get download URL
+                            photoUrl = await storageRef.getDownloadURL();
+
+                            console.log('✅ Photo uploaded to Storage:', photoUrl);
+                        } catch (error) {
+                            console.error('❌ Error uploading photo to Storage:', error);
+                            // Fall back to base64 if upload fails
+                            photoUrl = currentPhotoData;
+                        }
+                    }
+
                     const transaction = {
                         ...pendingFormData,
                         hash: hash,
                         time: new Date().toLocaleString(),
-                        photoUrl: currentPhotoData || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%239333ea" width="200" height="200"/%3E%3Ctext x="50%25" y="50%25" font-size="60" fill="white" text-anchor="middle" dy=".3em"%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E',
+                        photoUrl: photoUrl,
                         timestamp: firebase.database.ServerValue.TIMESTAMP
                     };
 
