@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop Bio - QR Code Generator</title>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            --nx-forest:       #0A2E21;
+            --nx-green-mid:    #1A5C3A;
+            --nx-bright-green: #4CAF72;
+            --nx-teal:         #64A6BE;
+            --nx-teal-light:   #ABD7DB;
+            --nx-purple:       #271650;
+            --nx-tan:          #C8A885;
+            --nx-tan-light:    #EDE0CF;
+            --nx-bg:           #EDEDED;
+            --nx-text:         #25221E;
+            --nx-muted:        #5B5E5E;
+            --nx-white:        #FFFFFF;
+            --font-display:    'Montserrat', sans-serif;
+            --font-body:       'Open Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: var(--font-body);
+        }
+
+        body {
+            background: var(--nx-bg);
+            min-height: 100vh;
+            margin: 0;
+            padding: 24px;
+            color: var(--nx-text);
+        }
+
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            color: var(--nx-purple);
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--nx-muted);
+            font-size: 0.875rem;
+        }
+
+        .card {
+            background: var(--nx-white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(10,46,33,0.08);
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: var(--nx-forest);
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--nx-tan-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: var(--font-body);
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--nx-teal);
+        }
+
+        .btn-primary {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--nx-green-mid);
+        }
+
+        .btn-secondary {
+            background: var(--nx-white);
+            color: var(--nx-forest);
+            border: 2px solid var(--nx-forest);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--nx-forest);
+            color: var(--nx-white);
+        }
+
+        /* Label Design - Ready for Printing */
+        .label {
+            background: var(--nx-white);
+            border: 2px dashed var(--nx-tan);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .label-content {
+            background: var(--nx-white);
+            border: 1px solid var(--nx-text);
+            padding: 20px;
+            max-width: 280px;
+            margin: 0 auto;
+        }
+
+        .label-header {
+            border-bottom: 2px solid var(--nx-forest);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .label-brand {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--nx-forest);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        .label-tagline {
+            font-size: 0.625rem;
+            color: var(--nx-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        .label-qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 16px 0;
+        }
+
+        .label-qr-container canvas,
+        .label-qr-container img {
+            border: 4px solid var(--nx-white);
+        }
+
+        .label-po {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: var(--nx-forest);
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .label-footer {
+            border-top: 1px solid var(--nx-tan-light);
+            padding-top: 12px;
+            margin-top: 12px;
+            font-size: 0.5rem;
+            color: var(--nx-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .label-scan {
+            font-size: 0.625rem;
+            color: var(--nx-forest);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .actions button {
+            flex: 1;
+        }
+
+        .url-display {
+            background: var(--nx-tan-light);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            word-break: break-all;
+            color: var(--nx-forest);
+            margin-top: 12px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .label {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+            }
+            .card {
+                box-shadow: none;
+                border: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header no-print">
+            <h1><i class="fas fa-qrcode"></i> QR Code Generator</h1>
+            <p>Create printable labels for Viberloop Bio bags</p>
+        </div>
+
+        <!-- Input Form -->
+        <div class="card no-print">
+            <div class="input-group">
+                <label for="poInput">Purchase Order Number</label>
+                <input type="text" id="poInput" value="PO112233" placeholder="e.g., PO112233">
+            </div>
+            <button class="btn-primary" onclick="generateQR()">
+                <i class="fas fa-magic"></i> Generate QR Code
+            </button>
+            <div class="url-display" id="urlDisplay">
+                https://viberloop-bio.web.app/passport?po=PO112233
+            </div>
+        </div>
+
+        <!-- QR Code Label -->
+        <div class="label" id="labelContainer">
+            <div class="label-content" id="printableLabel">
+                <div class="label-header">
+                    <div class="label-brand">VIBERLOOP BIO</div>
+                    <div class="label-tagline">Sustainable Textile</div>
+                </div>
+                <div class="label-qr-container">
+                    <canvas id="qrCanvas"></canvas>
+                </div>
+                <div class="label-scan">SCAN FOR PASSPORT</div>
+                <div class="label-po" id="labelPO">PO112233</div>
+                <div class="label-footer">
+                    Blockchain Verified
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions no-print">
+            <button class="btn-primary" onclick="downloadQR()">
+                <i class="fas fa-download"></i> Download PNG
+            </button>
+            <button class="btn-secondary" onclick="window.print()">
+                <i class="fas fa-print"></i> Print Label
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = 'https://viberloop-bio.web.app/passport?po=';
+
+        function generateQR() {
+            const po = document.getElementById('poInput').value.trim();
+            if (!po) {
+                alert('Please enter a Purchase Order number');
+                return;
+            }
+
+            const url = BASE_URL + po;
+
+            // Update URL display
+            document.getElementById('urlDisplay').textContent = url;
+
+            // Update label PO
+            document.getElementById('labelPO').textContent = po;
+
+            // Generate QR code
+            const canvas = document.getElementById('qrCanvas');
+            QRCode.toCanvas(canvas, url, {
+                width: 200,
+                margin: 1,
+                color: {
+                    dark: '#0A2E21',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'H'
+            }, function(error) {
+                if (error) console.error(error);
+            });
+        }
+
+        function downloadQR() {
+            const po = document.getElementById('poInput').value.trim() || 'PO';
+            const canvas = document.getElementById('qrCanvas');
+
+            // Create a larger canvas for high-res download
+            const downloadCanvas = document.createElement('canvas');
+            const size = 800;
+            downloadCanvas.width = size;
+            downloadCanvas.height = size;
+            const ctx = downloadCanvas.getContext('2d');
+
+            // White background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+
+            // Generate high-res QR
+            const url = BASE_URL + po;
+            QRCode.toCanvas(downloadCanvas, url, {
+                width: size,
+                margin: 2,
+                color: {
+                    dark: '#0A2E21',
+                    light: '#FFFFFF'
+                },
+                errorCorrectionLevel: 'H'
+            }, function(error) {
+                if (error) {
+                    console.error(error);
+                    return;
+                }
+
+                // Download
+                const link = document.createElement('a');
+                link.download = `viberloop-qr-${po}.png`;
+                link.href = downloadCanvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        // Generate QR on page load
+        window.addEventListener('DOMContentLoaded', generateQR);
+
+        // Regenerate on input change
+        document.getElementById('poInput').addEventListener('input', function() {
+            const po = this.value.trim();
+            if (po) {
+                generateQR();
+            }
+        });
+    </script>
+</body>
+</html>

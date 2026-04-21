@@ -37,6 +37,10 @@
       {
         "source": "/passport/**",
         "destination": "/passport.html"
+      },
+      {
+        "source": "/qr",
+        "destination": "/qr-generator.html"
       }
     ],
     "headers": [
