@@ -158,9 +158,32 @@
         }
 
         .label-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             border-bottom: 2px solid var(--nx-forest);
             padding-bottom: 12px;
             margin-bottom: 16px;
+        }
+
+        .label-nxtile {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .label-dragon {
+            font-size: 1rem;
+            color: var(--nx-forest);
+        }
+
+        .label-nxtile-text {
+            font-family: var(--font-display);
+            font-weight: 700;
+            font-size: 0.625rem;
+            color: var(--nx-forest);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .label-brand {
@@ -284,8 +307,14 @@
         <div class="label" id="labelContainer">
             <div class="label-content" id="printableLabel">
                 <div class="label-header">
-                    <div class="label-brand">VIBERLOOP BIO</div>
-                    <div class="label-tagline">Sustainable Textile</div>
+                    <div>
+                        <div class="label-brand">VIBERLOOP BIO</div>
+                        <div class="label-tagline">Sustainable Textile</div>
+                    </div>
+                    <div class="label-nxtile">
+                        <i class="fas fa-dragon label-dragon"></i>
+                        <div class="label-nxtile-text">NXTile</div>
+                    </div>
                 </div>
                 <div class="label-qr-container">
                     <div id="qrcode"></div>
