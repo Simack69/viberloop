@@ -314,7 +314,11 @@
                         <div class="label-tagline">Sustainable Textile</div>
                     </div>
                     <div class="label-nxtile">
-                        <img src="/images/nxtile-logo.png" alt="NXTile Dragon" class="label-dragon-logo">
+                        <img src="/images/nxtile-logo.png"
+                             alt="NXTile Dragon"
+                             class="label-dragon-logo"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                        <span class="label-dragon-fallback" style="display:none; font-size:1.25rem;">🐉</span>
                         <div class="label-nxtile-text">NXTile</div>
                     </div>
                 </div>
