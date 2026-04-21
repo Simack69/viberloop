@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- QR Code Library -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
@@ -288,7 +288,7 @@
                     <div class="label-tagline">Sustainable Textile</div>
                 </div>
                 <div class="label-qr-container">
-                    <canvas id="qrCanvas"></canvas>
+                    <div id="qrcode"></div>
                 </div>
                 <div class="label-scan">SCAN FOR PASSPORT</div>
                 <div class="label-po" id="labelPO">PO112233</div>
@@ -311,6 +311,7 @@
 
     <script>
         const BASE_URL = 'https://viberloop-bio.web.app/passport?po=';
+        let qrcode = null;
 
         function generateQR() {
             const po = document.getElementById('poInput').value.trim();
@@ -327,62 +328,57 @@
             // Update label PO
             document.getElementById('labelPO').textContent = po;
 
-            // Generate QR code
-            const canvas = document.getElementById('qrCanvas');
-            QRCode.toCanvas(canvas, url, {
+            // Clear existing QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            // Generate new QR code
+            qrcode = new QRCode(qrContainer, {
+                text: url,
                 width: 200,
-                margin: 1,
-                color: {
-                    dark: '#0A2E21',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'H'
-            }, function(error) {
-                if (error) console.error(error);
+                height: 200,
+                colorDark: '#0A2E21',
+                colorLight: '#FFFFFF',
+                correctLevel: QRCode.CorrectLevel.H
             });
         }
 
         function downloadQR() {
             const po = document.getElementById('poInput').value.trim() || 'PO';
-            const canvas = document.getElementById('qrCanvas');
+            const qrContainer = document.getElementById('qrcode');
+            const img = qrContainer.querySelector('img');
 
-            // Create a larger canvas for high-res download
-            const downloadCanvas = document.createElement('canvas');
+            if (!img) {
+                alert('Please generate a QR code first');
+                return;
+            }
+
+            // Create high-res version using canvas
+            const canvas = document.createElement('canvas');
             const size = 800;
-            downloadCanvas.width = size;
-            downloadCanvas.height = size;
-            const ctx = downloadCanvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
 
             // White background
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, size, size);
 
-            // Generate high-res QR
-            const url = BASE_URL + po;
-            QRCode.toCanvas(downloadCanvas, url, {
-                width: size,
-                margin: 2,
-                color: {
-                    dark: '#0A2E21',
-                    light: '#FFFFFF'
-                },
-                errorCorrectionLevel: 'H'
-            }, function(error) {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
+            // Draw scaled QR code
+            ctx.drawImage(img, 0, 0, size, size);
 
-                // Download
-                const link = document.createElement('a');
-                link.download = `viberloop-qr-${po}.png`;
-                link.href = downloadCanvas.toDataURL('image/png');
-                link.click();
-            });
+            // Download
+            const link = document.createElement('a');
+            link.download = `viberloop-qr-${po}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
         }
 
         // Generate QR on page load
-        window.addEventListener('DOMContentLoaded', generateQR);
+        window.addEventListener('DOMContentLoaded', function() {
+            // Small delay to ensure library is loaded
+            setTimeout(generateQR, 100);
+        });
 
         // Regenerate on input change
         document.getElementById('poInput').addEventListener('input', function() {
