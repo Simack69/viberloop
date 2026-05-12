@@ -1,12 +1,4 @@
-# https://www.robotstxt.org/robotstxt.html
+# Block all search engines from indexing this site
 User-agent: *
-Allow: /
-Allow: /passport
-Allow: /qr
-Disallow: /v1/
-Disallow: /v2/
-Disallow: /dashboard
-Disallow: /__/
+Disallow: /
 
-# Sitemaps
-Sitemap: https://viberloop-bio.web.app/sitemap.xml
