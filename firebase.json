@@ -41,6 +41,10 @@
       {
         "source": "/qr",
         "destination": "/qr-generator.html"
+      },
+      {
+        "source": "/supply-chain",
+        "destination": "/supply-chain.html"
       }
     ],
     "headers": [

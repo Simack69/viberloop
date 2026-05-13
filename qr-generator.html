@@ -303,6 +303,19 @@
         <!-- Input Form -->
         <div class="card no-print">
             <div class="input-group">
+                <label>QR Code Type</label>
+                <div style="display: flex; gap: 16px; margin-top: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="qrType" value="passport" checked onchange="togglePOInput()">
+                        <span>Product Passport</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="qrType" value="supply-chain" onchange="togglePOInput()">
+                        <span>Supply Chain Diagram</span>
+                    </label>
+                </div>
+            </div>
+            <div class="input-group" id="poInputGroup">
                 <label for="poInput">Purchase Order Number</label>
                 <input type="text" id="poInput" value="PO112233" placeholder="e.g., PO112233">
             </div>
@@ -355,22 +368,44 @@
 
     <script>
         const BASE_URL = 'https://viberloop-bio.web.app/passport?po=';
+        const SUPPLY_CHAIN_URL = 'https://viberloop-bio.web.app/supply-chain';
         let qrcode = null;
 
-        function generateQR() {
-            const po = document.getElementById('poInput').value.trim();
-            if (!po) {
-                alert('Please enter a Purchase Order number');
-                return;
+        function togglePOInput() {
+            const qrType = document.querySelector('input[name="qrType"]:checked').value;
+            const poInputGroup = document.getElementById('poInputGroup');
+
+            if (qrType === 'supply-chain') {
+                poInputGroup.style.display = 'none';
+            } else {
+                poInputGroup.style.display = 'block';
             }
 
-            const url = BASE_URL + po;
+            generateQR();
+        }
+
+        function generateQR() {
+            const qrType = document.querySelector('input[name="qrType"]:checked').value;
+            let url, label;
+
+            if (qrType === 'supply-chain') {
+                url = SUPPLY_CHAIN_URL;
+                label = 'Supply Chain';
+            } else {
+                const po = document.getElementById('poInput').value.trim();
+                if (!po) {
+                    alert('Please enter a Purchase Order number');
+                    return;
+                }
+                url = BASE_URL + po;
+                label = po;
+            }
 
             // Update URL display
             document.getElementById('urlDisplay').textContent = url;
 
-            // Update label PO
-            document.getElementById('labelPO').textContent = po;
+            // Update label text
+            document.getElementById('labelPO').textContent = label;
 
             // Clear existing QR code
             const qrContainer = document.getElementById('qrcode');

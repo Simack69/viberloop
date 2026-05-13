@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supply Chain Overview - Viberloop Bio</title>
+
+    <!-- Block Search Engines -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            --nx-forest:       #0A2E21;
+            --nx-bright-green: #4CAF72;
+            --nx-purple:       #271650;
+            --nx-bg:           #EDEDED;
+            --font-display:    'Montserrat', sans-serif;
+            --font-body:       'Open Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--nx-bg);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--nx-forest) 0%, #1A5C3A 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin: 0 0 8px 0;
+        }
+
+        .diagram-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(10,46,33,0.08);
+            text-align: center;
+        }
+
+        .diagram-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .btn-download {
+            background: var(--nx-bright-green);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-top: 16px;
+        }
+
+        .btn-download:hover {
+            background: #1A5C3A;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <div class="header">
+            <h1><i class="fas fa-leaf"></i> Viberloop Bio Supply Chain</h1>
+            <p>Circular Textile Provenance Using Blockchain Technology</p>
+        </div>
+
+        <div class="diagram-container">
+            <h2 style="font-family: var(--font-display); color: var(--nx-purple); margin-bottom: 16px;">
+                7-Step Supply Chain Process
+            </h2>
+
+            <img src="/documents/viberloop-supply-chain-diagram.png"
+                 alt="Circular Textile Provenance Using Blockchain Technology"
+                 loading="lazy">
+
+            <div style="margin-top: 24px;">
+                <a href="/documents/viberloop-supply-chain-diagram.pdf"
+                   class="btn-download"
+                   download>
+                    <i class="fas fa-download"></i>
+                    Download PDF
+                </a>
+            </div>
+
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid #EDE0CF;">
+                <h3 style="font-family: var(--font-display); color: var(--nx-forest); margin-bottom: 16px;">
+                    Supply Chain Stages
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; text-align: left;">
+                    <div>
+                        <strong>1. Waste Source & Collection</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">Bio Cotton & Regular Cotton Waste</p>
+                    </div>
+                    <div>
+                        <strong>2. Recycling Hub</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">The Dragon Pit - Mixed Cotton Bales</p>
+                    </div>
+                    <div>
+                        <strong>3. Spinning Mill</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">Yarn Production</p>
+                    </div>
+                    <div>
+                        <strong>4. Weaving Mill</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">Fabric Creation</p>
+                    </div>
+                    <div>
+                        <strong>5. Manufacturing</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">Finished Cotton Bags</p>
+                    </div>
+                    <div>
+                        <strong>6. Logistics & Shipping</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">POL → POD Transit</p>
+                    </div>
+                    <div>
+                        <strong>7. Distribution Center</strong>
+                        <p style="font-size: 0.875rem; color: #5B5E5E;">Final Destination (UDEA, Veghel)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; padding: 16px; background: #EDE0CF; border-radius: 8px;">
+                <p style="font-size: 0.875rem; color: var(--nx-forest); margin: 0;">
+                    <i class="fas fa-cube"></i>
+                    <strong>Blockchain Immutable Ledger Flow</strong>
+                </p>
+                <p style="font-size: 0.75rem; color: #5B5E5E; margin-top: 8px;">
+                    Every transaction is recorded on the blockchain: Data Entry → Asset Minting → Checkpoints → Production Records → Transit Logs → Final Delivery
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
