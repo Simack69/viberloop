@@ -383,16 +383,22 @@
                     <p><strong>Customer:</strong> ${transaction.customer || 'N/A'}</p>
                     <p><strong>Purchase Order:</strong> ${transaction.purchaseOrder || 'N/A'}</p>
                     <p><strong>NX Reference:</strong> ${transaction.nxReference || 'N/A'}</p>
-                    <p><strong>Date:</strong> ${transaction.transactionDate || 'N/A'}</p>
+                    <p><strong>Date:</strong> ${transaction.transactionDate || transaction.time || 'N/A'}</p>
                     <p><strong>Location:</strong> ${transaction.location || 'N/A'}</p>
                     <p><strong>Hash:</strong> ${transaction.hash || 'N/A'}</p>
+                    ${transaction.spinner ? `<p><strong>Spinner:</strong> ${transaction.spinner}</p>` : ''}
                 </div>
             `;
             document.getElementById('transactionDetails').innerHTML = detailsHTML;
 
             // Load current photo
             if (transaction.photoUrl) {
-                document.getElementById('currentPhoto').src = transaction.photoUrl;
+                const img = document.getElementById('currentPhoto');
+                img.src = transaction.photoUrl;
+                img.onerror = function() {
+                    console.error('Failed to load photo:', transaction.photoUrl);
+                    this.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect fill="%23EDE0CF" width="400" height="300"/><text x="50%" y="50%" fill="%235B5E5E" font-family="sans-serif" font-size="16" text-anchor="middle">Photo failed to load</text></svg>';
+                };
             } else {
                 document.getElementById('currentPhoto').src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect fill="%23EDE0CF" width="400" height="300"/><text x="50%" y="50%" fill="%235B5E5E" font-family="sans-serif" font-size="16" text-anchor="middle">No photo available</text></svg>';
             }
