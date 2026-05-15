@@ -442,18 +442,26 @@
                 const storage = firebase.storage();
                 const database = firebase.database();
 
-                // Use existing photoPath or create new one
-                let photoPath = currentTransaction.photoPath;
-                if (!photoPath) {
-                    // Generate new path if none exists
-                    const timestamp = Date.now();
-                    photoPath = `transactions/${currentTransaction.hash}/photos/photo-1-${timestamp}.jpg`;
+                // Always generate new path with timestamp to get new token
+                const timestamp = Date.now();
+                const photoPath = `transactions/${currentTransaction.hash}/photos/photo-${timestamp}.jpg`;
+
+                // Delete old photo if it exists
+                if (currentTransaction.photoPath) {
+                    try {
+                        const oldRef = storage.ref(currentTransaction.photoPath);
+                        await oldRef.delete();
+                        console.log('Deleted old photo:', currentTransaction.photoPath);
+                    } catch (deleteError) {
+                        console.warn('Could not delete old photo:', deleteError);
+                        // Continue anyway - old photo might not exist
+                    }
                 }
 
                 // Convert file to blob
                 const blob = await file.arrayBuffer().then(buffer => new Blob([buffer], { type: file.type }));
 
-                // Upload to Firebase Storage
+                // Upload to Firebase Storage at new path
                 const storageRef = storage.ref(photoPath);
                 await storageRef.put(blob);
 
