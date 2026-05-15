@@ -45,6 +45,10 @@
       {
         "source": "/supply-chain",
         "destination": "/supply-chain.html"
+      },
+      {
+        "source": "/photo-manager",
+        "destination": "/photo-manager.html"
       }
     ],
     "headers": [

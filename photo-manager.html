@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Manager - Viberloop Bio</title>
+
+    <!-- Block Search Engines -->
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            --nx-forest:       #0A2E21;
+            --nx-bright-green: #4CAF72;
+            --nx-purple:       #271650;
+            --nx-bg:           #EDEDED;
+            --font-display:    'Montserrat', sans-serif;
+            --font-body:       'Open Sans', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--nx-bg);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--nx-forest) 0%, #1A5C3A 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin: 0 0 8px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(10,46,33,0.08);
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--nx-forest);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #EDE0CF;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--nx-bright-green);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: var(--font-body);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--nx-bright-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1A5C3A;
+        }
+
+        .btn-secondary {
+            background: var(--nx-purple);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #1A0C3A;
+        }
+
+        .transaction-preview {
+            border: 2px solid #EDE0CF;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .photo-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .status-message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .status-success {
+            background: #D4EDDA;
+            color: #155724;
+            border: 1px solid #C3E6CB;
+        }
+
+        .status-error {
+            background: #F8D7DA;
+            color: #721C24;
+            border: 1px solid #F5C6CB;
+        }
+
+        .status-info {
+            background: #D1ECF1;
+            color: #0C5460;
+            border: 1px solid #BEE5EB;
+        }
+    </style>
+</head>
+<body>
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="header">
+            <h1><i class="fas fa-camera"></i> Photo Manager</h1>
+            <p>Replace photos in existing transactions</p>
+        </div>
+
+        <div class="card">
+            <h2 style="font-family: var(--font-display); color: var(--nx-purple); margin-bottom: 16px;">
+                Find Transaction
+            </h2>
+
+            <div class="form-group">
+                <label for="searchPO">Purchase Order / Packing List Reference</label>
+                <input type="text"
+                       id="searchPO"
+                       placeholder="e.g., PL101112"
+                       value="PL101112">
+            </div>
+
+            <div class="form-group">
+                <label for="searchCustomer">Customer (optional)</label>
+                <input type="text"
+                       id="searchCustomer"
+                       placeholder="e.g., Ekoplaza"
+                       value="Ekoplaza">
+            </div>
+
+            <button class="btn btn-primary" onclick="searchTransaction()">
+                <i class="fas fa-search"></i> Find Transaction
+            </button>
+
+            <div id="statusMessage" class="status-message"></div>
+        </div>
+
+        <div id="transactionCard" class="card" style="display: none;">
+            <h2 style="font-family: var(--font-display); color: var(--nx-purple); margin-bottom: 16px;">
+                Transaction Details
+            </h2>
+
+            <div id="transactionDetails"></div>
+
+            <h3 style="font-family: var(--font-display); color: var(--nx-forest); margin-top: 24px; margin-bottom: 12px;">
+                Current Photo
+            </h3>
+            <img id="currentPhoto" class="photo-preview" alt="Current photo">
+
+            <h3 style="font-family: var(--font-display); color: var(--nx-forest); margin-top: 24px; margin-bottom: 12px;">
+                Replace Photo
+            </h3>
+
+            <div class="form-group">
+                <label for="newPhotoFile">Upload New Photo</label>
+                <input type="file"
+                       id="newPhotoFile"
+                       accept="image/*"
+                       onchange="previewNewPhoto()">
+            </div>
+
+            <div id="newPhotoPreviewContainer" style="display: none;">
+                <p style="font-weight: 600; color: var(--nx-forest);">New Photo Preview:</p>
+                <img id="newPhotoPreview" class="photo-preview" alt="New photo preview">
+            </div>
+
+            <button class="btn btn-secondary"
+                    id="replaceBtn"
+                    onclick="replacePhoto()"
+                    style="margin-top: 16px;"
+                    disabled>
+                <i class="fas fa-exchange-alt"></i> Replace Photo
+            </button>
+
+            <div id="replaceStatus" class="status-message"></div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="/__/firebase/init.js?useService=database,storage"></script>
+
+    <script>
+        let currentTransaction = null;
+        let currentTransactionKey = null;
+
+        function showStatus(elementId, message, type) {
+            const statusEl = document.getElementById(elementId);
+            statusEl.textContent = message;
+            statusEl.className = `status-message status-${type}`;
+            statusEl.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function searchTransaction() {
+            const po = document.getElementById('searchPO').value.trim();
+            const customer = document.getElementById('searchCustomer').value.trim();
+
+            if (!po) {
+                showStatus('statusMessage', 'Please enter a Purchase Order number', 'error');
+                return;
+            }
+
+            showStatus('statusMessage', 'Searching for transaction...', 'info');
+
+            try {
+                const database = firebase.database();
+                const transactionsRef = database.ref('transactions');
+
+                // Query by PO
+                const snapshot = await transactionsRef
+                    .orderByChild('purchaseOrder')
+                    .equalTo(po)
+                    .once('value');
+
+                if (!snapshot.exists()) {
+                    showStatus('statusMessage', `No transaction found with PO: ${po}`, 'error');
+                    document.getElementById('transactionCard').style.display = 'none';
+                    return;
+                }
+
+                // Find matching transaction
+                let foundTransaction = null;
+                let foundKey = null;
+
+                snapshot.forEach(child => {
+                    const data = child.val();
+                    // If customer specified, match it; otherwise take first result
+                    if (!customer || data.customer === customer) {
+                        foundTransaction = data;
+                        foundKey = child.key;
+                        return true; // Stop iteration
+                    }
+                });
+
+                if (!foundTransaction) {
+                    showStatus('statusMessage', `Transaction with PO ${po} and customer ${customer} not found`, 'error');
+                    document.getElementById('transactionCard').style.display = 'none';
+                    return;
+                }
+
+                currentTransaction = foundTransaction;
+                currentTransactionKey = foundKey;
+
+                displayTransaction(foundTransaction);
+                showStatus('statusMessage', 'Transaction found!', 'success');
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showStatus('statusMessage', `Error searching: ${error.message}`, 'error');
+            }
+        }
+
+        function displayTransaction(transaction) {
+            const detailsHTML = `
+                <div class="transaction-preview">
+                    <p><strong>Role:</strong> ${transaction.role || 'N/A'}</p>
+                    <p><strong>Customer:</strong> ${transaction.customer || 'N/A'}</p>
+                    <p><strong>Purchase Order:</strong> ${transaction.purchaseOrder || 'N/A'}</p>
+                    <p><strong>NX Reference:</strong> ${transaction.nxReference || 'N/A'}</p>
+                    <p><strong>Date:</strong> ${transaction.transactionDate || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${transaction.location || 'N/A'}</p>
+                    <p><strong>Hash:</strong> ${transaction.hash || 'N/A'}</p>
+                </div>
+            `;
+            document.getElementById('transactionDetails').innerHTML = detailsHTML;
+
+            // Load current photo
+            if (transaction.photoUrl) {
+                document.getElementById('currentPhoto').src = transaction.photoUrl;
+            } else {
+                document.getElementById('currentPhoto').src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect fill="%23EDE0CF" width="400" height="300"/><text x="50%" y="50%" fill="%235B5E5E" font-family="sans-serif" font-size="16" text-anchor="middle">No photo available</text></svg>';
+            }
+
+            document.getElementById('transactionCard').style.display = 'block';
+        }
+
+        function previewNewPhoto() {
+            const fileInput = document.getElementById('newPhotoFile');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('newPhotoPreview').src = e.target.result;
+                    document.getElementById('newPhotoPreviewContainer').style.display = 'block';
+                    document.getElementById('replaceBtn').disabled = false;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function replacePhoto() {
+            const fileInput = document.getElementById('newPhotoFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showStatus('replaceStatus', 'Please select a photo file', 'error');
+                return;
+            }
+
+            if (!currentTransaction || !currentTransactionKey) {
+                showStatus('replaceStatus', 'No transaction selected', 'error');
+                return;
+            }
+
+            showStatus('replaceStatus', 'Uploading new photo...', 'info');
+            document.getElementById('replaceBtn').disabled = true;
+
+            try {
+                const storage = firebase.storage();
+                const database = firebase.database();
+
+                // Use existing photoPath or create new one
+                let photoPath = currentTransaction.photoPath;
+                if (!photoPath) {
+                    // Generate new path if none exists
+                    const timestamp = Date.now();
+                    photoPath = `transactions/${currentTransaction.hash}/photos/photo-1-${timestamp}.jpg`;
+                }
+
+                // Convert file to blob
+                const blob = await file.arrayBuffer().then(buffer => new Blob([buffer], { type: file.type }));
+
+                // Upload to Firebase Storage
+                const storageRef = storage.ref(photoPath);
+                await storageRef.put(blob);
+
+                // Get new download URL
+                const newPhotoUrl = await storageRef.getDownloadURL();
+
+                // Update transaction in database
+                const updates = {
+                    photoUrl: newPhotoUrl,
+                    photoPath: photoPath,
+                    photoUpdatedAt: Date.now()
+                };
+
+                await database.ref(`transactions/${currentTransactionKey}`).update(updates);
+
+                // Update current display
+                currentTransaction.photoUrl = newPhotoUrl;
+                currentTransaction.photoPath = photoPath;
+                document.getElementById('currentPhoto').src = newPhotoUrl;
+
+                showStatus('replaceStatus', 'Photo replaced successfully!', 'success');
+
+                // Clear file input and preview
+                fileInput.value = '';
+                document.getElementById('newPhotoPreviewContainer').style.display = 'none';
+
+            } catch (error) {
+                console.error('Replace error:', error);
+                showStatus('replaceStatus', `Error replacing photo: ${error.message}`, 'error');
+                document.getElementById('replaceBtn').disabled = false;
+            }
+        }
+
+        // Auto-load on page load if PO is pre-filled
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const po = document.getElementById('searchPO').value;
+                if (po) {
+                    searchTransaction();
+                }
+            }, 1000); // Wait for Firebase to initialize
+        });
+    </script>
+</body>
+</html>
