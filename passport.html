@@ -581,7 +581,7 @@
                             ` : ''}
                         </div>
 
-                        ${tx.photos && tx.photos.length > 0 ? `
+                        ${(tx.photos && tx.photos.length > 0) || tx.photoUrl ? `
                             <div class="photo-grid" id="photos-${tx.key}"></div>
                         ` : ''}
 
@@ -604,7 +604,10 @@
 
                 // Load photos if they exist
                 if (tx.photos && tx.photos.length > 0) {
-                    loadPhotos(tx.key, tx.photos);
+                    loadPhotos(tx.key, tx.photos, tx.photoUpdatedAt);
+                } else if (tx.photoUrl) {
+                    // Handle single photoUrl field
+                    loadPhotos(tx.key, [tx.photoUrl], tx.photoUpdatedAt);
                 }
             });
 
@@ -614,14 +617,20 @@
         }
 
         // Load photos from Firebase Storage
-        async function loadPhotos(txKey, photos) {
+        async function loadPhotos(txKey, photos, photoUpdatedAt) {
             const container = document.getElementById(`photos-${txKey}`);
             if (!container) return;
 
             for (const photo of photos) {
                 try {
                     // If photo is an object with url property
-                    const photoUrl = photo.url || photo;
+                    let photoUrl = photo.url || photo;
+
+                    // Add cache-busting parameter if photoUpdatedAt exists
+                    if (photoUpdatedAt && photoUrl) {
+                        const separator = photoUrl.includes('?') ? '&' : '?';
+                        photoUrl += `${separator}t=${photoUpdatedAt}`;
+                    }
 
                     const photoItem = document.createElement('div');
                     photoItem.className = 'photo-item';
