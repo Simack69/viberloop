@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Viberloop Bio - Version Selector</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .version-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .version-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .version-card:active {
+            transform: translateY(-4px);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-stable {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .badge-dev {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .feature-list li i {
+            margin-right: 12px;
+            width: 20px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            text-align: center;
+            width: 100%;
+            margin-top: 16px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .header-logo {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-6xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="header-logo">🌾</div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Viberloop Bio</h1>
+            <p class="text-xl text-white/80">Textile Supply Chain Tracking</p>
+            <p class="text-sm text-white/60 mt-2">Choose your version below</p>
+        </div>
+
+        <!-- Version Cards -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- V1 Card -->
+            <div class="glassmorphism rounded-[2rem] p-8 version-card" onclick="window.location.href='/v1/'">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-white">Version 1.0</h2>
+                    <span class="badge badge-stable">
+                        <i class="fas fa-check-circle"></i> Stable
+                    </span>
+                </div>
+
+                <p class="text-white/70 mb-6">
+                    Production-ready field tracking app with Firebase backend. Perfect for immediate deployment.
+                </p>
+
+                <ul class="feature-list">
+                    <li><i class="fas fa-check text-green-400"></i> Firebase Authentication</li>
+                    <li><i class="fas fa-check text-green-400"></i> Multi-location Tracking</li>
+                    <li><i class="fas fa-check text-green-400"></i> Form Validation</li>
+                    <li><i class="fas fa-check text-green-400"></i> iOS Safari Optimized</li>
+                    <li><i class="fas fa-check text-green-400"></i> Glassmorphism UI</li>
+                    <li><i class="fas fa-times text-gray-400"></i> No Blockchain</li>
+                </ul>
+
+                <div class="mt-6 pt-6 border-t border-white/20">
+                    <div class="flex justify-between text-sm text-white/60 mb-4">
+                        <span><i class="fas fa-database"></i> Firebase Only</span>
+                        <span><i class="fas fa-tag"></i> v1.0.0</span>
+                    </div>
+                    <a href="/v1/" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Launch V1
+                    </a>
+                    <a href="/v1/standalone.html" class="btn btn-secondary">
+                        <i class="fas fa-box"></i> Standalone Version
+                    </a>
+                </div>
+            </div>
+
+            <!-- V2 Card -->
+            <div class="glassmorphism rounded-[2rem] p-8 version-card" onclick="window.location.href='/v2/'">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-white">Version 2.0</h2>
+                    <span class="badge badge-dev">
+                        <i class="fas fa-code-branch"></i> Development
+                    </span>
+                </div>
+
+                <p class="text-white/70 mb-6">
+                    Experimental version with Solana blockchain integration for immutable transaction records.
+                </p>
+
+                <ul class="feature-list">
+                    <li><i class="fas fa-check text-green-400"></i> All V1 Features</li>
+                    <li><i class="fas fa-code text-yellow-400"></i> Server-side Wallet</li>
+                    <li><i class="fas fa-code text-yellow-400"></i> Solana Testnet</li>
+                    <li><i class="fas fa-code text-yellow-400"></i> Blockchain Registry</li>
+                    <li><i class="fas fa-code text-yellow-400"></i> Backend API</li>
+                    <li><i class="fas fa-code text-yellow-400"></i> Transaction Signing</li>
+                </ul>
+
+                <div class="mt-6 pt-6 border-t border-white/20">
+                    <div class="flex justify-between text-sm text-white/60 mb-4">
+                        <span><i class="fas fa-link"></i> Solana + Firebase</span>
+                        <span><i class="fas fa-flask"></i> Testnet</span>
+                    </div>
+                    <a href="/v2/" class="btn btn-primary">
+                        <i class="fas fa-cube"></i> Launch V2
+                    </a>
+                    <a href="/v2/standalone.html" class="btn btn-secondary">
+                        <i class="fas fa-box"></i> Standalone Version
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Link -->
+        <div class="glassmorphism rounded-2xl p-6 text-center">
+            <p class="text-white/80 mb-4">
+                <i class="fas fa-book"></i>
+                Need help choosing? Read the detailed comparison guide
+            </p>
+            <a href="https://github.com/Simack69/viberloop/blob/claude/viberloop-bio-dapp-ios-671QR/VERSION-GUIDE.md"
+               target="_blank"
+               class="inline-block px-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl text-white font-medium transition-all">
+                <i class="fas fa-external-link-alt"></i> View Documentation
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-white/50 text-sm">
+            <p>© 2026 Viberloop Bio | Built with Claude Code</p>
+        </div>
+    </div>
+
+    <script>
+        // Log version selection for analytics
+        document.querySelectorAll('a[href^="/v"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const version = e.target.closest('a').href.includes('/v1/') ? 'v1' : 'v2';
+                console.log(`Selected version: ${version}`);
+                // Add analytics tracking here if needed
+            });
+        });
+    </script>
+</body>
+</html>

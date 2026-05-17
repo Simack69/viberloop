@@ -1,0 +1,15 @@
+{
+  "rules": {
+    "transactions": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp", "role", "customer", "purchaseOrder"]
+    },
+    "users": {
+      "$userId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}

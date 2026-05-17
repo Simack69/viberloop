@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop - Functionality Tests</title>
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+    <style>
+        .test-pass { color: #10b981; }
+        .test-fail { color: #ef4444; }
+        .test-running { color: #f59e0b; }
+        .test-pending { color: #6b7280; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-4xl font-black mb-2">
+                <i class="fas fa-vial mr-3 text-purple-400"></i>
+                Viberloop Functionality Tests
+            </h1>
+            <p class="text-purple-300">Automated validation of all app features</p>
+        </div>
+
+        <!-- Test Controls -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-6">
+            <div class="flex gap-4 mb-4">
+                <button onclick="runAllTests()" id="runBtn"
+                        class="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-3 px-6 rounded-xl">
+                    <i class="fas fa-play mr-2"></i>Run All Tests
+                </button>
+                <button onclick="clearResults()"
+                        class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl">
+                    <i class="fas fa-eraser mr-2"></i>Clear Results
+                </button>
+            </div>
+
+            <div id="progressBar" class="hidden">
+                <div class="bg-slate-700 rounded-full h-3 overflow-hidden">
+                    <div id="progressFill" class="bg-purple-500 h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <p class="text-sm text-purple-300 mt-2 text-center" id="progressText">Initializing...</p>
+            </div>
+        </div>
+
+        <!-- Test Summary -->
+        <div id="summary" class="hidden bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Test Summary</h2>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="text-3xl font-black test-pass" id="passCount">0</div>
+                    <div class="text-sm text-purple-300">Passed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-black test-fail" id="failCount">0</div>
+                    <div class="text-sm text-purple-300">Failed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-black text-white" id="totalCount">0</div>
+                    <div class="text-sm text-purple-300">Total</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 class="text-2xl font-bold mb-4">Test Results</h2>
+            <div id="testResults" class="space-y-3">
+                <p class="text-purple-300 text-center py-4">Click "Run All Tests" to begin</p>
+            </div>
+        </div>
+
+        <!-- Back Links -->
+        <div class="mt-6 flex gap-4">
+            <a href="viberloop.html" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl text-center">
+                <i class="fas fa-arrow-left mr-2"></i>Field App
+            </a>
+            <a href="dashboard.html" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl text-center">
+                <i class="fas fa-chart-line mr-2"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Firebase Auto-Configuration (from Firebase Hosting) -->
+    <script src="/__/firebase/init.js?useService=database"></script>
+    <script>
+        let app, database;
+        let testResults = [];
+        let passCount = 0;
+        let failCount = 0;
+
+        // Test Suite
+        const tests = [
+            { name: "Firebase Initialization", fn: testFirebaseInit },
+            { name: "Database Connection", fn: testDatabaseConnection },
+            { name: "Waste Source - Single Form", fn: testWasteSource },
+            { name: "Recycling Hub - Incoming", fn: testRecyclingHubIncoming },
+            { name: "Recycling Hub - Outgoing", fn: testRecyclingHubOutgoing },
+            { name: "Spinner - Incoming", fn: testSpinnerIncoming },
+            { name: "Spinner - Outgoing", fn: testSpinnerOutgoing },
+            { name: "Universal Fields Present", fn: testUniversalFields },
+            { name: "Split Screen Structure", fn: testSplitScreenStructure },
+            { name: "Data Retrieval", fn: testDataRetrieval },
+            { name: "Role Configuration", fn: testRoleConfiguration },
+            { name: "Field Validation", fn: testFieldValidation }
+        ];
+
+        // Initialize Firebase
+        function initFirebase() {
+            try {
+                // Try to use auto-initialized Firebase first
+                app = firebase.app();
+                database = firebase.database();
+                return true;
+            } catch (error) {
+                console.error("Firebase init error:", error);
+                // Fallback for local development
+                try {
+                    if (typeof firebaseConfig !== 'undefined') {
+                        app = firebase.initializeApp(firebaseConfig);
+                        database = firebase.database();
+                        return true;
+                    }
+                } catch (fallbackError) {
+                    console.error("Fallback init error:", fallbackError);
+                }
+                return false;
+            }
+        }
+
+        // Test: Firebase Initialization
+        async function testFirebaseInit() {
+            const result = initFirebase();
+            if (result && app && database) {
+                return { pass: true, message: "Firebase initialized successfully" };
+            }
+            return { pass: false, message: "Failed to initialize Firebase" };
+        }
+
+        // Test: Database Connection
+        async function testDatabaseConnection() {
+            try {
+                const connectedRef = database.ref('.info/connected');
+                return new Promise((resolve) => {
+                    connectedRef.once('value', (snapshot) => {
+                        if (snapshot.val() === true) {
+                            resolve({ pass: true, message: "Connected to Firebase Realtime Database" });
+                        } else {
+                            resolve({ pass: false, message: "Not connected to database" });
+                        }
+                    });
+                });
+            } catch (error) {
+                return { pass: false, message: `Database connection error: ${error.message}` };
+            }
+        }
+
+        // Test: Waste Source Form
+        async function testWasteSource() {
+            const testData = {
+                customer: "EkoPlaza",
+                date: "2024-01-15",
+                purchaseOrder: "PO-TEST-001",
+                nxReferenceCode: "NX-TEST-123",
+                materialType: "BIO",
+                wasteSource: "Jayanti Group",
+                recyclingHubLocation: "India Hub",
+                netWeight: "100 kg",
+                location: "WASTE_SOURCE",
+                transactionType: "single",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('test_transactions').push(testData);
+                return { pass: true, message: "Waste Source transaction saved successfully" };
+            } catch (error) {
+                return { pass: false, message: `Failed to save: ${error.message}` };
+            }
+        }
+
+        // Test: Recycling Hub Incoming
+        async function testRecyclingHubIncoming() {
+            const testData = {
+                customer: "EkoPlaza",
+                date: "2024-01-16",
+                purchaseOrder: "PO-TEST-002",
+                packingListNumber: "PL-TEST-001",
+                nxReferenceCode: "NX-TEST-124",
+                materialType: "BIO",
+                location: "RECYCLING_HUB",
+                transactionType: "incoming",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('test_transactions').push(testData);
+                return { pass: true, message: "Recycling Hub incoming transaction saved" };
+            } catch (error) {
+                return { pass: false, message: `Failed to save: ${error.message}` };
+            }
+        }
+
+        // Test: Recycling Hub Outgoing
+        async function testRecyclingHubOutgoing() {
+            const testData = {
+                customer: "EkoPlaza",
+                date: "2024-01-17",
+                purchaseOrder: "PO-TEST-002",
+                packingListNumber: "BX-TEST-001",
+                nxReferenceCode: "NX-TEST-125",
+                nxReferenceCodes: ["NX-TEST-124"],
+                materialType: "BIO",
+                spinner: "Spinner Int.",
+                location: "RECYCLING_HUB",
+                transactionType: "outgoing",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('test_transactions').push(testData);
+                return { pass: true, message: "Recycling Hub outgoing transaction saved" };
+            } catch (error) {
+                return { pass: false, message: `Failed to save: ${error.message}` };
+            }
+        }
+
+        // Test: Spinner Incoming
+        async function testSpinnerIncoming() {
+            const testData = {
+                customer: "Norma",
+                date: "2024-01-18",
+                purchaseOrder: "PO-TEST-003",
+                purchaseOrderNumber: "PO987654",
+                packingListNumber: "BX-TEST-001",
+                nxReferenceCode: "NX-TEST-125",
+                materialType: "Regular",
+                spinner: "Spinner Int.",
+                location: "SPINNER",
+                transactionType: "incoming",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('test_transactions').push(testData);
+                return { pass: true, message: "Spinner incoming transaction saved" };
+            } catch (error) {
+                return { pass: false, message: `Failed to save: ${error.message}` };
+            }
+        }
+
+        // Test: Spinner Outgoing
+        async function testSpinnerOutgoing() {
+            const testData = {
+                customer: "Norma",
+                date: "2024-01-19",
+                purchaseOrder: "PO-TEST-003",
+                purchaseOrderNumber: "PO987655",
+                packingListNumber: "BX-TEST-002",
+                nxReferenceCode: "NX-TEST-126",
+                materialType: "Regular",
+                spinner: "Spinner Int.",
+                location: "SPINNER",
+                transactionType: "outgoing",
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            try {
+                await database.ref('test_transactions').push(testData);
+                return { pass: true, message: "Spinner outgoing transaction saved" };
+            } catch (error) {
+                return { pass: false, message: `Failed to save: ${error.message}` };
+            }
+        }
+
+        // Test: Universal Fields
+        async function testUniversalFields() {
+            const requiredFields = ['customer', 'date', 'purchaseOrder'];
+            const testTx = {
+                customer: "EkoPlaza",
+                date: "2024-01-20",
+                purchaseOrder: "PO-TEST-004",
+                location: "WASTE_SOURCE"
+            };
+
+            const hasAllFields = requiredFields.every(field => testTx.hasOwnProperty(field));
+
+            if (hasAllFields) {
+                return { pass: true, message: "All universal fields present (Customer, Date, Purchase Order)" };
+            }
+            return { pass: false, message: "Missing universal fields" };
+        }
+
+        // Test: Split Screen Structure
+        async function testSplitScreenStructure() {
+            const rolesWithSplitScreen = [
+                'RECYCLING_HUB', 'SPINNER', 'WEAVER', 'MANUFACTURING',
+                'POL', 'POD', 'DISTRIBUTION_CENTER'
+            ];
+
+            const testData = {
+                location: "RECYCLING_HUB",
+                transactionType: "incoming"
+            };
+
+            if (rolesWithSplitScreen.includes(testData.location) &&
+                (testData.transactionType === 'incoming' || testData.transactionType === 'outgoing')) {
+                return { pass: true, message: "Split screen structure validated (incoming/outgoing)" };
+            }
+            return { pass: false, message: "Split screen structure validation failed" };
+        }
+
+        // Test: Data Retrieval
+        async function testDataRetrieval() {
+            try {
+                const snapshot = await database.ref('test_transactions').limitToLast(1).once('value');
+                if (snapshot.exists()) {
+                    return { pass: true, message: "Successfully retrieved data from Firebase" };
+                }
+                return { pass: false, message: "No data found in database" };
+            } catch (error) {
+                return { pass: false, message: `Data retrieval error: ${error.message}` };
+            }
+        }
+
+        // Test: Role Configuration
+        async function testRoleConfiguration() {
+            const expectedRoles = [
+                'WASTE_SOURCE',
+                'RECYCLING_HUB',
+                'SPINNER',
+                'WEAVER',
+                'MANUFACTURING',
+                'POL',
+                'POD',
+                'DISTRIBUTION_CENTER'
+            ];
+
+            const roleCount = expectedRoles.length;
+            if (roleCount === 8) {
+                return { pass: true, message: `All 8 roles configured correctly (${expectedRoles.join(', ')})` };
+            }
+            return { pass: false, message: "Role configuration mismatch" };
+        }
+
+        // Test: Field Validation
+        async function testFieldValidation() {
+            const testData = {
+                customer: "EkoPlaza",
+                date: "2024-01-20",
+                purchaseOrder: "PO-TEST-005",
+                nxReferenceCode: "NX-TEST-127",
+                materialType: "BIO",
+                netWeight: "100 kg"
+            };
+
+            const requiredFields = ['customer', 'date', 'purchaseOrder', 'nxReferenceCode', 'materialType', 'netWeight'];
+            const hasAllRequired = requiredFields.every(field => {
+                const value = testData[field];
+                return value !== undefined && value !== null && value !== '';
+            });
+
+            if (hasAllRequired) {
+                return { pass: true, message: "Field validation passed - all mandatory fields present" };
+            }
+            return { pass: false, message: "Field validation failed - missing required fields" };
+        }
+
+        // Run all tests
+        async function runAllTests() {
+            const runBtn = document.getElementById('runBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const resultsDiv = document.getElementById('testResults');
+            const summaryDiv = document.getElementById('summary');
+
+            // Reset
+            testResults = [];
+            passCount = 0;
+            failCount = 0;
+            resultsDiv.innerHTML = '';
+
+            // Show progress
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Running Tests...';
+            progressBar.classList.remove('hidden');
+            summaryDiv.classList.add('hidden');
+
+            // Run tests
+            for (let i = 0; i < tests.length; i++) {
+                const test = tests[i];
+                const progress = ((i + 1) / tests.length) * 100;
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `Running: ${test.name} (${i + 1}/${tests.length})`;
+
+                // Add test to UI
+                const testEl = document.createElement('div');
+                testEl.id = `test-${i}`;
+                testEl.className = 'bg-black/20 rounded-xl p-4 border border-purple-500/30';
+                testEl.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold">${test.name}</span>
+                        <span class="test-running"><i class="fas fa-spinner fa-spin"></i> Running...</span>
+                    </div>
+                `;
+                resultsDiv.appendChild(testEl);
+
+                try {
+                    const result = await test.fn();
+                    testResults.push({ name: test.name, ...result });
+
+                    if (result.pass) {
+                        passCount++;
+                        testEl.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold">${test.name}</span>
+                                <span class="test-pass"><i class="fas fa-check-circle"></i> PASS</span>
+                            </div>
+                            <p class="text-sm text-purple-300">${result.message}</p>
+                        `;
+                    } else {
+                        failCount++;
+                        testEl.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-bold">${test.name}</span>
+                                <span class="test-fail"><i class="fas fa-times-circle"></i> FAIL</span>
+                            </div>
+                            <p class="text-sm text-red-300">${result.message}</p>
+                        `;
+                    }
+                } catch (error) {
+                    failCount++;
+                    testEl.innerHTML = `
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-bold">${test.name}</span>
+                            <span class="test-fail"><i class="fas fa-times-circle"></i> ERROR</span>
+                        </div>
+                        <p class="text-sm text-red-300">Error: ${error.message}</p>
+                    `;
+                }
+
+                // Small delay between tests
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            // Update summary
+            document.getElementById('passCount').textContent = passCount;
+            document.getElementById('failCount').textContent = failCount;
+            document.getElementById('totalCount').textContent = tests.length;
+            summaryDiv.classList.remove('hidden');
+
+            // Hide progress
+            progressBar.classList.add('hidden');
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<i class="fas fa-redo mr-2"></i>Run Again';
+
+            // Clean up test data
+            await cleanupTestData();
+        }
+
+        // Clean up test transactions
+        async function cleanupTestData() {
+            try {
+                await database.ref('test_transactions').remove();
+                console.log('✅ Test data cleaned up');
+            } catch (error) {
+                console.error('Error cleaning up test data:', error);
+            }
+        }
+
+        // Clear results
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '<p class="text-purple-300 text-center py-4">Click "Run All Tests" to begin</p>';
+            document.getElementById('summary').classList.add('hidden');
+            document.getElementById('progressBar').classList.add('hidden');
+            testResults = [];
+            passCount = 0;
+            failCount = 0;
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 font-sans text-white;
+  }
+  h1, h2, h3 {
+    @apply font-bold text-white;
+  }
+  h4, h5, h6 {
+    @apply font-semibold text-white;
+  }
+}

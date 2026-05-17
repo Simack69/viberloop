@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Wallet Integration - Viberloop</title>
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen text-white p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl font-black mb-8">🔗 Solana Wallet Integration Guide</h1>
+
+        <!-- Implementation Options -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h2 class="text-xl font-bold mb-4 text-purple-400">
+                    <i class="fas fa-coins mr-2"></i>Option 1: Hybrid (Recommended)
+                </h2>
+                <ul class="space-y-2 text-sm">
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Firebase for data storage</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Solana for cryptographic proof</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Cost: ~$0.0001 per transaction</li>
+                    <li><i class="fas fa-check text-green-400 mr-2"></i>Fast queries & cheap storage</li>
+                </ul>
+                <div class="mt-4 p-3 bg-green-500/20 rounded-lg text-xs">
+                    <strong>Best for:</strong> Production supply chains
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                <h2 class="text-xl font-bold mb-4 text-blue-400">
+                    <i class="fas fa-cube mr-2"></i>Option 2: Full On-Chain
+                </h2>
+                <ul class="space-y-2 text-sm">
+                    <li><i class="fas fa-check text-blue-400 mr-2"></i>All data on Solana blockchain</li>
+                    <li><i class="fas fa-check text-blue-400 mr-2"></i>Maximum decentralization</li>
+                    <li><i class="fas fa-exclamation text-yellow-400 mr-2"></i>Cost: ~$0.001-0.01 per tx</li>
+                    <li><i class="fas fa-exclamation text-yellow-400 mr-2"></i>Slower data queries</li>
+                </ul>
+                <div class="mt-4 p-3 bg-blue-500/20 rounded-lg text-xs">
+                    <strong>Best for:</strong> Maximum transparency
+                </div>
+            </div>
+        </div>
+
+        <!-- Required Libraries -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-code mr-2 text-purple-400"></i>Required Libraries
+            </h2>
+
+            <div class="space-y-4">
+                <div>
+                    <h3 class="font-bold text-lg mb-2">1. Solana Web3.js</h3>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm"><code>&lt;script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"&gt;&lt;/script&gt;</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg mb-2">2. Wallet Adapter (for Phantom, Solflare, etc.)</h3>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm"><code>&lt;script src="https://unpkg.com/@solana/wallet-adapter-wallets@latest/lib/index.iife.js"&gt;&lt;/script&gt;
+&lt;script src="https://unpkg.com/@solana/wallet-adapter-base@latest/lib/index.iife.js"&gt;&lt;/script&gt;</code></pre>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-lg mb-2">3. Or use Phantom Wallet directly</h3>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm"><code>// Phantom injects itself into window.solana
+if (window.solana && window.solana.isPhantom) {
+    console.log("Phantom wallet detected!");
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Steps -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-list-ol mr-2 text-purple-400"></i>Implementation Steps
+            </h2>
+
+            <div class="space-y-6">
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">1</div>
+                        <h3 class="font-bold text-lg">Add Wallet Connect Button</h3>
+                    </div>
+                    <p class="text-purple-300 text-sm ml-11 mb-2">Replace the role login with wallet connection</p>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm ml-11"><code>&lt;button onclick="connectWallet()"&gt;
+    Connect Phantom Wallet
+&lt;/button&gt;</code></pre>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">2</div>
+                        <h3 class="font-bold text-lg">Connect to Solana Wallet</h3>
+                    </div>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm ml-11"><code>async function connectWallet() {
+    if (!window.solana) {
+        alert('Please install Phantom Wallet');
+        window.open('https://phantom.app/', '_blank');
+        return;
+    }
+
+    try {
+        const response = await window.solana.connect();
+        const publicKey = response.publicKey.toString();
+        console.log('Connected:', publicKey);
+        // Save wallet address
+        currentWallet = publicKey;
+    } catch (err) {
+        console.error('Connection failed:', err);
+    }
+}</code></pre>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">3</div>
+                        <h3 class="font-bold text-lg">Create Solana Transaction</h3>
+                    </div>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm ml-11"><code>async function submitToBlockchain(data) {
+    // Create hash of transaction data
+    const dataString = JSON.stringify(data);
+    const dataHash = await crypto.subtle.digest(
+        'SHA-256',
+        new TextEncoder().encode(dataString)
+    );
+    const hashHex = Array.from(new Uint8Array(dataHash))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+
+    // Create Solana transaction with memo
+    const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl('devnet'), // or 'mainnet-beta'
+        'confirmed'
+    );
+
+    const transaction = new solanaWeb3.Transaction().add(
+        solanaWeb3.SystemProgram.transfer({
+            fromPubkey: window.solana.publicKey,
+            toPubkey: window.solana.publicKey, // Send to self
+            lamports: 1, // Minimal amount
+        }),
+        // Add memo with data hash
+        new solanaWeb3.TransactionInstruction({
+            keys: [],
+            programId: new solanaWeb3.PublicKey(
+                'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'
+            ),
+            data: Buffer.from(hashHex)
+        })
+    );
+
+    // Sign and send
+    const { signature } = await window.solana.signAndSendTransaction(
+        transaction
+    );
+
+    return signature; // Real blockchain signature!
+}</code></pre>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">4</div>
+                        <h3 class="font-bold text-lg">Update Firebase with Real Signature</h3>
+                    </div>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm ml-11"><code>// In your transaction submission
+const signature = await submitToBlockchain(transactionData);
+
+const transaction = {
+    ...transactionData,
+    hash: signature, // Real Solana signature
+    walletAddress: currentWallet,
+    blockchainNetwork: 'solana-devnet',
+    timestamp: firebase.database.ServerValue.TIMESTAMP
+};
+
+await database.ref('transactions').push(transaction);</code></pre>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">5</div>
+                        <h3 class="font-bold text-lg">Verify on Blockchain</h3>
+                    </div>
+                    <pre class="bg-black/40 p-4 rounded-lg overflow-x-auto text-sm ml-11"><code>async function verifyTransaction(signature) {
+    const connection = new solanaWeb3.Connection(
+        solanaWeb3.clusterApiUrl('devnet'),
+        'confirmed'
+    );
+
+    const txInfo = await connection.getTransaction(signature);
+
+    if (txInfo) {
+        console.log('✅ Verified on blockchain');
+        console.log('Block time:', txInfo.blockTime);
+        console.log('Slot:', txInfo.slot);
+        return true;
+    }
+    return false;
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Analysis -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-dollar-sign mr-2 text-green-400"></i>Cost Analysis
+            </h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-purple-500/30">
+                            <th class="text-left py-3 px-4">Approach</th>
+                            <th class="text-left py-3 px-4">Cost per Transaction</th>
+                            <th class="text-left py-3 px-4">1000 Transactions</th>
+                            <th class="text-left py-3 px-4">Storage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-purple-500/20">
+                            <td class="py-3 px-4 font-bold text-green-400">Hybrid (Hash only)</td>
+                            <td class="py-3 px-4">~$0.00001</td>
+                            <td class="py-3 px-4">~$0.01</td>
+                            <td class="py-3 px-4">Firebase</td>
+                        </tr>
+                        <tr class="border-b border-purple-500/20">
+                            <td class="py-3 px-4 font-bold text-yellow-400">Memo (256 bytes)</td>
+                            <td class="py-3 px-4">~$0.0001</td>
+                            <td class="py-3 px-4">~$0.10</td>
+                            <td class="py-3 px-4">Blockchain</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 px-4 font-bold text-blue-400">Full On-Chain</td>
+                            <td class="py-3 px-4">~$0.001-0.01</td>
+                            <td class="py-3 px-4">~$1-10</td>
+                            <td class="py-3 px-4">Blockchain</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 p-4 bg-purple-500/20 rounded-lg">
+                <p class="text-sm">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Recommendation:</strong> Use Hybrid approach for production. Store full data in Firebase,
+                    store cryptographic hash on Solana for immutable proof. Best balance of cost and transparency.
+                </p>
+            </div>
+        </div>
+
+        <!-- Network Selection -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-network-wired mr-2 text-purple-400"></i>Solana Network Selection
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-4">
+                <div class="bg-blue-500/20 rounded-lg p-4">
+                    <h3 class="font-bold mb-2">Devnet</h3>
+                    <p class="text-sm text-purple-300 mb-2">For testing and development</p>
+                    <code class="text-xs">solanaWeb3.clusterApiUrl('devnet')</code>
+                    <p class="text-xs mt-2 text-green-400">✅ Free SOL from faucet</p>
+                </div>
+
+                <div class="bg-yellow-500/20 rounded-lg p-4">
+                    <h3 class="font-bold mb-2">Testnet</h3>
+                    <p class="text-sm text-purple-300 mb-2">Pre-production testing</p>
+                    <code class="text-xs">solanaWeb3.clusterApiUrl('testnet')</code>
+                    <p class="text-xs mt-2 text-green-400">✅ Free SOL from faucet</p>
+                </div>
+
+                <div class="bg-purple-500/20 rounded-lg p-4">
+                    <h3 class="font-bold mb-2">Mainnet-Beta</h3>
+                    <p class="text-sm text-purple-300 mb-2">Production network</p>
+                    <code class="text-xs">solanaWeb3.clusterApiUrl('mainnet-beta')</code>
+                    <p class="text-xs mt-2 text-red-400">💰 Real SOL required</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Workflow -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+            <h2 class="text-2xl font-bold mb-4">
+                <i class="fas fa-user-check mr-2 text-purple-400"></i>User Workflow
+            </h2>
+
+            <div class="space-y-3">
+                <div class="flex items-start gap-3">
+                    <div class="bg-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1">1</div>
+                    <div>
+                        <p class="font-bold">Install Phantom Wallet</p>
+                        <p class="text-sm text-purple-300">Users download from <a href="https://phantom.app" target="_blank" class="underline">phantom.app</a></p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="bg-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1">2</div>
+                    <div>
+                        <p class="font-bold">Get SOL for Transactions</p>
+                        <p class="text-sm text-purple-300">Devnet: Free faucet | Mainnet: Buy from exchange</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="bg-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1">3</div>
+                    <div>
+                        <p class="font-bold">Connect Wallet to Viberloop</p>
+                        <p class="text-sm text-purple-300">One-click connect, wallet address becomes their identity</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="bg-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1">4</div>
+                    <div>
+                        <p class="font-bold">Submit Transactions</p>
+                        <p class="text-sm text-purple-300">Each transaction requires wallet signature (approval)</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start gap-3">
+                    <div class="bg-purple-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mt-1">5</div>
+                    <div>
+                        <p class="font-bold">Verify on Solana Explorer</p>
+                        <p class="text-sm text-purple-300">View transaction on <a href="https://explorer.solana.com" target="_blank" class="underline">explorer.solana.com</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
