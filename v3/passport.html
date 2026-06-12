@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Viberloop Bio - Digital Product Passport (V3)</title>
+
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="/__/firebase/init.js?useService=database,storage"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            --nx-forest:       #0A2E21;
+            --nx-green-mid:    #1A5C3A;
+            --nx-bright-green: #4CAF72;
+            --nx-teal:         #64A6BE;
+            --nx-teal-light:   #ABD7DB;
+            --nx-purple:       #271650;
+            --nx-tan:          #C8A885;
+            --nx-tan-light:    #EDE0CF;
+            --nx-bg:           #EDEDED;
+            --nx-text:         #25221E;
+            --nx-muted:        #5B5E5E;
+            --nx-white:        #FFFFFF;
+
+            --font-display: 'Montserrat', sans-serif;
+            --font-body:    'Open Sans', sans-serif;
+
+            --fs-h1:    2rem;
+            --fs-h2:    1.5rem;
+            --fs-h3:    1.25rem;
+            --fs-h4:    1rem;
+            --fs-body:  0.875rem;
+            --fs-small: 0.75rem;
+
+            --sp-xs:  4px;
+            --sp-sm:  8px;
+            --sp-md:  16px;
+            --sp-lg:  24px;
+            --sp-xl:  40px;
+            --sp-2xl: 64px;
+
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-pill: 999px;
+
+            --shadow-card: 0 2px 8px rgba(10,46,33,0.08);
+            --shadow-btn:  0 1px 3px rgba(10,46,33,0.15);
+        }
+
+        * {
+            font-family: var(--font-body);
+        }
+
+        body {
+            background: var(--nx-bg);
+            min-height: 100vh;
+            color: var(--nx-text);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--nx-purple);
+        }
+
+        .passport-header {
+            background: linear-gradient(135deg, var(--nx-forest) 0%, var(--nx-green-mid) 100%);
+            padding: var(--sp-xl) var(--sp-md);
+            box-shadow: var(--shadow-card);
+        }
+
+        .passport-card {
+            background: var(--nx-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: var(--sp-xl);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 40px;
+            bottom: calc(-1 * var(--sp-xl));
+            width: 2px;
+            background: linear-gradient(180deg, var(--nx-teal) 0%, var(--nx-teal-light) 100%);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--nx-bright-green);
+            border: 4px solid var(--nx-white);
+            box-shadow: 0 2px 8px rgba(76, 175, 114, 0.4);
+            z-index: 1;
+        }
+
+        .timeline-card {
+            background: var(--nx-tan-light);
+            border: 1px solid rgba(200, 168, 133, 0.3);
+            border-radius: var(--radius-md);
+            padding: var(--sp-lg);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-card);
+            border-color: var(--nx-tan);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-pill);
+            font-size: var(--fs-small);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-verified {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+        }
+
+        .badge-amended {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--nx-muted);
+            background: rgba(91, 94, 94, 0.1);
+            padding: 2px 8px;
+            border-radius: var(--radius-pill);
+            letter-spacing: 0.3px;
+            margin-left: var(--sp-sm);
+            vertical-align: middle;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--sp-md);
+            margin-top: var(--sp-md);
+        }
+
+        .photo-item {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 2px solid var(--nx-tan-light);
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+            border-color: var(--nx-tan);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--nx-teal-light);
+            border-top: 4px solid var(--nx-teal);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stat-card {
+            background: var(--nx-white);
+            border-radius: var(--radius-md);
+            padding: var(--sp-md);
+            text-align: center;
+            border: 2px solid var(--nx-tan-light);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--nx-teal);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: var(--fs-h2);
+            font-weight: 700;
+            color: var(--nx-purple);
+            font-family: var(--font-display);
+        }
+
+        .stat-label {
+            font-size: var(--fs-small);
+            color: var(--nx-muted);
+            margin-top: var(--sp-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-btn);
+        }
+
+        .btn-primary:hover {
+            background: var(--nx-green-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 114, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--nx-white);
+            color: var(--nx-forest);
+            border: 2px solid var(--nx-forest);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--nx-forest);
+            color: var(--nx-white);
+        }
+
+        .link-blockchain {
+            color: var(--nx-teal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .link-blockchain:hover {
+            color: var(--nx-forest);
+        }
+    </style>
+</head>
+<body>
+    <div class="passport-header">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 style="color: var(--nx-white); font-size: var(--fs-h1); margin-bottom: var(--sp-sm);">
+                <i class="fas fa-leaf" style="margin-right: var(--sp-sm);"></i>Viberloop Bio
+            </h1>
+            <p style="color: var(--nx-teal-light); font-size: var(--fs-h4);">Digital Product Passport</p>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4" style="margin-top: calc(-1 * var(--sp-xl)); padding-bottom: var(--sp-2xl);">
+        <div class="passport-card p-8 md:p-12">
+            <div id="loadingState" class="text-center" style="padding: var(--sp-2xl) 0;">
+                <div class="loading-spinner mx-auto" style="margin-bottom: var(--sp-md);"></div>
+                <p style="color: var(--nx-muted);">Loading passport data...</p>
+            </div>
+
+            <div id="errorState" class="hidden">
+                <div class="text-center" style="padding: var(--sp-2xl) 0;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--nx-tan); margin-bottom: var(--sp-md); display: block;"></i>
+                    <h2 style="font-size: var(--fs-h2); font-weight: 700; color: var(--nx-purple); margin-bottom: var(--sp-sm);">Product Not Found</h2>
+                    <p style="color: var(--nx-muted); margin-bottom: var(--sp-lg);">We couldn't find a product with this purchase order number.</p>
+                    <p style="font-size: var(--fs-small); color: var(--nx-muted);">Purchase Order: <span id="errorPO" style="font-family: monospace; font-weight: 700; color: var(--nx-text);"></span></p>
+                </div>
+            </div>
+
+            <div id="passportContent" class="hidden">
+                <div class="border-b border-gray-200 pb-6 mb-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                                Product Passport
+                            </h2>
+                            <p class="text-gray-600">Complete supply chain transparency</p>
+                        </div>
+                        <span class="badge badge-verified">
+                            <i class="fas fa-check-circle mr-1"></i> Blockchain Verified
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statPO">-</div>
+                            <div class="stat-label">Purchase Order</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statCustomer">-</div>
+                            <div class="stat-label">Customer</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSteps">-</div>
+                            <div class="stat-label">Supply Chain Steps</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statDuration">-</div>
+                            <div class="stat-label">Journey Duration</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-route mr-2 text-purple-600"></i>
+                        Supply Chain Journey
+                    </h3>
+
+                    <div id="timelineContainer"></div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 pt-6" style="border-top: 1px solid var(--nx-tan-light); margin-top: var(--sp-lg);">
+                    <button onclick="window.print()" class="btn-primary flex-1 md:flex-none">
+                        <i class="fas fa-print" style="margin-right: var(--sp-sm);"></i>Print Passport
+                    </button>
+                    <button onclick="window.print()" class="btn-secondary flex-1 md:flex-none">
+                        <i class="fas fa-file-pdf" style="margin-right: var(--sp-sm);"></i>Download PDF
+                    </button>
+                    <button onclick="sharePassport()" class="btn-secondary flex-1 md:flex-none">
+                        <i class="fas fa-share-alt" style="margin-right: var(--sp-sm);"></i>Share
+                    </button>
+                    <a href="/supply-chain" target="_blank" class="btn-secondary flex-1 md:flex-none" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-route" style="margin-right: var(--sp-sm);"></i>View Supply Chain
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center" style="margin-top: var(--sp-xl); color: var(--nx-muted); font-size: var(--fs-small);">
+            <p>Viberloop V3 &mdash; Digital Product Passport &bull; Verified on Blockchain</p>
+        </div>
+    </div>
+
+    <script>
+        var database, storage;
+
+        if (typeof firebase !== 'undefined') {
+            database = firebase.database();
+            storage = firebase.storage();
+        }
+
+        var roleConfig = {
+            'WASTE_SOURCE':        { name: 'Waste Source',        icon: 'fa-recycle',       color: '#4CAF72' },
+            'RECYCLING_HUB':       { name: 'Recycling Hub',       icon: 'fa-industry',      color: '#64A6BE' },
+            'SPINNER':             { name: 'Spinner',             icon: 'fa-circle-notch',  color: '#271650' },
+            'WEAVER':              { name: 'Weaver',              icon: 'fa-th',            color: '#C8A885' },
+            'MANUFACTURING':       { name: 'Manufacturing',       icon: 'fa-cogs',          color: '#1A5C3A' },
+            'POL':                 { name: 'Port of Loading',     icon: 'fa-ship',          color: '#64A6BE' },
+            'POD':                 { name: 'Port of Discharge',   icon: 'fa-anchor',        color: '#ABD7DB' },
+            'DISTRIBUTION_CENTER': { name: 'Distribution Center', icon: 'fa-warehouse',     color: '#0A2E21' }
+        };
+
+        var roleOrder = [
+            'WASTE_SOURCE',
+            'RECYCLING_HUB',
+            'SPINNER',
+            'WEAVER',
+            'MANUFACTURING',
+            'POL',
+            'POD',
+            'DISTRIBUTION_CENTER'
+        ];
+
+        function getPOFromURL() {
+            var urlParams = new URLSearchParams(window.location.search);
+            var poFromParam = urlParams.get('po');
+            var pathParts = window.location.pathname.split('/');
+            var poFromPath = pathParts[pathParts.length - 1];
+            return poFromParam || (poFromPath !== 'passport.html' && poFromPath !== '' ? poFromPath : null);
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            var date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function calculateDuration(startTimestamp, endTimestamp) {
+            var diff = endTimestamp - startTimestamp;
+            var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            return days > 0 ? days + ' days' : '< 1 day';
+        }
+
+        function isActive(tx) {
+            return !tx.status || tx.status === 'active';
+        }
+
+        function filterActiveTransactions(transactions) {
+            return transactions.filter(function(tx) {
+                return isActive(tx);
+            });
+        }
+
+        async function loadPassport() {
+            var po = getPOFromURL();
+
+            if (!po) {
+                showError('No purchase order specified');
+                return;
+            }
+
+            try {
+                var snapshot = await database.ref('transactions')
+                    .orderByChild('purchaseOrder')
+                    .equalTo(po)
+                    .once('value');
+
+                if (!snapshot.exists()) {
+                    showError(po);
+                    return;
+                }
+
+                var allTransactions = [];
+                snapshot.forEach(function(childSnapshot) {
+                    var val = childSnapshot.val();
+                    val.key = childSnapshot.key;
+                    allTransactions.push(val);
+                });
+
+                var transactions = filterActiveTransactions(allTransactions);
+
+                if (transactions.length === 0) {
+                    showError(po);
+                    return;
+                }
+
+                transactions.sort(function(a, b) {
+                    var orderA = roleOrder.indexOf(a.role);
+                    var orderB = roleOrder.indexOf(b.role);
+                    if (orderA !== orderB) return orderA - orderB;
+                    return (a.timestamp || 0) - (b.timestamp || 0);
+                });
+
+                displayPassport(po, transactions);
+
+            } catch (error) {
+                console.error('Error loading passport:', error);
+                showError(po);
+            }
+        }
+
+        function createDetailCell(label, value) {
+            var cell = document.createElement('div');
+            cell.style.fontSize = 'var(--fs-small)';
+
+            var labelSpan = document.createElement('span');
+            labelSpan.style.color = 'var(--nx-muted)';
+            labelSpan.textContent = label + ':';
+            cell.appendChild(labelSpan);
+
+            var valueSpan = document.createElement('span');
+            valueSpan.style.fontWeight = '600';
+            valueSpan.style.color = 'var(--nx-text)';
+            valueSpan.style.marginLeft = 'var(--sp-xs)';
+            valueSpan.textContent = value;
+            cell.appendChild(valueSpan);
+
+            return cell;
+        }
+
+        function buildTimelineItem(tx, index) {
+            var role = roleConfig[tx.role] || { name: tx.role, icon: 'fa-box', color: '#6b7280' };
+
+            var timelineItem = document.createElement('div');
+            timelineItem.className = 'timeline-item';
+
+            var dot = document.createElement('div');
+            dot.className = 'timeline-dot';
+            dot.style.background = role.color;
+            timelineItem.appendChild(dot);
+
+            var card = document.createElement('div');
+            card.className = 'timeline-card';
+
+            var headerRow = document.createElement('div');
+            headerRow.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--sp-md)';
+
+            var headerLeft = document.createElement('div');
+
+            var titleRow = document.createElement('div');
+            titleRow.style.cssText = 'display:flex;align-items:center;gap:var(--sp-sm);margin-bottom:var(--sp-xs)';
+
+            var icon = document.createElement('i');
+            icon.className = 'fas ' + role.icon;
+            icon.style.color = role.color;
+            titleRow.appendChild(icon);
+
+            var title = document.createElement('h4');
+            title.style.cssText = 'font-size:var(--fs-h3);font-weight:700;color:var(--nx-purple);margin:0';
+            title.textContent = role.name;
+            titleRow.appendChild(title);
+
+            if (tx.version && tx.version > 1) {
+                var amendedBadge = document.createElement('span');
+                amendedBadge.className = 'badge-amended';
+                amendedBadge.textContent = 'Amended';
+                titleRow.appendChild(amendedBadge);
+            }
+
+            headerLeft.appendChild(titleRow);
+
+            var dateP = document.createElement('p');
+            dateP.style.cssText = 'font-size:var(--fs-small);color:var(--nx-muted);margin:0';
+            var calIcon = document.createElement('i');
+            calIcon.className = 'far fa-calendar';
+            calIcon.style.marginRight = 'var(--sp-xs)';
+            dateP.appendChild(calIcon);
+            var dateText = document.createTextNode(formatDate(tx.timestamp));
+            dateP.appendChild(dateText);
+            headerLeft.appendChild(dateP);
+
+            headerRow.appendChild(headerLeft);
+
+            var stepLabel = document.createElement('span');
+            stepLabel.style.cssText = 'font-size:var(--fs-small);font-weight:700;color:var(--nx-muted)';
+            stepLabel.textContent = 'Step ' + (index + 1);
+            headerRow.appendChild(stepLabel);
+
+            card.appendChild(headerRow);
+
+            var detailsGrid = document.createElement('div');
+            detailsGrid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:var(--sp-md);margin-bottom:var(--sp-md)';
+
+            if (tx.location) detailsGrid.appendChild(createDetailCell('Location', tx.location));
+            if (tx.netWeight) detailsGrid.appendChild(createDetailCell('Weight', tx.netWeight + ' kg'));
+            if (tx.batchSize) detailsGrid.appendChild(createDetailCell('Batch Size', tx.batchSize));
+            if (tx.materialType) detailsGrid.appendChild(createDetailCell('Material', tx.materialType));
+            if (tx.packingList) detailsGrid.appendChild(createDetailCell('Packing List', tx.packingList));
+            if (tx.nxReference) detailsGrid.appendChild(createDetailCell('NX Reference', tx.nxReference));
+
+            if (detailsGrid.children.length > 0) {
+                card.appendChild(detailsGrid);
+            }
+
+            if ((tx.photos && tx.photos.length > 0) || tx.photoUrl) {
+                var photoGrid = document.createElement('div');
+                photoGrid.className = 'photo-grid';
+                photoGrid.id = 'photos-' + tx.key;
+                card.appendChild(photoGrid);
+            }
+
+            if (tx.hash) {
+                var hashSection = document.createElement('div');
+                hashSection.style.cssText = 'margin-top:var(--sp-md);padding-top:var(--sp-md);border-top:1px solid var(--nx-tan-light)';
+
+                var hashLink = document.createElement('a');
+                hashLink.href = 'https://explorer.solana.com/tx/' + encodeURIComponent(tx.hash) + '?cluster=devnet';
+                hashLink.target = '_blank';
+                hashLink.rel = 'noopener noreferrer';
+                hashLink.className = 'link-blockchain';
+                hashLink.style.cssText = 'display:inline-flex;align-items:center;font-size:var(--fs-small);text-decoration:none';
+
+                var linkIcon = document.createElement('i');
+                linkIcon.className = 'fas fa-link';
+                linkIcon.style.marginRight = 'var(--sp-sm)';
+                hashLink.appendChild(linkIcon);
+
+                hashLink.appendChild(document.createTextNode('Verify on Solana Blockchain'));
+
+                var extIcon = document.createElement('i');
+                extIcon.className = 'fas fa-external-link-alt';
+                extIcon.style.cssText = 'margin-left:var(--sp-xs);font-size:0.7rem';
+                hashLink.appendChild(extIcon);
+
+                hashSection.appendChild(hashLink);
+                card.appendChild(hashSection);
+            }
+
+            timelineItem.appendChild(card);
+            return timelineItem;
+        }
+
+        function displayPassport(po, transactions) {
+            document.getElementById('statPO').textContent = po;
+            document.getElementById('statCustomer').textContent = (transactions[0] && transactions[0].customer) || 'N/A';
+            document.getElementById('statSteps').textContent = transactions.length;
+
+            if (transactions.length > 1) {
+                var firstTimestamp = transactions[0].timestamp;
+                var lastTimestamp = transactions[transactions.length - 1].timestamp;
+                document.getElementById('statDuration').textContent = calculateDuration(firstTimestamp, lastTimestamp);
+            } else {
+                document.getElementById('statDuration').textContent = 'N/A';
+            }
+
+            var timelineContainer = document.getElementById('timelineContainer');
+            timelineContainer.textContent = '';
+
+            transactions.forEach(function(tx, index) {
+                var timelineItem = buildTimelineItem(tx, index);
+                timelineContainer.appendChild(timelineItem);
+
+                if (tx.photos && tx.photos.length > 0) {
+                    loadPhotos(tx.key, tx.photos, tx.photoUpdatedAt);
+                } else if (tx.photoUrl) {
+                    loadPhotos(tx.key, [tx.photoUrl], tx.photoUpdatedAt);
+                }
+            });
+
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('passportContent').classList.remove('hidden');
+        }
+
+        async function loadPhotos(txKey, photos, photoUpdatedAt) {
+            var container = document.getElementById('photos-' + txKey);
+            if (!container) return;
+
+            for (var i = 0; i < photos.length; i++) {
+                try {
+                    var photoUrl = photos[i].url || photos[i];
+                    if (photoUpdatedAt && photoUrl) {
+                        var separator = photoUrl.indexOf('?') !== -1 ? '&' : '?';
+                        photoUrl += separator + 't=' + photoUpdatedAt;
+                    }
+
+                    var photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item';
+
+                    var img = document.createElement('img');
+                    img.src = photoUrl;
+                    img.alt = 'Transaction Photo';
+                    img.loading = 'lazy';
+                    photoItem.appendChild(img);
+
+                    (function(url) {
+                        photoItem.addEventListener('click', function() {
+                            window.open(url, '_blank');
+                        });
+                    })(photoUrl);
+
+                    container.appendChild(photoItem);
+                } catch (error) {
+                    console.error('Error loading photo:', error);
+                }
+            }
+        }
+
+        function showError(po) {
+            document.getElementById('errorPO').textContent = po || 'N/A';
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+        }
+
+        function sharePassport() {
+            var url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Viberloop Bio - Digital Product Passport',
+                    text: 'View the complete supply chain journey of this Viberloop Bio product',
+                    url: url
+                }).catch(function() {});
+            } else {
+                navigator.clipboard.writeText(url).then(function() {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadPassport);
+    </script>
+
+    <style media="print">
+        body {
+            background: white !important;
+        }
+
+        .passport-card {
+            box-shadow: none !important;
+        }
+
+        button, a.btn-secondary {
+            display: none !important;
+        }
+
+        .timeline-item:hover .timeline-card {
+            transform: none !important;
+        }
+
+        .passport-header {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    </style>
+</body>
+</html>
