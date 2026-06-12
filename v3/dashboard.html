@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Viberloop Bio - Dashboard (V3)</title>
+
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .flow-node {
+            transition: all 0.3s ease;
+        }
+
+        .flow-node.active {
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(147, 51, 234, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(147, 51, 234, 0.8); }
+        }
+
+        .flow-connector {
+            stroke: #9333ea;
+            stroke-width: 2;
+            fill: none;
+            stroke-dasharray: 5, 5;
+            animation: dash 20s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -100; }
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            min-width: 600px;
+        }
+
+        .superseded-row {
+            opacity: 0.5;
+        }
+
+        .superseded-row td {
+            text-decoration: line-through;
+        }
+
+        .superseded-row td:last-child {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 flex items-center justify-center z-50">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-purple-400 text-4xl mb-4"></i>
+            <div class="text-purple-300">Authenticating...</div>
+        </div>
+    </div>
+
+    <div id="mainContent" class="min-h-screen p-4 pb-24 hidden">
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+                <div>
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-white text-3xl font-black uppercase tracking-widest">Dashboard</h1>
+                        <span class="bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-lg">V3</span>
+                    </div>
+                    <p class="text-purple-300 text-sm">Supply Chain Control Tower</p>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <div class="text-right hidden md:block">
+                        <div class="text-white text-sm font-bold" id="userEmail"></div>
+                        <div class="text-purple-300 text-xs" id="userRole"></div>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-home"></i>
+                        </a>
+                        <a href="/v3/" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-arrow-left mr-2"></i>Field App
+                        </a>
+                        <a href="/v3/admin.html" id="adminBtn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-xl hidden">
+                            <i class="fas fa-cog mr-2"></i>Admin
+                        </a>
+                        <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Total Transactions</div>
+                    <div class="text-white text-2xl font-black" id="totalCount">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Total Weight</div>
+                    <div class="text-white text-2xl font-black" id="totalWeight">0 kg</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Active Nodes</div>
+                    <div class="text-white text-2xl font-black" id="activeNodes">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">DB Usage</div>
+                    <div class="text-white text-2xl font-black" id="dbUsage">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button onclick="switchTab('ledger')" id="tabLedger" class="tab-btn bg-purple-600 text-white px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-table mr-2"></i>Ledger
+            </button>
+            <button onclick="switchTab('map')" id="tabMap" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-project-diagram mr-2"></i>Traceability Map
+            </button>
+            <button onclick="switchTab('explorer')" id="tabExplorer" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-search mr-2"></i>Block Explorer
+            </button>
+            <button onclick="switchTab('report')" id="tabReport" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-file-invoice mr-2"></i>Customer Report
+            </button>
+        </div>
+
+        <div id="ledgerTab" class="tab-content">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-white text-xl font-bold flex items-center">
+                        <i class="fas fa-database mr-3 text-purple-400"></i>
+                        Live Ledger
+                    </h2>
+                    <div class="flex gap-2 items-center flex-wrap">
+                        <label class="flex items-center gap-2 text-purple-300 text-sm cursor-pointer select-none">
+                            <input type="checkbox" id="showAllVersions" onchange="applyLedgerFilter()" class="accent-purple-500">
+                            Show all versions
+                        </label>
+                        <input type="text" id="searchInput" placeholder="Search NX, Source, Batch..."
+                               class="bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               oninput="applyLedgerFilter()">
+                        <button onclick="refreshLedger()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-purple-500/30">
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">ID</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Type</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Source</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Batch</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Location</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Weight</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Time</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledgerBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-purple-300 py-8">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>Loading transactions...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="mapTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-map-marked-alt mr-3 text-purple-400"></i>
+                    Supply Chain Flow
+                </h2>
+
+                <div class="relative overflow-x-auto pb-8">
+                    <div class="flex items-center justify-between min-w-max gap-4 p-4">
+                        <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index: 0;">
+                            <path id="connector1" class="flow-connector" d="M 120 80 L 220 80"></path>
+                            <path id="connector2" class="flow-connector" d="M 320 80 L 420 80"></path>
+                            <path id="connector3" class="flow-connector" d="M 520 80 L 620 80"></path>
+                            <path id="connector4" class="flow-connector" d="M 720 80 L 820 80"></path>
+                            <path id="connector5" class="flow-connector" d="M 920 80 L 1020 80"></path>
+                            <path id="connector6" class="flow-connector" d="M 1120 80 L 1220 80"></path>
+                            <path id="connector7" class="flow-connector" d="M 1320 80 L 1420 80"></path>
+                        </svg>
+
+                        <div id="nodeWasteSource" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-warehouse text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Waste Source</div>
+                            <div id="countWasteSource" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeRecyclingHub" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-layer-group text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Recycling Hub</div>
+                            <div id="countRecyclingHub" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeSpinner" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-cog text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Spinner</div>
+                            <div id="countSpinner" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeWeaver" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-th text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Weaver</div>
+                            <div id="countWeaver" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeManufacturing" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-industry text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Manufacturing</div>
+                            <div id="countManufacturing" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodePOL" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-shipping-fast text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">PoL</div>
+                            <div id="countPOL" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodePOD" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-truck-loading text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">PoD</div>
+                            <div id="countPOD" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+
+                        <div id="nodeDistributionCenter" class="flow-node bg-slate-700 border-2 border-slate-500 rounded-2xl p-4 w-24 text-center relative" style="z-index: 1;">
+                            <i class="fas fa-store text-slate-400 text-2xl mb-2"></i>
+                            <div class="text-white text-xs font-bold">Dist. Center</div>
+                            <div id="countDistributionCenter" class="text-purple-400 text-xs mt-1">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-black/20 rounded-xl p-4">
+                    <div class="text-purple-300 text-sm">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Nodes light up when transactions are recorded. Click any node to filter transactions.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="explorerTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-cube mr-3 text-purple-400"></i>
+                    Solana Block Explorer
+                </h2>
+
+                <div class="mb-4">
+                    <input type="text" id="hashSearch" placeholder="Enter transaction hash..."
+                           class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                           oninput="searchByHash()">
+                </div>
+
+                <div id="explorerResults" class="space-y-4">
+                    <div class="text-center text-purple-300 py-8">
+                        <i class="fas fa-search text-4xl mb-3"></i>
+                        <div>Enter a transaction hash to view details</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="reportTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-file-invoice mr-3 text-purple-400"></i>
+                    Customer Report
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Filter by Customer</label>
+                        <select id="customerFilter" onchange="filterReport()" class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Customers</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Filter by Purchase Order</label>
+                        <select id="purchaseOrderFilter" onchange="filterReport()" class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Purchase Orders</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="clearReportFilters()" class="w-full bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-redo mr-2"></i>Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-purple-500/30">
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Date</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Customer</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Purchase Order</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Type</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Location</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Weight</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-purple-300 py-8">
+                                    No transactions found
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Filtered Count</div>
+                        <div class="text-white text-2xl font-bold" id="reportCount">0</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Total Weight</div>
+                        <div class="text-white text-2xl font-bold" id="reportWeight">0 kg</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Customers</div>
+                        <div class="text-white text-2xl font-bold" id="reportCustomers">0</div>
+                    </div>
+                    <div class="bg-black/30 rounded-xl p-4">
+                        <div class="text-purple-300 text-xs uppercase mb-1">Orders</div>
+                        <div class="text-white text-2xl font-bold" id="reportOrders">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="passportModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-md w-full">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-white text-xl font-bold">Digital Passport</h3>
+                <button onclick="closePassport()" class="text-purple-300 hover:text-white">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <div id="passportContent"></div>
+        </div>
+    </div>
+
+    <script src="/__/firebase/init.js?useService=database,storage,auth"></script>
+    <script src="auth.js"></script>
+    <script>
+        var app, database;
+        var allTransactions = [];
+        var filteredTransactions = [];
+        var reportTransactions = [];
+
+        function safeText(value) {
+            return value != null ? String(value) : 'N/A';
+        }
+
+        function el(tag, attrs, children) {
+            var node = document.createElement(tag);
+            if (attrs) {
+                Object.keys(attrs).forEach(function(key) {
+                    if (key === 'className') {
+                        node.className = attrs[key];
+                    } else if (key === 'textContent') {
+                        node.textContent = attrs[key];
+                    } else if (key.indexOf('on') === 0) {
+                        node.addEventListener(key.substring(2).toLowerCase(), attrs[key]);
+                    } else {
+                        node.setAttribute(key, attrs[key]);
+                    }
+                });
+            }
+            if (children) {
+                (Array.isArray(children) ? children : [children]).forEach(function(child) {
+                    if (child == null) return;
+                    if (typeof child === 'string') {
+                        node.appendChild(document.createTextNode(child));
+                    } else {
+                        node.appendChild(child);
+                    }
+                });
+            }
+            return node;
+        }
+
+        function clearChildren(parent) {
+            while (parent.firstChild) {
+                parent.removeChild(parent.firstChild);
+            }
+        }
+
+        (function initApp() {
+            try {
+                app = firebase.app();
+                database = firebase.database();
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                document.getElementById('loadingOverlay').querySelector('div').textContent =
+                    'Firebase configuration error. Please check your setup.';
+                return;
+            }
+
+            ViberloopAuth.init(app).then(function() {
+                var user = ViberloopAuth.getCurrentUser();
+                if (!user) {
+                    window.location.href = '/v3/';
+                    return;
+                }
+                showDashboard(user);
+            });
+        })();
+
+        function showDashboard(user) {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userRole').textContent = user.role.replace(/_/g, ' ');
+
+            if (ViberloopAuth.isAdmin()) {
+                document.getElementById('adminBtn').classList.remove('hidden');
+            }
+
+            loadLedger();
+            switchTab('ledger');
+        }
+
+        function handleLogout() {
+            ViberloopAuth.logout().then(function() {
+                window.location.href = '/v3/';
+            });
+        }
+
+        function isActive(tx) {
+            return tx.data.status !== 'superseded';
+        }
+
+        function getActiveTransactions() {
+            return allTransactions.filter(isActive);
+        }
+
+        // ==================== TAB SWITCHING ====================
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(function(tab) {
+                tab.classList.add('hidden');
+            });
+            document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-white/10', 'text-purple-300');
+            });
+
+            var tabMap = {
+                ledger:   { panel: 'ledgerTab',   btn: 'tabLedger' },
+                map:      { panel: 'mapTab',      btn: 'tabMap' },
+                explorer: { panel: 'explorerTab', btn: 'tabExplorer' },
+                report:   { panel: 'reportTab',   btn: 'tabReport' }
+            };
+
+            var entry = tabMap[tabName];
+            if (!entry) return;
+
+            document.getElementById(entry.panel).classList.remove('hidden');
+            var btn = document.getElementById(entry.btn);
+            btn.classList.add('bg-purple-600', 'text-white');
+            btn.classList.remove('bg-white/10', 'text-purple-300');
+
+            if (tabName === 'map') updateFlowMap();
+            if (tabName === 'report') loadCustomerReport();
+        }
+
+        // ==================== LEDGER ====================
+
+        function loadLedger() {
+            database.ref('transactions').on('value', function(snapshot) {
+                allTransactions = [];
+                snapshot.forEach(function(child) {
+                    allTransactions.push({ key: child.key, data: child.val() });
+                });
+                allTransactions.sort(function(a, b) {
+                    return (b.data.timestamp || 0) - (a.data.timestamp || 0);
+                });
+                applyLedgerFilter();
+                updateStats();
+                updateFlowMap();
+            }, function(error) {
+                console.error('Error loading ledger:', error);
+                var tbody = document.getElementById('ledgerBody');
+                clearChildren(tbody);
+                var tr = el('tr', null, [
+                    el('td', { colspan: '8', className: 'text-center text-red-400 py-8' }, 'Error loading transactions. Please refresh.')
+                ]);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function applyLedgerFilter() {
+            var searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            var showAll = document.getElementById('showAllVersions').checked;
+
+            filteredTransactions = allTransactions.filter(function(tx) {
+                if (!showAll && tx.data.status === 'superseded') return false;
+                if (!searchTerm) return true;
+                var d = tx.data;
+                return (
+                    (d.nxReference || '').toLowerCase().indexOf(searchTerm) !== -1 ||
+                    (d.wasteSource || '').toLowerCase().indexOf(searchTerm) !== -1 ||
+                    (d.packingList || '').toLowerCase().indexOf(searchTerm) !== -1 ||
+                    (d.location || '').toLowerCase().indexOf(searchTerm) !== -1 ||
+                    (d.hash || '').toLowerCase().indexOf(searchTerm) !== -1
+                );
+            });
+
+            renderLedger();
+        }
+
+        function renderLedger() {
+            var tbody = document.getElementById('ledgerBody');
+            clearChildren(tbody);
+
+            if (filteredTransactions.length === 0) {
+                tbody.appendChild(
+                    el('tr', null, [
+                        el('td', { colspan: '8', className: 'text-center text-purple-300 py-8' }, 'No transactions found')
+                    ])
+                );
+                return;
+            }
+
+            filteredTransactions.forEach(function(tx) {
+                var d = tx.data;
+                var superseded = d.status === 'superseded';
+                var txType = d.transactionType || 'N/A';
+                var typeLabel = txType === 'incoming' ? 'Incoming' : txType === 'outgoing' ? 'Outgoing' : 'Single';
+                var typeBadgeColor = txType === 'incoming' ? 'bg-green-600' : txType === 'outgoing' ? 'bg-blue-600' : 'bg-gray-600';
+
+                var tr = document.createElement('tr');
+                tr.className = 'border-b border-purple-500/20 hover:bg-white/5 transition';
+                if (superseded) tr.className += ' superseded-row';
+
+                var idCell = el('td', { className: 'py-3 px-2' });
+                var idMain = el('div', { className: 'text-white font-bold text-sm' }, safeText(d.purchaseOrder));
+                idCell.appendChild(idMain);
+
+                var version = parseInt(d.version, 10);
+                if (version > 1) {
+                    var vBadge = el('span', {
+                        className: 'bg-yellow-600 text-white text-xs font-bold px-1 rounded ml-1'
+                    }, 'v' + version);
+                    idMain.appendChild(vBadge);
+                }
+
+                if (superseded) {
+                    var sBadge = el('span', {
+                        className: 'bg-red-700 text-white text-xs font-bold px-1 rounded ml-1'
+                    }, 'SUPERSEDED');
+                    idMain.appendChild(sBadge);
+                }
+
+                idCell.appendChild(el('div', { className: 'text-purple-400 text-xs' }, safeText(d.materialType)));
+                tr.appendChild(idCell);
+
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [
+                    el('span', { className: typeBadgeColor + ' px-2 py-1 rounded text-white text-xs' }, typeLabel)
+                ]));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-purple-300 text-sm' }, safeText(d.wasteSource)));
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-purple-300 text-sm' }, safeText(d.packingList)));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [
+                    el('span', { className: 'bg-purple-600 px-2 py-1 rounded text-white text-xs' }, safeText(d.location))
+                ]));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-white font-bold text-sm' },
+                    d.netWeight ? d.netWeight + ' kg' : 'N/A'));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-purple-300 text-xs' }, safeText(d.time)));
+
+                var actionBtn = el('button', {
+                    className: 'bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs'
+                }, [el('i', { className: 'fas fa-id-card' })]);
+                (function(txData) {
+                    actionBtn.addEventListener('click', function() { viewPassport(txData); });
+                })(d);
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [actionBtn]));
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function refreshLedger() {
+            loadLedger();
+        }
+
+        // ==================== STATS ====================
+
+        function updateStats() {
+            var active = getActiveTransactions();
+
+            document.getElementById('totalCount').textContent = active.length;
+
+            var totalWeight = 0;
+            active.forEach(function(tx) {
+                var w = parseFloat(tx.data.netWeight);
+                if (!isNaN(w)) totalWeight += w;
+            });
+            document.getElementById('totalWeight').textContent = totalWeight.toFixed(0) + ' kg';
+
+            var locations = {};
+            active.forEach(function(tx) { locations[tx.data.location] = true; });
+            document.getElementById('activeNodes').textContent = Object.keys(locations).length;
+
+            var estimatedSize = JSON.stringify(allTransactions).length;
+            var maxSize = 5 * 1024 * 1024;
+            document.getElementById('dbUsage').textContent = ((estimatedSize / maxSize) * 100).toFixed(1) + '%';
+        }
+
+        // ==================== FLOW MAP ====================
+
+        function updateFlowMap() {
+            var locationMap = {
+                'WASTE_SOURCE': 'nodeWasteSource',
+                'RECYCLING_HUB': 'nodeRecyclingHub',
+                'SPINNER': 'nodeSpinner',
+                'WEAVER': 'nodeWeaver',
+                'MANUFACTURING': 'nodeManufacturing',
+                'POL': 'nodePOL',
+                'POD': 'nodePOD',
+                'DISTRIBUTION_CENTER': 'nodeDistributionCenter'
+            };
+
+            var counts = {};
+            Object.keys(locationMap).forEach(function(k) { counts[k] = 0; });
+
+            getActiveTransactions().forEach(function(tx) {
+                var loc = tx.data.location;
+                if (counts.hasOwnProperty(loc)) counts[loc]++;
+            });
+
+            Object.keys(locationMap).forEach(function(location) {
+                var nodeId = locationMap[location];
+                var node = document.getElementById(nodeId);
+                var countEl = document.getElementById('count' + nodeId.replace('node', ''));
+
+                if (counts[location] > 0) {
+                    node.classList.remove('bg-slate-700', 'border-slate-500');
+                    node.classList.add('bg-purple-600', 'border-purple-400', 'active');
+                    countEl.textContent = counts[location];
+                } else {
+                    node.classList.add('bg-slate-700', 'border-slate-500');
+                    node.classList.remove('bg-purple-600', 'border-purple-400', 'active');
+                    countEl.textContent = '0';
+                }
+            });
+        }
+
+        // ==================== BLOCK EXPLORER ====================
+
+        function searchByHash() {
+            var hash = document.getElementById('hashSearch').value.trim();
+            var resultsDiv = document.getElementById('explorerResults');
+            clearChildren(resultsDiv);
+
+            if (!hash) {
+                var placeholder = el('div', { className: 'text-center text-purple-300 py-8' }, [
+                    el('i', { className: 'fas fa-search text-4xl mb-3' }),
+                    el('div', null, 'Enter a transaction hash to view details')
+                ]);
+                resultsDiv.appendChild(placeholder);
+                return;
+            }
+
+            var found = allTransactions.filter(function(tx) {
+                return tx.data.hash && tx.data.hash.toLowerCase().indexOf(hash.toLowerCase()) !== -1;
+            });
+
+            if (found.length === 0) {
+                resultsDiv.appendChild(
+                    el('div', { className: 'text-center text-red-400 py-8' }, [
+                        el('i', { className: 'fas fa-exclamation-circle text-4xl mb-3' }),
+                        el('div', null, 'No transactions found with this hash')
+                    ])
+                );
+                return;
+            }
+
+            found.forEach(function(tx) {
+                var d = tx.data;
+                var slotId = String(Math.floor(Math.random() * 1000000) + 100000000);
+                var gasFee = (Math.random() * 0.001).toFixed(6);
+
+                var statusBadge;
+                if (d.status === 'superseded') {
+                    statusBadge = el('span', { className: 'bg-red-700 px-3 py-1 rounded-lg text-white text-xs' }, [
+                        el('i', { className: 'fas fa-ban mr-1' }),
+                        document.createTextNode('Superseded')
+                    ]);
+                } else {
+                    statusBadge = el('span', { className: 'bg-green-500 px-3 py-1 rounded-lg text-white text-xs' }, [
+                        el('i', { className: 'fas fa-check mr-1' }),
+                        document.createTextNode('Confirmed')
+                    ]);
+                }
+
+                var borshContent = '{\n' +
+                    '  "nxReference": "' + safeText(d.nxReference) + '",\n' +
+                    '  "packingList": "' + safeText(d.packingList) + '",\n' +
+                    '  "source": "' + safeText(d.wasteSource) + '",\n' +
+                    '  "transactionType": "' + safeText(d.transactionType) + '",\n' +
+                    '  "location": "' + safeText(d.location) + '",\n' +
+                    '  "weight": "' + safeText(d.netWeight) + ' kg",\n' +
+                    '  "material": "' + safeText(d.materialType) + '"\n' +
+                    '}';
+
+                var header = el('div', { className: 'flex items-center justify-between mb-4' }, [
+                    el('h3', { className: 'text-white font-bold text-lg' }, 'Transaction Details'),
+                    statusBadge
+                ]);
+
+                var hashRow = el('div', null, [
+                    el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Transaction Hash'),
+                    el('div', { className: 'text-white font-mono text-sm break-all', textContent: safeText(d.hash) })
+                ]);
+
+                var slotDiv = el('div', null, [
+                    el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Slot ID'),
+                    el('div', { className: 'text-white font-mono text-sm', textContent: slotId })
+                ]);
+
+                var gasDiv = el('div', null, [
+                    el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Gas Fee'),
+                    el('div', { className: 'text-white font-mono text-sm', textContent: gasFee + ' SOL' })
+                ]);
+
+                var gridRow = el('div', { className: 'grid grid-cols-2 gap-3' }, [slotDiv, gasDiv]);
+
+                var borshPre = el('pre', {
+                    className: 'bg-black/40 rounded-lg p-3 text-purple-300 font-mono text-xs overflow-x-auto whitespace-pre-wrap',
+                    textContent: borshContent
+                });
+
+                var borshRow = el('div', null, [
+                    el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Borsh Data'),
+                    borshPre
+                ]);
+
+                var versionRow = null;
+                var ver = parseInt(d.version, 10);
+                if (ver > 1) {
+                    versionRow = el('div', null, [
+                        el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Version'),
+                        el('span', { className: 'bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded' }, 'v' + ver)
+                    ]);
+                }
+
+                var timeRow = el('div', null, [
+                    el('div', { className: 'text-purple-400 text-xs uppercase mb-1' }, 'Timestamp'),
+                    el('div', { className: 'text-white text-sm', textContent: safeText(d.time) })
+                ]);
+
+                var passportBtn = el('button', {
+                    className: 'w-full mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl'
+                }, [
+                    el('i', { className: 'fas fa-passport mr-2' }),
+                    document.createTextNode('View Digital Passport')
+                ]);
+                (function(txData) {
+                    passportBtn.addEventListener('click', function() { viewPassport(txData); });
+                })(d);
+
+                var detailsChildren = [hashRow, gridRow, borshRow];
+                if (versionRow) detailsChildren.push(versionRow);
+                detailsChildren.push(timeRow);
+
+                var details = el('div', { className: 'space-y-3' }, detailsChildren);
+
+                var card = el('div', { className: 'bg-black/30 rounded-2xl p-6 border border-purple-500/30' }, [
+                    header, details, passportBtn
+                ]);
+
+                resultsDiv.appendChild(card);
+            });
+        }
+
+        // ==================== PASSPORT MODAL ====================
+
+        function viewPassport(txData) {
+            var content = document.getElementById('passportContent');
+            clearChildren(content);
+
+            var nxReference = safeText(txData.nxReference);
+            var packingList = safeText(txData.packingList);
+            var netWeight = safeText(txData.netWeight);
+            var materialType = safeText(txData.materialType);
+            var wasteSource = safeText(txData.wasteSource);
+            var transactionType = txData.transactionType ? txData.transactionType.toUpperCase() : 'N/A';
+            var role = txData.role ? txData.role.replace(/_/g, ' ') : 'N/A';
+            var location = txData.location ? txData.location.replace(/_/g, ' ') : 'N/A';
+
+            if (txData.photoUrl) {
+                var img = el('img', {
+                    className: 'w-full h-48 object-cover rounded-2xl border-2 border-purple-400',
+                    alt: 'Product Photo'
+                });
+                img.src = txData.photoUrl;
+                content.appendChild(el('div', { className: 'mb-6' }, [img]));
+            }
+
+            var fields = el('div', { className: 'space-y-4' });
+
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'NX Reference'),
+                el('div', { className: 'text-white text-lg font-black', textContent: nxReference })
+            ]));
+
+            var ver = parseInt(txData.version, 10);
+            if (ver > 1) {
+                fields.appendChild(el('div', null, [
+                    el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Version'),
+                    el('span', { className: 'bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded' }, 'v' + ver)
+                ]));
+            }
+
+            if (txData.status === 'superseded') {
+                fields.appendChild(el('div', null, [
+                    el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Status'),
+                    el('span', { className: 'bg-red-700 text-white text-xs font-bold px-2 py-1 rounded' }, 'SUPERSEDED')
+                ]));
+            }
+
+            var gridRow = el('div', { className: 'grid grid-cols-2 gap-4' }, [
+                el('div', null, [
+                    el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Packing List'),
+                    el('div', { className: 'text-white font-bold', textContent: packingList })
+                ]),
+                el('div', null, [
+                    el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Net Weight (kg)'),
+                    el('div', { className: 'text-white font-bold', textContent: netWeight })
+                ])
+            ]);
+            fields.appendChild(gridRow);
+
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Waste Source'),
+                el('div', { className: 'text-white', textContent: wasteSource })
+            ]));
+
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Material Type'),
+                el('div', { className: 'text-white', textContent: materialType })
+            ]));
+
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Process Action'),
+                el('div', { className: 'text-white', textContent: transactionType + ' - ' + role })
+            ]));
+
+            var locationBadge = el('span', {
+                className: 'bg-purple-600 inline-block px-3 py-1 rounded-lg text-white text-sm',
+                textContent: location
+            });
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Location'),
+                locationBadge
+            ]));
+
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Timestamp'),
+                el('div', { className: 'text-white text-sm', textContent: safeText(txData.time) })
+            ]));
+
+            var hashDiv = el('div', {
+                className: 'text-white font-mono text-xs break-all bg-black/20 p-2 rounded',
+                textContent: safeText(txData.hash)
+            });
+            fields.appendChild(el('div', null, [
+                el('div', { className: 'text-purple-300 text-xs uppercase font-bold mb-1' }, 'Blockchain Hash'),
+                hashDiv
+            ]));
+
+            content.appendChild(fields);
+
+            var footer = el('div', { className: 'mt-6 pt-6 border-t border-purple-500/30' }, [
+                el('div', { className: 'flex items-center justify-center gap-2 text-purple-300 text-xs' }, [
+                    el('i', { className: 'fas fa-shield-alt' }),
+                    document.createTextNode('Verified on Solana Blockchain')
+                ])
+            ]);
+            content.appendChild(footer);
+
+            document.getElementById('passportModal').classList.remove('hidden');
+        }
+
+        function closePassport() {
+            document.getElementById('passportModal').classList.add('hidden');
+        }
+
+        // ==================== CUSTOMER REPORT ====================
+
+        function loadCustomerReport() {
+            reportTransactions = getActiveTransactions();
+            populateReportFilters();
+            renderReport();
+        }
+
+        function populateReportFilters() {
+            var customers = {};
+            var purchaseOrders = {};
+            var active = getActiveTransactions();
+
+            active.forEach(function(tx) {
+                if (tx.data.customer) customers[tx.data.customer] = true;
+                if (tx.data.purchaseOrder) purchaseOrders[tx.data.purchaseOrder] = true;
+            });
+
+            var customerFilter = document.getElementById('customerFilter');
+            clearChildren(customerFilter);
+            customerFilter.appendChild(el('option', { value: '' }, 'All Customers'));
+            Object.keys(customers).sort().forEach(function(c) {
+                customerFilter.appendChild(el('option', { value: c, textContent: c }));
+            });
+
+            var poFilter = document.getElementById('purchaseOrderFilter');
+            clearChildren(poFilter);
+            poFilter.appendChild(el('option', { value: '' }, 'All Purchase Orders'));
+            Object.keys(purchaseOrders).sort().forEach(function(po) {
+                poFilter.appendChild(el('option', { value: po, textContent: po }));
+            });
+        }
+
+        function filterReport() {
+            var customerVal = document.getElementById('customerFilter').value;
+            var poVal = document.getElementById('purchaseOrderFilter').value;
+
+            reportTransactions = getActiveTransactions().filter(function(tx) {
+                if (customerVal && tx.data.customer !== customerVal) return false;
+                if (poVal && tx.data.purchaseOrder !== poVal) return false;
+                return true;
+            });
+
+            renderReport();
+        }
+
+        function clearReportFilters() {
+            document.getElementById('customerFilter').value = '';
+            document.getElementById('purchaseOrderFilter').value = '';
+            filterReport();
+        }
+
+        function renderReport() {
+            var tbody = document.getElementById('reportBody');
+            clearChildren(tbody);
+
+            if (reportTransactions.length === 0) {
+                tbody.appendChild(
+                    el('tr', null, [
+                        el('td', { colspan: '7', className: 'text-center text-purple-300 py-8' },
+                            'No transactions found with selected filters')
+                    ])
+                );
+                updateReportStats(0, 0, 0);
+                return;
+            }
+
+            var sorted = reportTransactions.slice().sort(function(a, b) {
+                return (b.data.timestamp || 0) - (a.data.timestamp || 0);
+            });
+
+            var customerSet = {};
+            var orderSet = {};
+            var totalWeight = 0;
+
+            sorted.forEach(function(tx) {
+                var d = tx.data;
+                var txType = d.transactionType || 'N/A';
+                var typeLabel = txType === 'incoming' ? 'Incoming' : txType === 'outgoing' ? 'Outgoing' : 'Single';
+                var typeBadgeColor = txType === 'incoming' ? 'bg-green-600' : txType === 'outgoing' ? 'bg-blue-600' : 'bg-gray-600';
+
+                if (d.customer) customerSet[d.customer] = true;
+                if (d.purchaseOrder) orderSet[d.purchaseOrder] = true;
+                var w = parseFloat(d.netWeight);
+                if (!isNaN(w)) totalWeight += w;
+
+                var tr = el('tr', { className: 'border-b border-purple-500/20 hover:bg-white/5 transition' });
+
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-purple-300 text-sm' }, safeText(d.transactionDate)));
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-white text-sm' }, safeText(d.customer)));
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-white font-bold text-sm' }, safeText(d.purchaseOrder)));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [
+                    el('span', { className: typeBadgeColor + ' px-2 py-1 rounded text-white text-xs' }, typeLabel)
+                ]));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [
+                    el('span', { className: 'bg-purple-600 px-2 py-1 rounded text-white text-xs' }, safeText(d.location))
+                ]));
+
+                tr.appendChild(el('td', { className: 'py-3 px-2 text-white font-bold text-sm' },
+                    d.netWeight ? d.netWeight + ' kg' : 'N/A'));
+
+                var actionBtn = el('button', {
+                    className: 'bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-lg text-xs'
+                }, [el('i', { className: 'fas fa-id-card' })]);
+                (function(txData) {
+                    actionBtn.addEventListener('click', function() { viewPassport(txData); });
+                })(d);
+                tr.appendChild(el('td', { className: 'py-3 px-2' }, [actionBtn]));
+
+                tbody.appendChild(tr);
+            });
+
+            updateReportStats(
+                Object.keys(customerSet).length,
+                Object.keys(orderSet).length,
+                totalWeight
+            );
+        }
+
+        function updateReportStats(customerCount, orderCount, totalWeight) {
+            document.getElementById('reportCount').textContent = reportTransactions.length;
+            document.getElementById('reportWeight').textContent = totalWeight.toFixed(0) + ' kg';
+            document.getElementById('reportCustomers').textContent = customerCount;
+            document.getElementById('reportOrders').textContent = orderCount;
+        }
+    </script>
+</body>
+</html>
