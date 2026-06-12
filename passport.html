@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Viberloop Bio - Digital Product Passport</title>
+
+    <!-- Block Search Engines -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="bingbot" content="noindex, nofollow">
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+    <!-- Firebase Hosting Auto-Configuration -->
+    <script src="/__/firebase/init.js?useService=database,storage"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;900&family=Open+Sans:wght@300;400;600;700&display=swap');
+
+        :root {
+            /* Brand colors */
+            --nx-forest:       #0A2E21;   /* primary brand, nav bg */
+            --nx-green-mid:    #1A5C3A;   /* hover states, dark sections */
+            --nx-bright-green: #4CAF72;   /* CTA buttons, active states */
+            --nx-teal:         #64A6BE;   /* info, links, process nodes */
+            --nx-teal-light:   #ABD7DB;   /* teal bg tints, secondary */
+            --nx-purple:       #271650;   /* Viberloop brand, headings */
+            --nx-tan:          #C8A885;   /* cotton/organic accents */
+            --nx-tan-light:    #EDE0CF;   /* tan bg tints, cards */
+            --nx-bg:           #EDEDED;   /* page background */
+            --nx-text:         #25221E;   /* primary text */
+            --nx-muted:        #5B5E5E;   /* secondary text, captions */
+            --nx-white:        #FFFFFF;
+
+            /* Typography */
+            --font-display: 'Montserrat', sans-serif;
+            --font-body:    'Open Sans', sans-serif;
+
+            /* Font sizes */
+            --fs-h1:    2rem;       /* 32px */
+            --fs-h2:    1.5rem;     /* 24px */
+            --fs-h3:    1.25rem;    /* 20px */
+            --fs-h4:    1rem;       /* 16px */
+            --fs-body:  0.875rem;   /* 14px */
+            --fs-small: 0.75rem;    /* 12px */
+
+            /* Spacing */
+            --sp-xs:  4px;
+            --sp-sm:  8px;
+            --sp-md:  16px;
+            --sp-lg:  24px;
+            --sp-xl:  40px;
+            --sp-2xl: 64px;
+
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-pill: 999px;
+
+            /* Shadows */
+            --shadow-card: 0 2px 8px rgba(10,46,33,0.08);
+            --shadow-btn:  0 1px 3px rgba(10,46,33,0.15);
+        }
+
+        * {
+            font-family: var(--font-body);
+        }
+
+        body {
+            background: var(--nx-bg);
+            min-height: 100vh;
+            color: var(--nx-text);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            color: var(--nx-purple);
+        }
+
+        .passport-header {
+            background: linear-gradient(135deg, var(--nx-forest) 0%, var(--nx-green-mid) 100%);
+            padding: var(--sp-xl) var(--sp-md);
+            box-shadow: var(--shadow-card);
+        }
+
+        .passport-card {
+            background: var(--nx-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: var(--sp-xl);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 40px;
+            bottom: calc(-1 * var(--sp-xl));
+            width: 2px;
+            background: linear-gradient(180deg, var(--nx-teal) 0%, var(--nx-teal-light) 100%);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--nx-bright-green);
+            border: 4px solid var(--nx-white);
+            box-shadow: 0 2px 8px rgba(76, 175, 114, 0.4);
+            z-index: 1;
+        }
+
+        .timeline-card {
+            background: var(--nx-tan-light);
+            border: 1px solid rgba(200, 168, 133, 0.3);
+            border-radius: var(--radius-md);
+            padding: var(--sp-lg);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-card);
+            border-color: var(--nx-tan);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--radius-pill);
+            font-size: var(--fs-small);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-verified {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--sp-md);
+            margin-top: var(--sp-md);
+        }
+
+        .photo-item {
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 2px solid var(--nx-tan-light);
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+            border-color: var(--nx-tan);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--nx-teal-light);
+            border-top: 4px solid var(--nx-teal);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stat-card {
+            background: var(--nx-white);
+            border-radius: var(--radius-md);
+            padding: var(--sp-md);
+            text-align: center;
+            border: 2px solid var(--nx-tan-light);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--nx-teal);
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: var(--fs-h2);
+            font-weight: 700;
+            color: var(--nx-purple);
+            font-family: var(--font-display);
+        }
+
+        .stat-label {
+            font-size: var(--fs-small);
+            color: var(--nx-muted);
+            margin-top: var(--sp-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--nx-bright-green);
+            color: var(--nx-white);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-btn);
+        }
+
+        .btn-primary:hover {
+            background: var(--nx-green-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 114, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--nx-white);
+            color: var(--nx-forest);
+            border: 2px solid var(--nx-forest);
+            padding: var(--sp-md) var(--sp-lg);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--fs-body);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--nx-forest);
+            color: var(--nx-white);
+        }
+
+        .link-blockchain {
+            color: var(--nx-teal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .link-blockchain:hover {
+            color: var(--nx-forest);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="passport-header">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 style="color: var(--nx-white); font-size: var(--fs-h1); margin-bottom: var(--sp-sm);">
+                <i class="fas fa-leaf" style="margin-right: var(--sp-sm);"></i>Viberloop Bio
+            </h1>
+            <p style="color: var(--nx-teal-light); font-size: var(--fs-h4);">Digital Product Passport</p>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4" style="margin-top: calc(-1 * var(--sp-xl)); padding-bottom: var(--sp-2xl);">
+
+        <!-- Main Card -->
+        <div class="passport-card p-8 md:p-12">
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center" style="padding: var(--sp-2xl) 0;">
+                <div class="loading-spinner mx-auto" style="margin-bottom: var(--sp-md);"></div>
+                <p style="color: var(--nx-muted);">Loading passport data...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="hidden">
+                <div class="text-center" style="padding: var(--sp-2xl) 0;">
+                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--nx-tan); margin-bottom: var(--sp-md); display: block;"></i>
+                    <h2 style="font-size: var(--fs-h2); font-weight: 700; color: var(--nx-purple); margin-bottom: var(--sp-sm);">Product Not Found</h2>
+                    <p style="color: var(--nx-muted); margin-bottom: var(--sp-lg);">We couldn't find a product with this purchase order number.</p>
+                    <p style="font-size: var(--fs-small); color: var(--nx-muted);">Purchase Order: <span id="errorPO" style="font-family: monospace; font-weight: 700; color: var(--nx-text);"></span></p>
+                </div>
+            </div>
+
+            <!-- Passport Content -->
+            <div id="passportContent" class="hidden">
+                <!-- Product Header -->
+                <div class="border-b border-gray-200 pb-6 mb-8">
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">
+                                Product Passport
+                            </h2>
+                            <p class="text-gray-600">Complete supply chain transparency</p>
+                        </div>
+                        <span class="badge badge-verified">
+                            <i class="fas fa-check-circle mr-1"></i> Blockchain Verified
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                        <div class="stat-card">
+                            <div class="stat-value" id="statPO">-</div>
+                            <div class="stat-label">Purchase Order</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statCustomer">-</div>
+                            <div class="stat-label">Customer</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statSteps">-</div>
+                            <div class="stat-label">Supply Chain Steps</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="statDuration">-</div>
+                            <div class="stat-label">Journey Duration</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supply Chain Journey -->
+                <div class="mb-8">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-6">
+                        <i class="fas fa-route mr-2 text-purple-600"></i>
+                        Supply Chain Journey
+                    </h3>
+
+                    <div id="timelineContainer">
+                        <!-- Timeline items will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-wrap gap-4 pt-6" style="border-top: 1px solid var(--nx-tan-light); margin-top: var(--sp-lg);">
+                    <button onclick="window.print()" class="btn-primary flex-1 md:flex-none">
+                        <i class="fas fa-print" style="margin-right: var(--sp-sm);"></i>Print Passport
+                    </button>
+                    <button onclick="sharePassport()" class="btn-secondary flex-1 md:flex-none">
+                        <i class="fas fa-share-alt" style="margin-right: var(--sp-sm);"></i>Share
+                    </button>
+                    <a href="/supply-chain" target="_blank" class="btn-secondary flex-1 md:flex-none" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-route" style="margin-right: var(--sp-sm);"></i>View Supply Chain
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center" style="margin-top: var(--sp-xl); color: var(--nx-muted); font-size: var(--fs-small);">
+            <p>Powered by Solana Blockchain • Verified & Immutable</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration (via Firebase Hosting)
+        let database, storage;
+
+        // Initialize Firebase
+        if (typeof firebase !== 'undefined') {
+            database = firebase.database();
+            storage = firebase.storage();
+            console.log('✅ Firebase initialized via Firebase Hosting');
+        }
+
+        // Role display names and icons (using NXTile color scheme)
+        const roleConfig = {
+            'WASTE_SOURCE': { name: 'Waste Source', icon: 'fa-recycle', color: '#4CAF72' },
+            'RECYCLING_HUB': { name: 'Recycling Hub', icon: 'fa-industry', color: '#64A6BE' },
+            'SPINNER': { name: 'Spinner', icon: 'fa-circle-notch', color: '#271650' },
+            'WEAVER': { name: 'Weaver', icon: 'fa-th', color: '#C8A885' },
+            'MANUFACTURING': { name: 'Manufacturing', icon: 'fa-cogs', color: '#1A5C3A' },
+            'POL': { name: 'Port of Loading', icon: 'fa-ship', color: '#64A6BE' },
+            'POD': { name: 'Port of Discharge', icon: 'fa-anchor', color: '#ABD7DB' },
+            'DISTRIBUTION_CENTER': { name: 'Distribution Center', icon: 'fa-warehouse', color: '#0A2E21' }
+        };
+
+        // Role order for timeline
+        const roleOrder = [
+            'WASTE_SOURCE',
+            'RECYCLING_HUB',
+            'SPINNER',
+            'WEAVER',
+            'MANUFACTURING',
+            'POL',
+            'POD',
+            'DISTRIBUTION_CENTER'
+        ];
+
+        // Get PO from URL
+        function getPOFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const poFromParam = urlParams.get('po');
+
+            // Also check path-based URL: /passport/PO09876
+            const pathParts = window.location.pathname.split('/');
+            const poFromPath = pathParts[pathParts.length - 1];
+
+            return poFromParam || (poFromPath !== 'passport.html' && poFromPath !== '' ? poFromPath : null);
+        }
+
+        // Format date nicely
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // Calculate duration between dates
+        function calculateDuration(startTimestamp, endTimestamp) {
+            const diff = endTimestamp - startTimestamp;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            return days > 0 ? `${days} days` : '< 1 day';
+        }
+
+        // Load passport data
+        async function loadPassport() {
+            const po = getPOFromURL();
+
+            if (!po) {
+                showError('No purchase order specified');
+                return;
+            }
+
+            console.log('🔍 Loading passport for PO:', po);
+
+            try {
+                // Query Firebase for all transactions with this PO
+                const snapshot = await database.ref('transactions')
+                    .orderByChild('purchaseOrder')
+                    .equalTo(po)
+                    .once('value');
+
+                if (!snapshot.exists()) {
+                    showError(po);
+                    return;
+                }
+
+                // Collect transactions
+                const transactions = [];
+                snapshot.forEach(childSnapshot => {
+                    transactions.push({
+                        key: childSnapshot.key,
+                        ...childSnapshot.val()
+                    });
+                });
+
+                console.log('📦 Found', transactions.length, 'transactions');
+
+                // Sort by role order
+                transactions.sort((a, b) => {
+                    const orderA = roleOrder.indexOf(a.role);
+                    const orderB = roleOrder.indexOf(b.role);
+                    if (orderA !== orderB) return orderA - orderB;
+                    // If same role, sort by timestamp
+                    return (a.timestamp || 0) - (b.timestamp || 0);
+                });
+
+                // Display passport
+                displayPassport(po, transactions);
+
+            } catch (error) {
+                console.error('Error loading passport:', error);
+                showError(po);
+            }
+        }
+
+        // Display passport data
+        function displayPassport(po, transactions) {
+            // Update stats
+            document.getElementById('statPO').textContent = po;
+            document.getElementById('statCustomer').textContent = transactions[0]?.customer || 'N/A';
+            document.getElementById('statSteps').textContent = transactions.length;
+
+            // Calculate duration
+            if (transactions.length > 1) {
+                const firstTimestamp = transactions[0].timestamp;
+                const lastTimestamp = transactions[transactions.length - 1].timestamp;
+                document.getElementById('statDuration').textContent = calculateDuration(firstTimestamp, lastTimestamp);
+            } else {
+                document.getElementById('statDuration').textContent = 'N/A';
+            }
+
+            // Build timeline
+            const timelineContainer = document.getElementById('timelineContainer');
+            timelineContainer.innerHTML = '';
+
+            transactions.forEach((tx, index) => {
+                const role = roleConfig[tx.role] || { name: tx.role, icon: 'fa-box', color: '#6b7280' };
+
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+                timelineItem.innerHTML = `
+                    <div class="timeline-dot" style="background: ${role.color};"></div>
+                    <div class="timeline-card">
+                        <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--sp-md);">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: var(--sp-sm); margin-bottom: var(--sp-xs);">
+                                    <i class="fas ${role.icon}" style="color: ${role.color};"></i>
+                                    <h4 style="font-size: var(--fs-h3); font-weight: 700; color: var(--nx-purple); margin: 0;">${role.name}</h4>
+                                </div>
+                                <p style="font-size: var(--fs-small); color: var(--nx-muted); margin: 0;">
+                                    <i class="far fa-calendar" style="margin-right: var(--sp-xs);"></i>${formatDate(tx.timestamp)}
+                                </p>
+                            </div>
+                            <span style="font-size: var(--fs-small); font-weight: 700; color: var(--nx-muted);">Step ${index + 1}</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-md); margin-bottom: var(--sp-md);">
+                            ${tx.location ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Location:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.location}</span>
+                                </div>
+                            ` : ''}
+                            ${tx.netWeight ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Weight:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.netWeight} kg</span>
+                                </div>
+                            ` : ''}
+                            ${tx.batchSize ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Batch Size:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.batchSize}</span>
+                                </div>
+                            ` : ''}
+                            ${tx.materialType ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Material:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.materialType}</span>
+                                </div>
+                            ` : ''}
+                            ${tx.packingList ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">Packing List:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.packingList}</span>
+                                </div>
+                            ` : ''}
+                            ${tx.nxReference ? `
+                                <div style="font-size: var(--fs-small);">
+                                    <span style="color: var(--nx-muted);">NX Reference:</span>
+                                    <span style="font-weight: 600; color: var(--nx-text); margin-left: var(--sp-xs);">${tx.nxReference}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        ${(tx.photos && tx.photos.length > 0) || tx.photoUrl ? `
+                            <div class="photo-grid" id="photos-${tx.key}"></div>
+                        ` : ''}
+
+                        ${tx.hash ? `
+                            <div style="margin-top: var(--sp-md); padding-top: var(--sp-md); border-top: 1px solid var(--nx-tan-light);">
+                                <a href="https://explorer.solana.com/tx/${tx.hash}?cluster=devnet"
+                                   target="_blank"
+                                   class="link-blockchain"
+                                   style="display: inline-flex; align-items: center; font-size: var(--fs-small); text-decoration: none;">
+                                    <i class="fas fa-link" style="margin-right: var(--sp-sm);"></i>
+                                    Verify on Solana Blockchain
+                                    <i class="fas fa-external-link-alt" style="margin-left: var(--sp-xs); font-size: 0.7rem;"></i>
+                                </a>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                timelineContainer.appendChild(timelineItem);
+
+                // Load photos if they exist
+                if (tx.photos && tx.photos.length > 0) {
+                    loadPhotos(tx.key, tx.photos, tx.photoUpdatedAt);
+                } else if (tx.photoUrl) {
+                    // Handle single photoUrl field
+                    loadPhotos(tx.key, [tx.photoUrl], tx.photoUpdatedAt);
+                }
+            });
+
+            // Show content, hide loading
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('passportContent').classList.remove('hidden');
+        }
+
+        // Load photos from Firebase Storage
+        async function loadPhotos(txKey, photos, photoUpdatedAt) {
+            const container = document.getElementById(`photos-${txKey}`);
+            if (!container) return;
+
+            for (const photo of photos) {
+                try {
+                    // If photo is an object with url property
+                    let photoUrl = photo.url || photo;
+
+                    // Add cache-busting parameter if photoUpdatedAt exists
+                    if (photoUpdatedAt && photoUrl) {
+                        const separator = photoUrl.includes('?') ? '&' : '?';
+                        photoUrl += `${separator}t=${photoUpdatedAt}`;
+                    }
+
+                    const photoItem = document.createElement('div');
+                    photoItem.className = 'photo-item';
+                    photoItem.innerHTML = `<img src="${photoUrl}" alt="Transaction Photo" loading="lazy">`;
+                    photoItem.onclick = () => window.open(photoUrl, '_blank');
+
+                    container.appendChild(photoItem);
+                } catch (error) {
+                    console.error('Error loading photo:', error);
+                }
+            }
+        }
+
+        // Show error state
+        function showError(po) {
+            document.getElementById('errorPO').textContent = po || 'N/A';
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('errorState').classList.remove('hidden');
+        }
+
+        // Share passport
+        function sharePassport() {
+            const url = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Viberloop Bio - Digital Product Passport',
+                    text: 'View the complete supply chain journey of this Viberloop Bio product',
+                    url: url
+                }).catch(err => console.log('Share failed:', err));
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link copied to clipboard!');
+                });
+            }
+        }
+
+        // Load passport on page load
+        window.addEventListener('DOMContentLoaded', loadPassport);
+    </script>
+
+    <!-- Print Styles -->
+    <style media="print">
+        body {
+            background: white !important;
+        }
+
+        .passport-card {
+            box-shadow: none !important;
+        }
+
+        button {
+            display: none !important;
+        }
+
+        .timeline-item:hover .timeline-card {
+            transform: none !important;
+        }
+    </style>
+</body>
+</html>

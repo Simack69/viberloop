@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop Bio - Solana Wallet Example</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="/css/tailwind.css">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <div class="min-h-screen p-4">
+        <!-- Header -->
+        <div class="mb-6 text-center">
+            <h1 class="text-white text-4xl font-black uppercase tracking-widest mb-2">Viberloop Bio</h1>
+            <p class="text-purple-300 text-sm">Solana Wallet Integration Example</p>
+        </div>
+
+        <!-- Wallet Connection Card -->
+        <div id="walletScreen" class="max-w-md mx-auto">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <div class="text-center mb-6">
+                    <div class="bg-purple-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-wallet text-white text-3xl"></i>
+                    </div>
+                    <h2 class="text-white text-2xl font-bold mb-2">Connect Wallet</h2>
+                    <p class="text-purple-300 text-sm">Connect your Solana wallet to continue</p>
+                </div>
+
+                <div id="walletNotInstalled" class="hidden space-y-4">
+                    <div class="bg-red-500/20 border border-red-500/50 rounded-xl p-4 text-center">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-2xl mb-2"></i>
+                        <p class="text-white font-bold mb-2">Phantom Wallet Not Detected</p>
+                        <p class="text-purple-300 text-sm mb-4">Please install Phantom wallet to continue</p>
+                        <a href="https://phantom.app/" target="_blank"
+                           class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl inline-block">
+                            <i class="fas fa-download mr-2"></i>Install Phantom
+                        </a>
+                    </div>
+                </div>
+
+                <div id="walletConnect" class="space-y-4">
+                    <button onclick="connectPhantom()"
+                            class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-3">
+                        <i class="fas fa-wallet"></i>
+                        <span>Connect Phantom Wallet</span>
+                    </button>
+
+                    <div class="text-center">
+                        <p class="text-purple-300 text-xs">
+                            By connecting, you agree to sign blockchain transactions
+                        </p>
+                    </div>
+                </div>
+
+                <div id="walletConnected" class="hidden space-y-4">
+                    <div class="bg-green-500/20 border border-green-500/50 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-green-400 font-bold">Connected</span>
+                            <i class="fas fa-check-circle text-green-400"></i>
+                        </div>
+                        <p class="text-white font-mono text-xs break-all" id="connectedAddress"></p>
+                        <p class="text-purple-300 text-xs mt-2">Balance: <span id="walletBalance">0</span> SOL</p>
+                    </div>
+
+                    <button onclick="showTransactionForm()"
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl">
+                        Continue to App
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Form (Hidden initially) -->
+        <div id="appScreen" class="hidden max-w-2xl mx-auto">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20 mb-6">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-white text-2xl font-bold">Submit Transaction</h2>
+                        <p class="text-purple-300 text-sm" id="userWallet"></p>
+                    </div>
+                    <button onclick="disconnectWallet()"
+                            class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Disconnect
+                    </button>
+                </div>
+
+                <form id="txForm" class="space-y-4">
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Batch ID</label>
+                        <input type="text" id="batchId" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white">
+                    </div>
+
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Weight (kg)</label>
+                        <input type="number" id="weight" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white">
+                    </div>
+
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Location</label>
+                        <select id="location" required
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white">
+                            <option value="">Select location...</option>
+                            <option value="RECYCLER HUB">Recycler Hub</option>
+                            <option value="CONSOLIDATION HUB">Consolidation Hub</option>
+                            <option value="SPINNING MILL">Spinning Mill</option>
+                            <option value="WEAVING UNIT">Weaving Unit</option>
+                            <option value="TEXTILE FACTORY">Textile Factory</option>
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-bold py-4 px-6 rounded-2xl">
+                        <i class="fas fa-cube mr-2"></i>Submit to Blockchain
+                    </button>
+                </form>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <h3 class="text-white text-xl font-bold mb-4">Recent Transactions</h3>
+                <div id="txHistory" class="space-y-3">
+                    <p class="text-purple-300 text-sm text-center py-4">No transactions yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mining Modal -->
+    <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-purple-600 p-6 rounded-full animate-pulse">
+                    <i class="fas fa-cubes text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Submitting to Solana</h3>
+            <p class="text-purple-300 text-sm mb-4">Please approve in your wallet...</p>
+            <div class="bg-purple-600/30 rounded-full h-2 overflow-hidden">
+                <div class="bg-purple-500 h-full w-3/4 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20 max-w-md w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-green-500 p-6 rounded-full">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Transaction Confirmed!</h3>
+            <p class="text-purple-300 text-sm mb-4" id="successMessage"></p>
+            <div class="bg-black/40 rounded-xl p-3 mb-4">
+                <p class="text-purple-400 text-xs mb-1">Signature</p>
+                <p class="text-white font-mono text-xs break-all" id="txSignature"></p>
+            </div>
+            <a id="explorerLink" href="#" target="_blank"
+               class="text-purple-400 hover:text-purple-300 text-sm underline mb-4 block">
+                <i class="fas fa-external-link-alt mr-1"></i>View on Solana Explorer
+            </a>
+            <button onclick="closeSuccessModal()"
+                    class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIGURATION ====================
+        const NETWORK = 'devnet'; // Change to 'mainnet-beta' for production
+        const SOLANA_CLUSTER = solanaWeb3.clusterApiUrl(NETWORK);
+
+        let connection;
+        let wallet = null;
+        let transactions = [];
+
+        // ==================== WALLET CONNECTION ====================
+        async function connectPhantom() {
+            // Check if Phantom is installed
+            if (!window.solana || !window.solana.isPhantom) {
+                document.getElementById('walletConnect').classList.add('hidden');
+                document.getElementById('walletNotInstalled').classList.remove('hidden');
+                return;
+            }
+
+            try {
+                // Connect to wallet
+                const response = await window.solana.connect();
+                wallet = response.publicKey;
+
+                // Initialize Solana connection
+                connection = new solanaWeb3.Connection(SOLANA_CLUSTER, 'confirmed');
+
+                // Get balance
+                const balance = await connection.getBalance(wallet);
+                const solBalance = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(4);
+
+                // Update UI
+                document.getElementById('connectedAddress').textContent = wallet.toString();
+                document.getElementById('walletBalance').textContent = solBalance;
+                document.getElementById('walletConnect').classList.add('hidden');
+                document.getElementById('walletConnected').classList.remove('hidden');
+
+                console.log('✅ Wallet connected:', wallet.toString());
+                console.log('Balance:', solBalance, 'SOL');
+
+            } catch (err) {
+                console.error('❌ Connection failed:', err);
+                alert('Failed to connect wallet. Please try again.');
+            }
+        }
+
+        function showTransactionForm() {
+            document.getElementById('walletScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('userWallet').textContent = wallet.toString();
+        }
+
+        function disconnectWallet() {
+            if (window.solana) {
+                window.solana.disconnect();
+            }
+            wallet = null;
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('walletScreen').classList.remove('hidden');
+            document.getElementById('walletConnect').classList.remove('hidden');
+            document.getElementById('walletConnected').classList.add('hidden');
+        }
+
+        // ==================== TRANSACTION SUBMISSION ====================
+        document.getElementById('txForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const batchId = document.getElementById('batchId').value;
+            const weight = document.getElementById('weight').value;
+            const location = document.getElementById('location').value;
+
+            // Prepare transaction data
+            const txData = {
+                batchId,
+                weight: `${weight} kg`,
+                location,
+                timestamp: new Date().toISOString(),
+                wallet: wallet.toString()
+            };
+
+            // Show mining modal
+            document.getElementById('miningModal').classList.remove('hidden');
+
+            try {
+                // Submit to Solana blockchain
+                const signature = await submitToSolana(txData);
+
+                // Hide mining modal
+                document.getElementById('miningModal').classList.add('hidden');
+
+                // Show success modal
+                document.getElementById('txSignature').textContent = signature;
+                document.getElementById('successMessage').textContent =
+                    `Transaction confirmed on Solana ${NETWORK}`;
+
+                const explorerUrl = NETWORK === 'devnet'
+                    ? `https://explorer.solana.com/tx/${signature}?cluster=devnet`
+                    : `https://explorer.solana.com/tx/${signature}`;
+                document.getElementById('explorerLink').href = explorerUrl;
+                document.getElementById('successModal').classList.remove('hidden');
+
+                // Add to history
+                transactions.unshift({
+                    signature,
+                    data: txData,
+                    time: new Date().toLocaleString()
+                });
+                updateTransactionHistory();
+
+                // Reset form
+                document.getElementById('txForm').reset();
+
+            } catch (error) {
+                console.error('❌ Transaction failed:', error);
+                document.getElementById('miningModal').classList.add('hidden');
+                alert('Transaction failed: ' + error.message);
+            }
+        });
+
+        async function submitToSolana(data) {
+            // Create hash of transaction data
+            const dataString = JSON.stringify(data);
+            const encoder = new TextEncoder();
+            const dataBuffer = encoder.encode(dataString);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+            console.log('📝 Transaction data hash:', hashHex);
+
+            // Create Solana transaction
+            const transaction = new solanaWeb3.Transaction();
+
+            // Add a minimal transfer (to self)
+            transaction.add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: wallet,
+                    toPubkey: wallet,
+                    lamports: 1000, // 0.000001 SOL
+                })
+            );
+
+            // Add memo with data hash
+            const memoInstruction = new solanaWeb3.TransactionInstruction({
+                keys: [],
+                programId: new solanaWeb3.PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+                data: Buffer.from(`VIBERLOOP:${hashHex.substring(0, 32)}`)
+            });
+            transaction.add(memoInstruction);
+
+            // Get recent blockhash
+            const { blockhash } = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = wallet;
+
+            // Sign and send transaction using Phantom
+            const signed = await window.solana.signTransaction(transaction);
+            const signature = await connection.sendRawTransaction(signed.serialize());
+
+            // Wait for confirmation
+            await connection.confirmTransaction(signature, 'confirmed');
+
+            console.log('✅ Transaction confirmed:', signature);
+            return signature;
+        }
+
+        function updateTransactionHistory() {
+            const container = document.getElementById('txHistory');
+
+            if (transactions.length === 0) {
+                container.innerHTML = '<p class="text-purple-300 text-sm text-center py-4">No transactions yet</p>';
+                return;
+            }
+
+            container.innerHTML = transactions.map(tx => `
+                <div class="bg-black/40 rounded-xl p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="text-white font-bold">${tx.data.batchId}</p>
+                            <p class="text-purple-300 text-xs">${tx.data.location}</p>
+                        </div>
+                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">
+                            <i class="fas fa-check mr-1"></i>Confirmed
+                        </span>
+                    </div>
+                    <p class="text-purple-400 text-xs font-mono break-all mb-2">${tx.signature.substring(0, 40)}...</p>
+                    <p class="text-purple-300 text-xs">${tx.time}</p>
+                </div>
+            `).join('');
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check if wallet is already connected
+            if (window.solana && window.solana.isConnected) {
+                connectPhantom();
+            }
+        });
+    </script>
+
+</body>
+</html>

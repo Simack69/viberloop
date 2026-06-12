@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>V2 Testnet - Testing Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e293b, #7e22ce, #1e293b);
+            color: white;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .badge {
+            display: inline-block;
+            background: #f97316;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            color: #c084fc;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.success { background: #22c55e; }
+        .status-dot.pending { background: #f59e0b; }
+        .status-dot.error { background: #ef4444; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .btn {
+            background: linear-gradient(135deg, #9333ea, #7e22ce);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(147,51,234,0.3); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .info { font-family: monospace; font-size: 12px; word-break: break-all; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin: 5px 0; }
+        .tx-list { max-height: 300px; overflow-y: auto; }
+        .tx-item {
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 3px solid #22c55e;
+        }
+        .tx-link { color: #60a5fa; text-decoration: none; }
+        .tx-link:hover { color: #93c5fd; }
+        .log-container {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry { margin: 3px 0; }
+        .log-success { color: #22c55e; }
+        .log-error { color: #ef4444; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 V2 Testing Dashboard <span class="badge">DEVNET</span></h1>
+            <p style="margin-top: 10px; opacity: 0.8;">Monitor Solana Devnet Integration & Test Transactions</p>
+        </div>
+
+        <div class="grid">
+            <!-- Solana Status -->
+            <div class="card">
+                <h3><i class="fas fa-link"></i> Solana Connection</h3>
+                <div class="status">
+                    <div id="solanaStatus" class="status-dot pending"></div>
+                    <span id="solanaStatusText">Initializing...</span>
+                </div>
+                <div class="info" id="walletAddress">Wallet: Generating...</div>
+                <div class="info" id="walletBalance">Balance: -- SOL</div>
+                <button class="btn" onclick="requestAirdrop()" id="airdropBtn">
+                    <i class="fas fa-faucet"></i> Request Airdrop (1 SOL)
+                </button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                <button class="btn" onclick="testTransaction()">
+                    <i class="fas fa-paper-plane"></i> Send Test Transaction
+                </button>
+                <button class="btn" onclick="window.open('http://localhost:8002/', '_blank')">
+                    <i class="fas fa-external-link-alt"></i> Open V2 App
+                </button>
+                <button class="btn" onclick="clearLogs()">
+                    <i class="fas fa-trash"></i> Clear Logs
+                </button>
+            </div>
+
+            <!-- Network Info -->
+            <div class="card">
+                <h3><i class="fas fa-network-wired"></i> Network Info</h3>
+                <div class="info">Network: Devnet</div>
+                <div class="info" id="clusterVersion">Version: --</div>
+                <div class="info" id="slotInfo">Current Slot: --</div>
+                <button class="btn" onclick="refreshNetworkInfo()">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card" style="margin-top: 20px;">
+            <h3><i class="fas fa-history"></i> Recent Test Transactions</h3>
+            <div class="tx-list" id="txList">
+                <p style="opacity: 0.6; text-align: center; padding: 20px;">No transactions yet. Send a test transaction to get started!</p>
+            </div>
+        </div>
+
+        <!-- Live Logs -->
+        <div class="card" style="margin-top: 20px;">
+            <h3><i class="fas fa-terminal"></i> Live Console Logs</h3>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry log-info">📋 Dashboard initialized</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let connection, keypair;
+        const transactions = [];
+
+        // Logging
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('logContainer').innerHTML = '<div class="log-entry log-info">📋 Logs cleared</div>';
+        }
+
+        // Initialize Solana
+        async function initSolana() {
+            try {
+                addLog('🔄 Connecting to Solana Devnet...', 'info');
+
+                connection = new solanaWeb3.Connection(
+                    solanaWeb3.clusterApiUrl('devnet'),
+                    'confirmed'
+                );
+
+                keypair = solanaWeb3.Keypair.generate();
+
+                document.getElementById('solanaStatus').className = 'status-dot success';
+                document.getElementById('solanaStatusText').textContent = 'Connected to Devnet';
+                document.getElementById('walletAddress').textContent = `Wallet: ${keypair.publicKey.toBase58()}`;
+
+                addLog('✅ Solana Devnet connected', 'success');
+                addLog(`🔑 Wallet: ${keypair.publicKey.toBase58()}`, 'info');
+
+                await updateBalance();
+                await refreshNetworkInfo();
+
+                // Auto-airdrop
+                addLog('💧 Requesting initial airdrop...', 'info');
+                await requestAirdrop();
+
+            } catch (error) {
+                addLog(`❌ Solana init error: ${error.message}`, 'error');
+                document.getElementById('solanaStatus').className = 'status-dot error';
+                document.getElementById('solanaStatusText').textContent = 'Connection Failed';
+            }
+        }
+
+        async function updateBalance() {
+            try {
+                const balance = await connection.getBalance(keypair.publicKey);
+                const sol = balance / solanaWeb3.LAMPORTS_PER_SOL;
+                document.getElementById('walletBalance').textContent = `Balance: ${sol.toFixed(4)} SOL`;
+                addLog(`💰 Balance: ${sol.toFixed(4)} SOL`, 'info');
+            } catch (error) {
+                addLog(`❌ Balance check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function requestAirdrop() {
+            const btn = document.getElementById('airdropBtn');
+            btn.disabled = true;
+            btn.textContent = 'Requesting...';
+
+            try {
+                addLog('💧 Requesting 1 SOL from devnet faucet...', 'warning');
+                const signature = await connection.requestAirdrop(
+                    keypair.publicKey,
+                    solanaWeb3.LAMPORTS_PER_SOL
+                );
+                addLog('⏳ Confirming airdrop...', 'info');
+                await connection.confirmTransaction(signature);
+                addLog('✅ Airdrop successful!', 'success');
+                await updateBalance();
+            } catch (error) {
+                addLog(`❌ Airdrop failed: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-faucet"></i> Request Airdrop (1 SOL)';
+            }
+        }
+
+        async function refreshNetworkInfo() {
+            try {
+                const version = await connection.getVersion();
+                const slot = await connection.getSlot();
+                document.getElementById('clusterVersion').textContent = `Version: ${version['solana-core']}`;
+                document.getElementById('slotInfo').textContent = `Current Slot: ${slot}`;
+                addLog(`📊 Network: v${version['solana-core']}, Slot: ${slot}`, 'info');
+            } catch (error) {
+                addLog(`❌ Network info error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testTransaction() {
+            try {
+                addLog('📡 Sending test transaction...', 'warning');
+
+                const memoData = JSON.stringify({
+                    app: 'Viberloop V2',
+                    test: true,
+                    timestamp: Date.now(),
+                    message: 'Test transaction from dashboard'
+                });
+
+                const transaction = new solanaWeb3.Transaction().add(
+                    new solanaWeb3.TransactionInstruction({
+                        keys: [{ pubkey: keypair.publicKey, isSigner: true, isWritable: true }],
+                        programId: new solanaWeb3.PublicKey('MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr'),
+                        data: Buffer.from(memoData, 'utf-8')
+                    })
+                );
+
+                const signature = await solanaWeb3.sendAndConfirmTransaction(
+                    connection,
+                    transaction,
+                    [keypair]
+                );
+
+                addLog(`✅ Transaction confirmed!`, 'success');
+                addLog(`🔗 Signature: ${signature}`, 'success');
+
+                // Add to transaction list
+                transactions.unshift({
+                    signature,
+                    timestamp: new Date(),
+                    memo: memoData
+                });
+
+                updateTransactionList();
+                await updateBalance();
+
+            } catch (error) {
+                addLog(`❌ Transaction failed: ${error.message}`, 'error');
+            }
+        }
+
+        function updateTransactionList() {
+            const list = document.getElementById('txList');
+            if (transactions.length === 0) {
+                list.innerHTML = '<p style="opacity: 0.6; text-align: center; padding: 20px;">No transactions yet.</p>';
+                return;
+            }
+
+            list.innerHTML = transactions.map((tx, i) => `
+                <div class="tx-item">
+                    <div><strong>Transaction #${transactions.length - i}</strong></div>
+                    <div style="font-size: 11px; opacity: 0.8; margin: 5px 0;">${tx.timestamp.toLocaleString()}</div>
+                    <div class="info" style="margin: 5px 0;">${tx.signature.substring(0, 40)}...</div>
+                    <a href="https://explorer.solana.com/tx/${tx.signature}?cluster=devnet"
+                       target="_blank"
+                       class="tx-link">
+                        <i class="fas fa-external-link-alt"></i> View on Explorer
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initSolana);
+    </script>
+</body>
+</html>

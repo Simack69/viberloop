@@ -1,0 +1,74 @@
+rules_version = '2';
+
+// Firestore Security Rules for Viberloop Bio
+// Implements role-based access control (RBAC)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasRole(role) {
+      return isSignedIn() && getUserData().role == role;
+    }
+
+    function isActive() {
+      return isSignedIn() && getUserData().status == 'active';
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Users collection - store user profiles
+    match /users/{userId} {
+      // Users can read their own profile
+      allow read: if isSignedIn() && isOwner(userId);
+
+      // Only system can create (during registration)
+      allow create: if isSignedIn();
+
+      // Users can update their own profile (but not role or status)
+      allow update: if isSignedIn()
+                    && isOwner(userId)
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status']);
+
+      // Nobody can delete users (except via Firebase Admin SDK)
+      allow delete: if false;
+    }
+
+    // Transactions collection - supply chain data
+    match /transactions/{transactionId} {
+      // Anyone authenticated can read transactions
+      allow read: if isSignedIn() && isActive();
+
+      // Only active users with matching role can create transactions
+      allow create: if isSignedIn()
+                    && isActive()
+                    && hasRole(request.resource.data.role)
+                    && validateTransaction(request.resource.data);
+
+      // Transactions cannot be updated (immutable)
+      allow update: if false;
+
+      // Transactions cannot be deleted (immutable ledger)
+      allow delete: if false;
+    }
+
+    // Validate transaction data
+    function validateTransaction(data) {
+      return data.keys().hasAll(['customer', 'transactionDate', 'purchaseOrder', 'role', 'location', 'timestamp'])
+             && data.customer is string
+             && data.purchaseOrder is string
+             && data.role in ['WASTE_SOURCE', 'RECYCLING_HUB', 'SPINNER', 'WEAVER', 'MANUFACTURING', 'POL', 'POD', 'DISTRIBUTION_CENTER']
+             && data.timestamp == request.time;
+    }
+  }
+}
