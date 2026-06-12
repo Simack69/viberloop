@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "transactions": {
+      ".read": true,
+      ".write": true,
+      ".indexOn": ["timestamp", "role", "customer", "purchaseOrder", "entryGroupId", "status"],
+      "$transactionId": {
+        ".validate": "newData.hasChildren(['customer', 'transactionDate', 'purchaseOrder', 'role', 'location'])",
+        "status": {
+          ".validate": "newData.val() === 'active' || newData.val() === 'superseded'"
+        },
+        "version": {
+          ".validate": "newData.isNumber() && newData.val() >= 1"
+        }
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['email', 'role', 'status'])",
+        "role": {
+          ".validate": "newData.val() === 'WASTE_SOURCE' || newData.val() === 'RECYCLING_HUB' || newData.val() === 'SPINNER' || newData.val() === 'WEAVER' || newData.val() === 'MANUFACTURING' || newData.val() === 'POL' || newData.val() === 'POD' || newData.val() === 'DISTRIBUTION_CENTER' || newData.val() === 'ADMIN' || newData.val() === 'PENDING'"
+        },
+        "status": {
+          ".validate": "newData.val() === 'active' || newData.val() === 'pending' || newData.val() === 'disabled'"
+        }
+      }
+    }
+  }
+}

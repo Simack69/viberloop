@@ -49,6 +49,26 @@
       {
         "source": "/photo-manager",
         "destination": "/photo-manager.html"
+      },
+      {
+        "source": "/v3",
+        "destination": "/v3/index.html"
+      },
+      {
+        "source": "/v3/dashboard",
+        "destination": "/v3/dashboard.html"
+      },
+      {
+        "source": "/v3/admin",
+        "destination": "/v3/admin.html"
+      },
+      {
+        "source": "/v3/passport",
+        "destination": "/v3/passport.html"
+      },
+      {
+        "source": "/v3/passport/**",
+        "destination": "/v3/passport.html"
       }
     ],
     "headers": [
