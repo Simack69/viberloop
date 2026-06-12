@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viberloop V3 - Admin Bootstrap</title>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="/__/firebase/init.js?useService=auth,database"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0f0a1e; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: rgba(255,255,255,0.08); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 40px; max-width: 480px; width: 100%; }
+        h1 { color: #fff; font-size: 22px; margin-bottom: 6px; }
+        .subtitle { color: #d8b4fe; font-size: 13px; margin-bottom: 28px; }
+        .warning { background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); border-radius: 12px; padding: 14px; margin-bottom: 24px; color: #fde68a; font-size: 13px; line-height: 1.5; }
+        .warning b { color: #fbbf24; }
+        label { display: block; color: #c4b5fd; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        input { width: 100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 14px; margin-bottom: 16px; outline: none; }
+        input:focus { border-color: #a855f7; box-shadow: 0 0 0 2px rgba(168,85,247,0.2); }
+        input::placeholder { color: rgba(216,180,254,0.4); }
+        .btn { width: 100%; background: linear-gradient(135deg, #9333ea, #7e22ce); color: #fff; font-weight: 700; font-size: 15px; padding: 14px; border: none; border-radius: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 8px; }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #log { margin-top: 20px; max-height: 220px; overflow-y: auto; }
+        .log-entry { padding: 8px 12px; border-radius: 8px; margin-bottom: 6px; font-size: 12px; font-family: monospace; line-height: 1.5; }
+        .log-info { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+        .log-success { background: rgba(34,197,94,0.15); color: #86efac; }
+        .log-error { background: rgba(239,68,68,0.15); color: #fca5a5; }
+        .steps { margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .steps h3 { color: #c4b5fd; font-size: 13px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .step { color: #94a3b8; font-size: 12px; padding: 4px 0; padding-left: 20px; position: relative; }
+        .step::before { content: ''; position: absolute; left: 4px; top: 10px; width: 8px; height: 8px; border-radius: 50%; background: #475569; }
+        .step.done::before { background: #22c55e; }
+        .step.active::before { background: #a855f7; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+        .done-banner { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); border-radius: 12px; padding: 16px; margin-top: 20px; text-align: center; }
+        .done-banner h3 { color: #86efac; font-size: 16px; margin-bottom: 6px; }
+        .done-banner p { color: #94a3b8; font-size: 13px; }
+        .done-banner a { color: #c4b5fd; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Viberloop V3 — Admin Bootstrap</h1>
+        <p class="subtitle">Create the first admin account to get started</p>
+
+        <div class="warning">
+            <b>One-time setup.</b> This creates a Firebase Auth user and writes the admin profile to the database. After setup, use the Admin Console to manage all other users. Delete this page from your deployment when done.
+        </div>
+
+        <form id="bootstrapForm" onsubmit="return bootstrap(event)">
+            <label>Admin Email</label>
+            <input type="email" id="email" required placeholder="admin@yourcompany.com">
+
+            <label>Display Name</label>
+            <input type="text" id="displayName" required placeholder="Your Name" minlength="2">
+
+            <label>Password (min 8 characters)</label>
+            <input type="password" id="password" required placeholder="Strong password" minlength="8">
+
+            <label>Confirm Password</label>
+            <input type="password" id="passwordConfirm" required placeholder="Repeat password" minlength="8">
+
+            <button type="submit" class="btn" id="submitBtn">Create Admin Account</button>
+        </form>
+
+        <div id="log"></div>
+        <div id="doneBanner" class="done-banner" style="display:none;"></div>
+    </div>
+
+    <script>
+        var auth = firebase.auth();
+        var database = firebase.database();
+
+        function addLog(message, type) {
+            var logDiv = document.getElementById('log');
+            var entry = document.createElement('div');
+            entry.className = 'log-entry log-' + type;
+            entry.textContent = message;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function bootstrap(e) {
+            e.preventDefault();
+
+            var email = document.getElementById('email').value.trim();
+            var displayName = document.getElementById('displayName').value.trim();
+            var password = document.getElementById('password').value;
+            var passwordConfirm = document.getElementById('passwordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                addLog('Passwords do not match.', 'error');
+                return false;
+            }
+
+            if (password.length < 8) {
+                addLog('Password must be at least 8 characters.', 'error');
+                return false;
+            }
+
+            var btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creating...';
+
+            try {
+                addLog('Step 1/4: Creating Firebase Auth user...', 'info');
+                var credential = await auth.createUserWithEmailAndPassword(email, password);
+                var uid = credential.user.uid;
+                addLog('Auth user created. UID: ' + uid, 'success');
+
+                addLog('Step 2/4: Setting display name...', 'info');
+                await credential.user.updateProfile({ displayName: displayName });
+                addLog('Display name set: ' + displayName, 'success');
+
+                addLog('Step 3/4: Writing admin profile to /users/' + uid + '...', 'info');
+                await database.ref('users/' + uid).set({
+                    email: email,
+                    displayName: displayName,
+                    role: 'ADMIN',
+                    status: 'active',
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastLoginAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                addLog('Admin profile written to database.', 'success');
+
+                addLog('Step 4/4: Verifying profile...', 'info');
+                var snapshot = await database.ref('users/' + uid).once('value');
+                var profile = snapshot.val();
+                if (profile && profile.role === 'ADMIN' && profile.status === 'active') {
+                    addLog('Verification passed. Admin account is ready.', 'success');
+                } else {
+                    addLog('Warning: Profile verification returned unexpected data.', 'error');
+                }
+
+                await auth.signOut();
+
+                var banner = document.getElementById('doneBanner');
+                var h3 = document.createElement('h3');
+                h3.textContent = 'Admin account created successfully!';
+                var p1 = document.createElement('p');
+                p1.textContent = 'Email: ' + email + ' | Role: ADMIN | Status: active';
+                var p2 = document.createElement('p');
+                p2.style.marginTop = '8px';
+                p2.textContent = 'You can now log in to the V3 app: ';
+                var link = document.createElement('a');
+                link.href = '/v3/';
+                link.textContent = 'Go to Viberloop V3';
+                p2.appendChild(link);
+                var p3 = document.createElement('p');
+                p3.style.marginTop = '12px';
+                p3.style.fontSize = '11px';
+                p3.style.color = '#fde68a';
+                p3.textContent = 'Remember to delete this bootstrap page from your deployment.';
+                banner.appendChild(h3);
+                banner.appendChild(p1);
+                banner.appendChild(p2);
+                banner.appendChild(p3);
+                banner.style.display = 'block';
+
+                document.getElementById('bootstrapForm').style.display = 'none';
+
+            } catch (err) {
+                addLog('Error: ' + err.message, 'error');
+                if (err.code === 'auth/email-already-in-use') {
+                    addLog('This email already has a Firebase Auth account. If you need to make it admin, use the Firebase Console to find the UID, then manually set /users/{uid}/role to ADMIN.', 'info');
+                }
+                btn.disabled = false;
+                btn.textContent = 'Create Admin Account';
+            }
+
+            return false;
+        }
+    </script>
+</body>
+</html>
