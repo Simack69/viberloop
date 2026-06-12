@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Viberloop Bio - Admin Console (V3)</title>
+
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        body { -webkit-tap-highlight-color: transparent; }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table { min-width: 600px; }
+
+        .bar-chart-bar {
+            transition: width 0.6s ease;
+            min-width: 2px;
+        }
+
+        .version-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .version-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(147, 51, 234, 0.4);
+        }
+
+        .version-node {
+            position: relative;
+        }
+
+        .version-node::before {
+            content: '';
+            position: absolute;
+            left: -1.625rem;
+            top: 1.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #9333ea;
+            background: #1e1b4b;
+        }
+
+        .version-node.active-version::before {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        .version-node.superseded-version::before {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+
+        .diff-old {
+            text-decoration: line-through;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        .diff-new {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+            padding: 0 0.25rem;
+            border-radius: 0.25rem;
+        }
+
+        select option { background: #1e1b4b; color: #fff; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <div id="accessDenied" class="hidden fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center z-50">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-md w-full mx-4 text-center">
+            <i class="fas fa-shield-alt text-red-400 text-5xl mb-4"></i>
+            <h2 class="text-white text-2xl font-bold mb-2">Access Denied</h2>
+            <p class="text-purple-300 mb-6">You do not have administrator privileges.</p>
+            <p class="text-purple-400 text-sm">Redirecting...</p>
+        </div>
+    </div>
+
+    <div id="loadingScreen" class="fixed inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center z-40">
+        <div class="text-center">
+            <i class="fas fa-spinner fa-spin text-purple-400 text-4xl mb-4"></i>
+            <div class="text-purple-300">Authenticating...</div>
+        </div>
+    </div>
+
+    <div id="mainContent" class="hidden min-h-screen p-4 pb-24">
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-white text-3xl font-black uppercase tracking-widest">Admin Console</h1>
+                    <p class="text-purple-300 text-sm">System Administration &mdash; V3</p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/v3/" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Total Users</div>
+                    <div class="text-white text-2xl font-black" id="statTotalUsers">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Active Users</div>
+                    <div class="text-white text-2xl font-black" id="statActiveUsers">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Pending Users</div>
+                    <div class="text-white text-2xl font-black" id="statPendingUsers">0</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20">
+                    <div class="text-purple-300 text-xs uppercase font-bold mb-1">Active Transactions</div>
+                    <div class="text-white text-2xl font-black" id="statActiveTransactions">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-6 flex gap-2 overflow-x-auto">
+            <button onclick="switchTab('users')" id="tabUsers" class="tab-btn bg-purple-600 text-white px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-users mr-2"></i>User Management
+            </button>
+            <button onclick="switchTab('audit')" id="tabAudit" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-history mr-2"></i>Audit Trail
+            </button>
+            <button onclick="switchTab('analytics')" id="tabAnalytics" class="tab-btn bg-white/10 text-purple-300 px-6 py-3 rounded-xl font-bold whitespace-nowrap">
+                <i class="fas fa-chart-bar mr-2"></i>Analytics
+            </button>
+        </div>
+
+        <!-- User Management Tab -->
+        <div id="usersTab" class="tab-content">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-white text-xl font-bold flex items-center">
+                        <i class="fas fa-users-cog mr-3 text-purple-400"></i>
+                        User Management
+                    </h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="userSearchInput" placeholder="Search email or role..."
+                               class="bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               oninput="filterUsers()">
+                        <select id="userRoleFilter" onchange="filterUsers()"
+                                class="bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">All Roles</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-purple-500/30">
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Email</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Display Name</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Role</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Status</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Created</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Last Login</th>
+                                <th class="text-left text-purple-300 font-bold py-3 px-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <tr>
+                                <td colspan="7" class="text-center text-purple-300 py-8">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <div>Loading users...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Trail Tab -->
+        <div id="auditTab" class="tab-content hidden">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                    <h2 class="text-white text-xl font-bold flex items-center">
+                        <i class="fas fa-history mr-3 text-purple-400"></i>
+                        Transaction Version History
+                    </h2>
+                    <div class="flex gap-2">
+                        <input type="text" id="auditSearchInput" placeholder="Search by Purchase Order or Group ID..."
+                               class="bg-white/10 border border-purple-400/30 rounded-xl px-4 py-2 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500 w-72">
+                        <button onclick="searchAuditTrail()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="auditResults">
+                    <div class="text-center text-purple-300 py-12">
+                        <i class="fas fa-search text-4xl mb-3"></i>
+                        <div class="text-lg mb-1">Search for a Purchase Order or Entry Group ID</div>
+                        <div class="text-sm text-purple-400">View the complete version history including corrections and superseded entries</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content hidden">
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-2">Active Transactions</div>
+                        <div class="text-white text-3xl font-black" id="metricActiveTransactions">0</div>
+                        <div class="text-purple-400 text-xs mt-1">Excludes superseded entries</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-2">Correction Rate</div>
+                        <div class="text-white text-3xl font-black" id="metricCorrectionRate">0%</div>
+                        <div class="text-purple-400 text-xs mt-1">Corrections / Total Entry Groups</div>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
+                        <div class="text-purple-300 text-xs uppercase font-bold mb-2">Total Entry Groups</div>
+                        <div class="text-white text-3xl font-black" id="metricEntryGroups">0</div>
+                        <div class="text-purple-400 text-xs mt-1">Unique entry group chains</div>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                    <h3 class="text-white text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-layer-group mr-3 text-purple-400"></i>
+                        Transactions per Role
+                    </h3>
+                    <div id="chartRoles" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                    <h3 class="text-white text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-calendar-alt mr-3 text-purple-400"></i>
+                        Transactions per Day (Last 7 Days)
+                    </h3>
+                    <div id="chartDays" class="space-y-3"></div>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+                    <h3 class="text-white text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-user-edit mr-3 text-purple-400"></i>
+                        Top Correctors
+                    </h3>
+                    <div class="text-purple-400 text-xs mb-4">Users who make the most corrections — may indicate training needs</div>
+                    <div id="chartCorrectors" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/__/firebase/init.js?useService=database,storage,auth"></script>
+    <script src="auth.js"></script>
+    <script>
+        var database;
+        var allUsers = [];
+        var filteredUsers = [];
+        var allTransactions = [];
+        var ROLES = ViberloopAuth.VALID_ROLES;
+
+        var app = firebase.app();
+        database = firebase.database();
+
+        ViberloopAuth.init(app).then(function() {
+            ViberloopAuth.requireAuth(function(user) {
+                if (!ViberloopAuth.isAdmin()) {
+                    document.getElementById('loadingScreen').classList.add('hidden');
+                    document.getElementById('accessDenied').classList.remove('hidden');
+                    setTimeout(function() { window.location.href = 'login.html'; }, 2500);
+                    return;
+                }
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.remove('hidden');
+                startListeners();
+            });
+        });
+
+        function handleLogout() {
+            ViberloopAuth.logout().then(function() {
+                window.location.href = 'login.html';
+            });
+        }
+
+        // ==================== TAB SWITCHING ====================
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.add('hidden'); });
+            document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('bg-white/10', 'text-purple-300');
+            });
+
+            var tabEl = document.getElementById(tabName + 'Tab');
+            var btnEl = document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1));
+            if (tabEl) tabEl.classList.remove('hidden');
+            if (btnEl) {
+                btnEl.classList.add('bg-purple-600', 'text-white');
+                btnEl.classList.remove('bg-white/10', 'text-purple-300');
+            }
+
+            if (tabName === 'analytics') renderAnalytics();
+        }
+
+        // ==================== REAL-TIME LISTENERS ====================
+
+        function startListeners() {
+            database.ref('users').on('value', function(snapshot) {
+                allUsers = [];
+                snapshot.forEach(function(child) {
+                    allUsers.push({ uid: child.key, data: child.val() });
+                });
+                filteredUsers = allUsers.slice();
+                renderUsers();
+                updateUserStats();
+                populateRoleFilter();
+            });
+
+            database.ref('transactions').on('value', function(snapshot) {
+                allTransactions = [];
+                snapshot.forEach(function(child) {
+                    allTransactions.push({ key: child.key, data: child.val() });
+                });
+                allTransactions.sort(function(a, b) {
+                    return (b.data.timestamp || 0) - (a.data.timestamp || 0);
+                });
+                updateTransactionStats();
+            });
+        }
+
+        // ==================== USER STATS ====================
+
+        function updateUserStats() {
+            var total = allUsers.length;
+            var active = 0;
+            var pending = 0;
+            allUsers.forEach(function(u) {
+                if (u.data.status === 'active') active++;
+                if (u.data.status === 'pending') pending++;
+            });
+            document.getElementById('statTotalUsers').textContent = total;
+            document.getElementById('statActiveUsers').textContent = active;
+            document.getElementById('statPendingUsers').textContent = pending;
+        }
+
+        function updateTransactionStats() {
+            var activeCount = 0;
+            allTransactions.forEach(function(tx) {
+                if (tx.data.status !== 'superseded') activeCount++;
+            });
+            document.getElementById('statActiveTransactions').textContent = activeCount;
+        }
+
+        // ==================== USER MANAGEMENT ====================
+
+        function populateRoleFilter() {
+            var select = document.getElementById('userRoleFilter');
+            var current = select.value;
+            select.innerHTML = '<option value="">All Roles</option>';
+            ROLES.forEach(function(role) {
+                var opt = document.createElement('option');
+                opt.value = role;
+                opt.textContent = role.replace(/_/g, ' ');
+                select.appendChild(opt);
+            });
+            var pendingOpt = document.createElement('option');
+            pendingOpt.value = 'PENDING';
+            pendingOpt.textContent = 'PENDING';
+            select.appendChild(pendingOpt);
+            select.value = current;
+        }
+
+        function filterUsers() {
+            var search = document.getElementById('userSearchInput').value.toLowerCase();
+            var roleFilter = document.getElementById('userRoleFilter').value;
+
+            filteredUsers = allUsers.filter(function(u) {
+                var matchesSearch = !search ||
+                    (u.data.email || '').toLowerCase().indexOf(search) !== -1 ||
+                    (u.data.role || '').toLowerCase().indexOf(search) !== -1 ||
+                    (u.data.displayName || '').toLowerCase().indexOf(search) !== -1;
+                var matchesRole = !roleFilter || u.data.role === roleFilter;
+                return matchesSearch && matchesRole;
+            });
+            renderUsers();
+        }
+
+        function formatTimestamp(ts) {
+            if (!ts) return 'N/A';
+            var d = new Date(ts);
+            return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function renderUsers() {
+            var tbody = document.getElementById('usersBody');
+            tbody.innerHTML = '';
+
+            if (filteredUsers.length === 0) {
+                var emptyRow = document.createElement('tr');
+                var emptyCell = document.createElement('td');
+                emptyCell.setAttribute('colspan', '7');
+                emptyCell.className = 'text-center text-purple-300 py-8';
+                emptyCell.textContent = 'No users found';
+                emptyRow.appendChild(emptyCell);
+                tbody.appendChild(emptyRow);
+                return;
+            }
+
+            filteredUsers.forEach(function(user) {
+                var tr = document.createElement('tr');
+                tr.className = 'border-b border-purple-500/20 hover:bg-white/5 transition';
+
+                var tdEmail = document.createElement('td');
+                tdEmail.className = 'py-3 px-2 text-white text-sm';
+                tdEmail.textContent = user.data.email || 'N/A';
+
+                var tdName = document.createElement('td');
+                tdName.className = 'py-3 px-2 text-purple-300 text-sm';
+                tdName.textContent = user.data.displayName || 'N/A';
+
+                var tdRole = document.createElement('td');
+                tdRole.className = 'py-3 px-2';
+                var roleBadge = document.createElement('span');
+                roleBadge.className = 'px-2 py-1 rounded text-white text-xs ' +
+                    (user.data.role === 'ADMIN' ? 'bg-red-600' :
+                     user.data.role === 'PENDING' ? 'bg-yellow-600' : 'bg-purple-600');
+                roleBadge.textContent = (user.data.role || 'PENDING').replace(/_/g, ' ');
+                tdRole.appendChild(roleBadge);
+
+                var tdStatus = document.createElement('td');
+                tdStatus.className = 'py-3 px-2';
+                var statusBadge = document.createElement('span');
+                statusBadge.className = 'px-2 py-1 rounded text-white text-xs ' +
+                    (user.data.status === 'active' ? 'bg-green-600' :
+                     user.data.status === 'disabled' ? 'bg-red-600' : 'bg-yellow-600');
+                statusBadge.textContent = user.data.status || 'pending';
+                tdStatus.appendChild(statusBadge);
+
+                var tdCreated = document.createElement('td');
+                tdCreated.className = 'py-3 px-2 text-purple-300 text-xs';
+                tdCreated.textContent = formatTimestamp(user.data.createdAt);
+
+                var tdLastLogin = document.createElement('td');
+                tdLastLogin.className = 'py-3 px-2 text-purple-300 text-xs';
+                tdLastLogin.textContent = formatTimestamp(user.data.lastLoginAt);
+
+                var tdActions = document.createElement('td');
+                tdActions.className = 'py-3 px-2';
+                var actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex gap-2 items-center';
+
+                var roleSelect = document.createElement('select');
+                roleSelect.className = 'bg-white/10 border border-purple-400/30 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-purple-500';
+                roleSelect.setAttribute('data-uid', user.uid);
+
+                ROLES.forEach(function(role) {
+                    var opt = document.createElement('option');
+                    opt.value = role;
+                    opt.textContent = role.replace(/_/g, ' ');
+                    if (user.data.role === role) opt.selected = true;
+                    roleSelect.appendChild(opt);
+                });
+
+                roleSelect.addEventListener('change', function() {
+                    var uid = this.getAttribute('data-uid');
+                    var newRole = this.value;
+                    assignRole(uid, newRole);
+                });
+
+                var toggleBtn = document.createElement('button');
+                var isActive = user.data.status === 'active';
+                toggleBtn.className = 'px-3 py-1 rounded-lg text-xs text-white ' +
+                    (isActive ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700');
+                toggleBtn.textContent = isActive ? 'Disable' : 'Activate';
+                toggleBtn.setAttribute('data-uid', user.uid);
+                toggleBtn.setAttribute('data-status', isActive ? 'disabled' : 'active');
+                toggleBtn.addEventListener('click', function() {
+                    var uid = this.getAttribute('data-uid');
+                    var newStatus = this.getAttribute('data-status');
+                    toggleUserStatus(uid, newStatus);
+                });
+
+                actionsDiv.appendChild(roleSelect);
+                actionsDiv.appendChild(toggleBtn);
+                tdActions.appendChild(actionsDiv);
+
+                tr.appendChild(tdEmail);
+                tr.appendChild(tdName);
+                tr.appendChild(tdRole);
+                tr.appendChild(tdStatus);
+                tr.appendChild(tdCreated);
+                tr.appendChild(tdLastLogin);
+                tr.appendChild(tdActions);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function assignRole(uid, role) {
+            database.ref('users/' + uid).update({ role: role }).then(function() {
+                showToast('Role updated to ' + role.replace(/_/g, ' '));
+            }).catch(function(err) {
+                showToast('Error: ' + err.message, true);
+            });
+        }
+
+        function toggleUserStatus(uid, newStatus) {
+            database.ref('users/' + uid).update({ status: newStatus }).then(function() {
+                showToast('User ' + (newStatus === 'active' ? 'activated' : 'disabled'));
+            }).catch(function(err) {
+                showToast('Error: ' + err.message, true);
+            });
+        }
+
+        // ==================== AUDIT TRAIL ====================
+
+        function searchAuditTrail() {
+            var query = document.getElementById('auditSearchInput').value.trim();
+            var container = document.getElementById('auditResults');
+
+            if (!query) {
+                container.innerHTML = '';
+                var emptyDiv = document.createElement('div');
+                emptyDiv.className = 'text-center text-purple-300 py-12';
+                emptyDiv.innerHTML = '<i class="fas fa-search text-4xl mb-3"></i>';
+                var titleP = document.createElement('div');
+                titleP.className = 'text-lg mb-1';
+                titleP.textContent = 'Search for a Purchase Order or Entry Group ID';
+                var subtitleP = document.createElement('div');
+                subtitleP.className = 'text-sm text-purple-400';
+                subtitleP.textContent = 'View the complete version history including corrections and superseded entries';
+                emptyDiv.appendChild(titleP);
+                emptyDiv.appendChild(subtitleP);
+                container.appendChild(emptyDiv);
+                return;
+            }
+
+            var queryLower = query.toLowerCase();
+            var matched = allTransactions.filter(function(tx) {
+                return (tx.data.purchaseOrder || '').toLowerCase().indexOf(queryLower) !== -1 ||
+                       (tx.data.entryGroupId || '').toLowerCase().indexOf(queryLower) !== -1;
+            });
+
+            if (matched.length === 0) {
+                container.innerHTML = '';
+                var noResults = document.createElement('div');
+                noResults.className = 'text-center text-purple-300 py-12';
+                var icon = document.createElement('i');
+                icon.className = 'fas fa-exclamation-circle text-4xl mb-3 text-red-400';
+                noResults.appendChild(icon);
+                var msg = document.createElement('div');
+                msg.textContent = 'No transactions found for "' + query + '"';
+                noResults.appendChild(msg);
+                container.appendChild(noResults);
+                return;
+            }
+
+            var purchaseOrders = {};
+            matched.forEach(function(tx) {
+                var po = tx.data.purchaseOrder || 'Unknown PO';
+                if (!purchaseOrders[po]) purchaseOrders[po] = [];
+                purchaseOrders[po].push(tx);
+            });
+
+            container.innerHTML = '';
+
+            Object.keys(purchaseOrders).sort().forEach(function(po) {
+                var poTransactions = purchaseOrders[po];
+
+                var groups = {};
+                poTransactions.forEach(function(tx) {
+                    var groupId = tx.data.entryGroupId || tx.key;
+                    if (!groups[groupId]) groups[groupId] = [];
+                    groups[groupId].push(tx);
+                });
+
+                var poSection = document.createElement('div');
+                poSection.className = 'mb-8';
+
+                var poHeader = document.createElement('div');
+                poHeader.className = 'flex items-center gap-3 mb-4';
+                var poIcon = document.createElement('i');
+                poIcon.className = 'fas fa-file-invoice text-purple-400 text-xl';
+                poHeader.appendChild(poIcon);
+                var poTitle = document.createElement('h3');
+                poTitle.className = 'text-white text-lg font-bold';
+                poTitle.textContent = 'Purchase Order: ' + po;
+                poHeader.appendChild(poTitle);
+                var poCount = document.createElement('span');
+                poCount.className = 'bg-purple-600 px-2 py-1 rounded text-white text-xs';
+                poCount.textContent = Object.keys(groups).length + ' group(s)';
+                poHeader.appendChild(poCount);
+                poSection.appendChild(poHeader);
+
+                Object.keys(groups).forEach(function(groupId) {
+                    var versions = groups[groupId].slice();
+                    versions.sort(function(a, b) {
+                        return (a.data.version || 1) - (b.data.version || 1);
+                    });
+
+                    var groupCard = document.createElement('div');
+                    groupCard.className = 'bg-black/30 rounded-2xl p-6 border border-purple-500/30 mb-4';
+
+                    var groupHeader = document.createElement('div');
+                    groupHeader.className = 'flex items-center justify-between mb-4';
+                    var groupLabel = document.createElement('div');
+                    groupLabel.className = 'text-purple-300 text-sm';
+                    var groupLabelStrong = document.createElement('span');
+                    groupLabelStrong.className = 'text-white font-bold';
+                    groupLabelStrong.textContent = 'Entry Group: ';
+                    groupLabel.appendChild(groupLabelStrong);
+                    var groupIdSpan = document.createElement('span');
+                    groupIdSpan.className = 'font-mono text-xs';
+                    groupIdSpan.textContent = groupId;
+                    groupLabel.appendChild(groupIdSpan);
+                    groupHeader.appendChild(groupLabel);
+
+                    var versionCount = document.createElement('span');
+                    versionCount.className = 'text-purple-400 text-xs';
+                    versionCount.textContent = versions.length + ' version(s)';
+                    groupHeader.appendChild(versionCount);
+                    groupCard.appendChild(groupHeader);
+
+                    var timeline = document.createElement('div');
+                    timeline.className = 'version-timeline';
+
+                    versions.forEach(function(tx, idx) {
+                        var version = tx.data.version || 1;
+                        var isActive = tx.data.status !== 'superseded';
+                        var isCorrection = version > 1;
+
+                        var node = document.createElement('div');
+                        node.className = 'version-node mb-6 ' + (isActive ? 'active-version' : 'superseded-version');
+
+                        var nodeHeader = document.createElement('div');
+                        nodeHeader.className = 'flex items-center gap-3 mb-3';
+
+                        var versionLabel = document.createElement('span');
+                        versionLabel.className = 'text-white font-bold';
+                        versionLabel.textContent = 'Version ' + version;
+                        nodeHeader.appendChild(versionLabel);
+
+                        if (isCorrection) {
+                            var corrBadge = document.createElement('span');
+                            corrBadge.className = 'bg-yellow-600 px-2 py-0.5 rounded text-white text-xs';
+                            corrBadge.textContent = 'CORRECTION';
+                            nodeHeader.appendChild(corrBadge);
+                        }
+
+                        var statusBadge = document.createElement('span');
+                        statusBadge.className = 'px-2 py-0.5 rounded text-white text-xs ' +
+                            (isActive ? 'bg-green-600' : 'bg-red-600');
+                        statusBadge.textContent = isActive ? 'ACTIVE' : 'SUPERSEDED';
+                        nodeHeader.appendChild(statusBadge);
+
+                        node.appendChild(nodeHeader);
+
+                        if (isCorrection && tx.data.correctionReason) {
+                            var reasonDiv = document.createElement('div');
+                            reasonDiv.className = 'bg-yellow-600/20 border border-yellow-600/30 rounded-lg px-3 py-2 mb-3';
+                            var reasonIcon = document.createElement('i');
+                            reasonIcon.className = 'fas fa-comment-alt text-yellow-400 mr-2';
+                            reasonDiv.appendChild(reasonIcon);
+                            var reasonLabel = document.createElement('span');
+                            reasonLabel.className = 'text-yellow-300 text-xs font-bold';
+                            reasonLabel.textContent = 'Reason: ';
+                            reasonDiv.appendChild(reasonLabel);
+                            var reasonText = document.createElement('span');
+                            reasonText.className = 'text-yellow-200 text-xs';
+                            reasonText.textContent = tx.data.correctionReason;
+                            reasonDiv.appendChild(reasonText);
+                            node.appendChild(reasonDiv);
+                        }
+
+                        var fieldsGrid = document.createElement('div');
+                        fieldsGrid.className = 'grid grid-cols-2 md:grid-cols-4 gap-2 text-xs';
+
+                        var displayFields = [
+                            { key: 'customer', label: 'Customer' },
+                            { key: 'transactionDate', label: 'Date' },
+                            { key: 'role', label: 'Role' },
+                            { key: 'location', label: 'Location' },
+                            { key: 'transactionType', label: 'Type' },
+                            { key: 'netWeight', label: 'Weight (kg)' },
+                            { key: 'materialType', label: 'Material' },
+                            { key: 'nxReference', label: 'NX Reference' },
+                            { key: 'packingList', label: 'Packing List' }
+                        ];
+
+                        var prevVersion = idx > 0 ? versions[idx - 1].data : null;
+
+                        displayFields.forEach(function(field) {
+                            var fieldDiv = document.createElement('div');
+                            fieldDiv.className = 'bg-black/20 rounded-lg p-2';
+
+                            var fieldLabel = document.createElement('div');
+                            fieldLabel.className = 'text-purple-400 uppercase mb-1';
+                            fieldLabel.style.fontSize = '10px';
+                            fieldLabel.textContent = field.label;
+                            fieldDiv.appendChild(fieldLabel);
+
+                            var currentVal = String(tx.data[field.key] || 'N/A');
+                            var changed = isCorrection && prevVersion &&
+                                String(prevVersion[field.key] || 'N/A') !== currentVal;
+
+                            if (changed) {
+                                var oldSpan = document.createElement('span');
+                                oldSpan.className = 'diff-old';
+                                oldSpan.textContent = String(prevVersion[field.key] || 'N/A');
+                                fieldDiv.appendChild(oldSpan);
+
+                                fieldDiv.appendChild(document.createTextNode(' '));
+
+                                var newSpan = document.createElement('span');
+                                newSpan.className = 'diff-new';
+                                newSpan.textContent = currentVal;
+                                fieldDiv.appendChild(newSpan);
+                            } else {
+                                var valueSpan = document.createElement('span');
+                                valueSpan.className = 'text-white';
+                                valueSpan.textContent = currentVal;
+                                fieldDiv.appendChild(valueSpan);
+                            }
+
+                            fieldsGrid.appendChild(fieldDiv);
+                        });
+
+                        var metaDiv = document.createElement('div');
+                        metaDiv.className = 'bg-black/20 rounded-lg p-2';
+                        var metaLabel = document.createElement('div');
+                        metaLabel.className = 'text-purple-400 uppercase mb-1';
+                        metaLabel.style.fontSize = '10px';
+                        metaLabel.textContent = 'Created By';
+                        metaDiv.appendChild(metaLabel);
+                        var metaValue = document.createElement('span');
+                        metaValue.className = 'text-white';
+                        metaValue.textContent = tx.data.createdByEmail || 'N/A';
+                        metaDiv.appendChild(metaValue);
+                        fieldsGrid.appendChild(metaDiv);
+
+                        var tsDiv = document.createElement('div');
+                        tsDiv.className = 'bg-black/20 rounded-lg p-2';
+                        var tsLabel = document.createElement('div');
+                        tsLabel.className = 'text-purple-400 uppercase mb-1';
+                        tsLabel.style.fontSize = '10px';
+                        tsLabel.textContent = 'Timestamp';
+                        tsDiv.appendChild(tsLabel);
+                        var tsValue = document.createElement('span');
+                        tsValue.className = 'text-white';
+                        tsValue.textContent = formatTimestamp(tx.data.timestamp);
+                        tsDiv.appendChild(tsValue);
+                        fieldsGrid.appendChild(tsDiv);
+
+                        node.appendChild(fieldsGrid);
+                        timeline.appendChild(node);
+
+                        if (idx < versions.length - 1) {
+                            var arrow = document.createElement('div');
+                            arrow.className = 'flex items-center gap-2 mb-4 text-purple-400 text-xs';
+                            var arrowIcon = document.createElement('i');
+                            arrowIcon.className = 'fas fa-arrow-down';
+                            arrow.appendChild(arrowIcon);
+                            var arrowText = document.createElement('span');
+                            arrowText.textContent = 'Superseded by Version ' + ((versions[idx + 1].data.version) || (version + 1));
+                            arrow.appendChild(arrowText);
+                            timeline.appendChild(arrow);
+                        }
+                    });
+
+                    groupCard.appendChild(timeline);
+                    poSection.appendChild(groupCard);
+                });
+
+                container.appendChild(poSection);
+            });
+        }
+
+        document.getElementById('auditSearchInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') searchAuditTrail();
+        });
+
+        // ==================== ANALYTICS ====================
+
+        function renderAnalytics() {
+            var activeTx = [];
+            var corrections = [];
+            var entryGroups = {};
+
+            allTransactions.forEach(function(tx) {
+                var groupId = tx.data.entryGroupId || tx.key;
+                if (!entryGroups[groupId]) entryGroups[groupId] = [];
+                entryGroups[groupId].push(tx);
+
+                if (tx.data.status !== 'superseded') {
+                    activeTx.push(tx);
+                }
+                if ((tx.data.version || 1) > 1) {
+                    corrections.push(tx);
+                }
+            });
+
+            var totalGroups = Object.keys(entryGroups).length;
+            var groupsWithCorrections = 0;
+            Object.keys(entryGroups).forEach(function(gid) {
+                var hasCorrection = entryGroups[gid].some(function(tx) {
+                    return (tx.data.version || 1) > 1;
+                });
+                if (hasCorrection) groupsWithCorrections++;
+            });
+
+            var correctionRate = totalGroups > 0 ? ((groupsWithCorrections / totalGroups) * 100).toFixed(1) : '0.0';
+
+            document.getElementById('metricActiveTransactions').textContent = activeTx.length;
+            document.getElementById('metricCorrectionRate').textContent = correctionRate + '%';
+            document.getElementById('metricEntryGroups').textContent = totalGroups;
+
+            renderRoleChart(activeTx);
+            renderDaysChart(activeTx);
+            renderCorrectorsChart(corrections);
+        }
+
+        function renderBarChart(container, items) {
+            container.innerHTML = '';
+            if (items.length === 0) {
+                var empty = document.createElement('div');
+                empty.className = 'text-purple-400 text-sm text-center py-4';
+                empty.textContent = 'No data available';
+                container.appendChild(empty);
+                return;
+            }
+
+            var maxVal = 0;
+            items.forEach(function(item) { if (item.value > maxVal) maxVal = item.value; });
+
+            items.forEach(function(item) {
+                var row = document.createElement('div');
+                row.className = 'flex items-center gap-3';
+
+                var label = document.createElement('div');
+                label.className = 'text-purple-300 text-xs w-36 text-right shrink-0 truncate';
+                label.textContent = item.label;
+                label.title = item.label;
+
+                var barContainer = document.createElement('div');
+                barContainer.className = 'flex-1 bg-black/30 rounded-full h-6 overflow-hidden';
+
+                var bar = document.createElement('div');
+                var pct = maxVal > 0 ? (item.value / maxVal) * 100 : 0;
+                bar.className = 'bar-chart-bar h-full rounded-full bg-gradient-to-r from-purple-600 to-purple-400';
+                bar.style.width = pct + '%';
+
+                barContainer.appendChild(bar);
+
+                var count = document.createElement('div');
+                count.className = 'text-white text-xs font-bold w-12 text-right shrink-0';
+                count.textContent = item.value;
+
+                row.appendChild(label);
+                row.appendChild(barContainer);
+                row.appendChild(count);
+                container.appendChild(row);
+            });
+        }
+
+        function renderRoleChart(activeTx) {
+            var roleCounts = {};
+            activeTx.forEach(function(tx) {
+                var role = tx.data.role || 'Unknown';
+                roleCounts[role] = (roleCounts[role] || 0) + 1;
+            });
+
+            var items = Object.keys(roleCounts).sort().map(function(role) {
+                return { label: role.replace(/_/g, ' '), value: roleCounts[role] };
+            });
+
+            renderBarChart(document.getElementById('chartRoles'), items);
+        }
+
+        function renderDaysChart(activeTx) {
+            var days = [];
+            for (var i = 6; i >= 0; i--) {
+                var d = new Date();
+                d.setHours(0, 0, 0, 0);
+                d.setDate(d.getDate() - i);
+                days.push({
+                    date: d,
+                    key: d.toISOString().split('T')[0],
+                    label: d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+                });
+            }
+
+            var dayCounts = {};
+            days.forEach(function(day) { dayCounts[day.key] = 0; });
+
+            activeTx.forEach(function(tx) {
+                var ts = tx.data.timestamp;
+                if (!ts) return;
+                var txDate = new Date(ts).toISOString().split('T')[0];
+                if (dayCounts.hasOwnProperty(txDate)) {
+                    dayCounts[txDate]++;
+                }
+            });
+
+            var items = days.map(function(day) {
+                return { label: day.label, value: dayCounts[day.key] };
+            });
+
+            renderBarChart(document.getElementById('chartDays'), items);
+        }
+
+        function renderCorrectorsChart(corrections) {
+            var correctorCounts = {};
+            corrections.forEach(function(tx) {
+                var email = tx.data.createdByEmail || 'Unknown';
+                correctorCounts[email] = (correctorCounts[email] || 0) + 1;
+            });
+
+            var items = Object.keys(correctorCounts).map(function(email) {
+                return { label: email, value: correctorCounts[email] };
+            });
+
+            items.sort(function(a, b) { return b.value - a.value; });
+            items = items.slice(0, 10);
+
+            renderBarChart(document.getElementById('chartCorrectors'), items);
+        }
+
+        // ==================== TOAST NOTIFICATION ====================
+
+        function showToast(message, isError) {
+            var existing = document.getElementById('adminToast');
+            if (existing) existing.remove();
+
+            var toast = document.createElement('div');
+            toast.id = 'adminToast';
+            toast.className = 'fixed bottom-6 right-6 px-6 py-3 rounded-xl text-white text-sm font-bold z-50 transition-opacity duration-300 ' +
+                (isError ? 'bg-red-600' : 'bg-green-600');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
