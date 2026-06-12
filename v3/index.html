@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="application-name" content="Viberloop Bio">
+    <title>Viberloop Bio - Field App V3 (Testnet)</title>
+
+    <link rel="stylesheet" href="/css/tailwind.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea, select {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mining-dots::after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+
+        .tab-active {
+            background: linear-gradient(135deg, #9333ea, #7e22ce);
+            color: white;
+        }
+
+        .tab-inactive {
+            background: rgba(255, 255, 255, 0.05);
+            color: #d8b4fe;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 min-h-screen">
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-block bg-purple-600 p-4 rounded-[2rem] mb-4">
+                    <i class="fas fa-recycle text-white text-4xl"></i>
+                </div>
+                <h1 class="text-white text-3xl font-black uppercase tracking-widest mb-2">Viberloop</h1>
+                <p class="text-purple-300 text-sm">Bio Cotton Supply Chain</p>
+                <div class="mt-2 flex justify-center gap-2">
+                    <span class="inline-block bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full">TESTNET</span>
+                    <span class="inline-block bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">V3</span>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <h2 class="text-white text-xl font-bold mb-6">Sign In</h2>
+
+                <div id="loginError" class="hidden bg-red-500/20 border border-red-500/50 rounded-xl p-3 mb-4 text-red-200 text-sm"></div>
+
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Email</label>
+                        <input type="email" id="loginEmail" required autocomplete="email"
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="you@example.com">
+                    </div>
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">Password</label>
+                        <input type="password" id="loginPassword" required autocomplete="current-password"
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter password">
+                    </div>
+                    <button type="submit" id="loginButton" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 px-6 rounded-2xl transition flex items-center justify-center">
+                        <i class="fas fa-sign-in-alt mr-3"></i>Sign In
+                    </button>
+                </form>
+
+                <div class="mt-6 pt-6 border-t border-white/20 space-y-3">
+                    <a href="/" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-home mr-2"></i>
+                        Go to Home Screen
+                    </a>
+                    <a href="/dashboard" class="text-purple-300 hover:text-purple-100 text-sm flex items-center justify-center">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Approval Screen -->
+    <div id="pendingScreen" class="hidden min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md text-center">
+            <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-8 border border-white/20">
+                <div class="inline-block bg-yellow-500 p-6 rounded-full mb-6">
+                    <i class="fas fa-hourglass-half text-white text-4xl"></i>
+                </div>
+                <h2 class="text-white text-xl font-bold mb-4">Your account is pending approval</h2>
+                <p class="text-purple-300 text-sm mb-6">An administrator needs to assign a role to your account before you can access the field app.</p>
+                <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-xl">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="appScreen" class="hidden min-h-screen p-4 pb-24">
+        <div class="mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <h1 class="text-white text-2xl font-black uppercase tracking-wider">Viberloop</h1>
+                        <span class="bg-purple-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">V3</span>
+                    </div>
+                    <p class="text-purple-300 text-sm" id="roleDisplay"></p>
+                    <p class="text-purple-400 text-xs" id="userEmailDisplay"></p>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amendment Banner -->
+        <div id="amendBanner" class="hidden mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-edit text-yellow-400 mr-3"></i>
+                    <span class="text-yellow-200 text-sm font-bold">Amending entry -- changes will create a new version</span>
+                </div>
+                <button onclick="cancelAmendment()" class="text-yellow-300 hover:text-white text-sm">
+                    <i class="fas fa-times mr-1"></i>Cancel
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div id="tabButtons" class="hidden mb-6 grid grid-cols-2 gap-3">
+            <button onclick="switchFormTab('incoming')" id="tabIncoming" class="tab-active py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-down mr-2"></i>Incoming Goods
+            </button>
+            <button onclick="switchFormTab('outgoing')" id="tabOutgoing" class="tab-inactive py-3 px-6 rounded-xl font-bold">
+                <i class="fas fa-arrow-up mr-2"></i>Outgoing Goods
+            </button>
+        </div>
+
+        <!-- Transaction Form -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20 mb-6">
+            <h2 class="text-white text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-plus-circle mr-3 text-purple-400"></i>
+                <span id="formTitle">New Transaction</span>
+            </h2>
+
+            <form id="transactionForm" class="space-y-4">
+                <div class="bg-purple-900/30 rounded-xl p-4 mb-4 border border-purple-500/30">
+                    <h3 class="text-purple-200 font-bold mb-3 text-sm uppercase">Universal Fields</h3>
+
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Customer <span class="text-red-400">*</span>
+                        </label>
+                        <select id="customer" required
+                                class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Select customer...</option>
+                            <option value="EkoPlaza">EkoPlaza</option>
+                            <option value="Norma">Norma</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Date <span class="text-red-400">*</span>
+                        </label>
+                        <input type="date" id="transactionDate" required
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-purple-300 text-sm font-bold mb-2">
+                            Purchase Order <span class="text-red-400">*</span>
+                        </label>
+                        <input type="text" id="purchaseOrder" required minlength="3"
+                               class="w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter purchase order (min 3 chars)...">
+                    </div>
+                </div>
+
+                <div id="dynamicFields"></div>
+
+                <!-- Correction Reason (shown only during amendment) -->
+                <div id="correctionReasonSection" class="hidden">
+                    <label class="block text-yellow-300 text-sm font-bold mb-2">
+                        Correction Reason <span class="text-red-400">*</span>
+                    </label>
+                    <textarea id="correctionReason" rows="3"
+                              class="w-full bg-yellow-500/10 border border-yellow-400/30 rounded-xl px-4 py-3 text-white placeholder-yellow-300/50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                              placeholder="Explain why this entry is being corrected..."></textarea>
+                </div>
+
+                <!-- Multi-Photo & File Upload -->
+                <div>
+                    <label class="block text-purple-300 text-sm font-bold mb-2">
+                        Photos & Files (Optional)
+                    </label>
+                    <div class="grid grid-cols-2 gap-3 mb-3">
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-camera mr-2"></i>
+                            <span>Take Photos</span>
+                            <input type="file" id="photoInputCamera" accept="image/*" capture="environment" class="hidden" multiple onchange="handleFileUpload(event, 'photo')">
+                        </label>
+                        <label class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition">
+                            <i class="fas fa-upload mr-2"></i>
+                            <span>Upload Photos</span>
+                            <input type="file" id="photoInputUpload" accept="image/*" class="hidden" multiple onchange="handleFileUpload(event, 'photo')">
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="bg-slate-600 hover:bg-slate-700 text-white font-bold py-3 px-4 rounded-xl cursor-pointer text-center transition block">
+                            <i class="fas fa-paperclip mr-2"></i>
+                            <span>Attach Files (PDF, Docs)</span>
+                            <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt,.csv" class="hidden" multiple onchange="handleFileUpload(event, 'file')">
+                        </label>
+                    </div>
+                    <div class="flex justify-between mb-3">
+                        <span class="text-purple-300 text-xs">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="uploadCount">0 photos, 0 files</span>
+                        </span>
+                        <button type="button" onclick="clearAllFiles()" class="bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded-lg text-xs">
+                            <i class="fas fa-times mr-1"></i>Clear All
+                        </button>
+                    </div>
+
+                    <div id="photoGallery" class="grid grid-cols-3 gap-2 mb-3 hidden"></div>
+                    <div id="fileList" class="space-y-2 hidden"></div>
+                    <canvas id="photoCanvas" class="hidden"></canvas>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-black py-4 px-6 rounded-2xl uppercase tracking-wider transition-all transform hover:scale-105">
+                    <i class="fas fa-cubes mr-2"></i>
+                    Submit to Chain
+                </button>
+            </form>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="bg-white/10 backdrop-blur-lg rounded-[2rem] p-6 border border-white/20">
+            <h2 class="text-white text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-history mr-3 text-purple-400"></i>
+                Recent Transactions
+            </h2>
+            <div id="recentTransactions" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Mining Modal -->
+    <div id="miningModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-purple-600 p-6 rounded-full pulse-animation">
+                    <i class="fas fa-cubes text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2">Recording Transaction</h3>
+            <p class="text-purple-300 text-sm mb-4 mining-dots">Saving to blockchain</p>
+            <div class="bg-purple-600/30 rounded-full h-2 overflow-hidden">
+                <div class="bg-purple-500 h-full w-3/4 animate-pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+        <div class="glassmorphism rounded-[2rem] p-8 max-w-sm w-full text-center">
+            <div class="mb-6">
+                <div class="inline-block bg-green-500 p-6 rounded-full">
+                    <i class="fas fa-check text-white text-4xl"></i>
+                </div>
+            </div>
+            <h3 class="text-white text-xl font-bold mb-2" id="successTitle">Transaction Confirmed!</h3>
+            <span class="inline-block bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full mb-2">TESTNET</span>
+            <p class="text-purple-300 text-sm mb-2" id="successHash"></p>
+            <button onclick="closeSuccessModal()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-xl">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true">
+        <div class="glassmorphism rounded-[2rem] p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-white text-xl font-bold">Confirm Transaction</h3>
+                <button onclick="closeConfirmation()" class="text-purple-300 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div id="confirmationContent" class="space-y-3 mb-6"></div>
+
+            <div class="flex gap-3">
+                <button onclick="closeConfirmation()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-xl transition">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button onclick="confirmSubmission()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-xl transition">
+                    <i class="fas fa-check mr-2"></i>Submit to Chain
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Auto-Configuration -->
+    <script src="/__/firebase/init.js?useService=database,storage,auth"></script>
+    <script src="auth.js"></script>
+    <script>
+        // ==================== FIREBASE INITIALIZATION ====================
+        let app, database, storage;
+        try {
+            app = firebase.app();
+            database = firebase.database();
+            storage = firebase.storage();
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+
+        // ==================== STATE MANAGEMENT ====================
+        let currentRole = null;
+        let currentUser = null;
+        let currentTab = 'incoming';
+        let uploadedPhotos = [];
+        let uploadedFiles = [];
+        let incomingNXCodes = [];
+        let pendingFormData = null;
+        let amendingTransaction = null; // holds {key, data} of the transaction being amended
+
+        // ==================== ROLE CONFIGURATION ====================
+        const roleConfig = {
+            'WASTE_SOURCE': {
+                display: 'Waste Source',
+                hasTabs: false,
+                location: 'WASTE_SOURCE',
+                fields: {
+                    single: [
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'RECYCLING_HUB': {
+                display: 'Recycling Hub',
+                hasTabs: true,
+                location: 'RECYCLING_HUB',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'wasteSource', label: 'Waste Source', type: 'select', required: true, options: ['Jayanti Group', 'Vardhman Textiles', 'Arvind Mills'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'multiselect', required: true, placeholder: 'Select NX codes' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'SPINNER': {
+                display: 'Spinner',
+                hasTabs: true,
+                location: 'SPINNER',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'nxReference', label: 'NX reference code', type: 'text', required: true, placeholder: 'e.g., NX123456' },
+                        { id: 'batchSize', label: 'Batch size', type: 'number', required: false, placeholder: 'e.g., 10' },
+                        { id: 'materialType', label: 'Material type', type: 'select', required: true, options: ['Regular', 'BIO', 'BIO/Regular mix'] },
+                        { id: 'recyclingHubLocation', label: 'Recycling Hub location', type: 'select', required: true, options: ['Recycling Hub'] },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'e.g., Weaver Int.' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'WEAVER': {
+                display: 'Weaver',
+                hasTabs: true,
+                location: 'WEAVER',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'spinner', label: 'Spinner', type: 'text', required: true, placeholder: 'Enter spinner name' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'MANUFACTURING': {
+                display: 'Manufacturing',
+                hasTabs: true,
+                location: 'MANUFACTURING',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'weaver', label: 'Weaver', type: 'text', required: true, placeholder: 'Enter weaver name' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'truckId', label: 'Truck ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POL': {
+                display: 'Point of Loading',
+                hasTabs: true,
+                location: 'POL',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'manufacturing', label: 'Manufacturing', type: 'text', required: true, placeholder: 'Enter manufacturing name' },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pol', label: 'Port of Loading (PoL)', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'container', label: 'Container', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'POD': {
+                display: 'Point of Destination',
+                hasTabs: true,
+                location: 'POD',
+                fields: {
+                    incoming: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pol', label: 'Port of Loading', type: 'text', required: true, placeholder: 'Enter port name' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ],
+                    outgoing: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' }
+                    ]
+                }
+            },
+            'DISTRIBUTION_CENTER': {
+                display: 'Distribution Center',
+                hasTabs: false,
+                location: 'DISTRIBUTION_CENTER',
+                fields: {
+                    single: [
+                        { id: 'packingList', label: 'Packing List reference', type: 'text', required: true, placeholder: 'e.g., PL123456' },
+                        { id: 'pod', label: 'Port of Destination (PoD)', type: 'text', required: true, placeholder: 'Enter destination port' },
+                        { id: 'distributionCenter', label: 'Distribution Center', type: 'text', required: true, placeholder: 'Enter distribution center' },
+                        { id: 'netWeight', label: 'Net weight (kg)', type: 'number', required: true, placeholder: 'e.g., 200' },
+                        { id: 'containerId', label: 'Container ID', type: 'text', required: false, placeholder: 'Optional' },
+                        { id: 'cmrCopy', label: 'CMR copy', type: 'file', required: false, placeholder: 'Upload CMR documents', multiple: true }
+                    ]
+                }
+            }
+        };
+
+        // ==================== UTILITY ====================
+        function generateUUID() {
+            return crypto.randomUUID ? crypto.randomUUID() :
+                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0;
+                    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+        }
+
+        async function computeHash(data) {
+            var encoder = new TextEncoder();
+            var dataBuffer = encoder.encode(JSON.stringify(data));
+            var hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+            var hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        }
+
+        // ==================== AUTHENTICATION ====================
+        async function initAuth() {
+            try {
+                await ViberloopAuth.init(app);
+                ViberloopAuth.onAuthChanged(function(user) {
+                    if (user) {
+                        currentUser = user;
+                        handleAuthenticatedUser(user);
+                    } else {
+                        currentUser = null;
+                        showLoginScreen();
+                    }
+                });
+            } catch (error) {
+                console.error('Auth initialization error:', error);
+            }
+        }
+
+        function handleAuthenticatedUser(user) {
+            if (user.role === 'PENDING' || user.status === 'pending' || user.status === 'disabled') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('pendingScreen').classList.remove('hidden');
+                return;
+            }
+
+            if (!roleConfig[user.role]) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('pendingScreen').classList.remove('hidden');
+                return;
+            }
+
+            currentRole = user.role;
+            var config = roleConfig[currentRole];
+            document.getElementById('roleDisplay').textContent = config.display;
+            document.getElementById('userEmailDisplay').textContent = user.email;
+
+            if (config.hasTabs) {
+                document.getElementById('tabButtons').classList.remove('hidden');
+                currentTab = 'incoming';
+                switchFormTab('incoming');
+            } else {
+                document.getElementById('tabButtons').classList.add('hidden');
+                renderForm();
+            }
+
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('transactionDate').value = today;
+
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('pendingScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+
+            loadRecentTransactions();
+        }
+
+        function showLoginScreen() {
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('pendingScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            var errorEl = document.getElementById('loginError');
+            errorEl.classList.add('hidden');
+
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                errorEl.textContent = 'Please enter both email and password.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            var btn = document.getElementById('loginButton');
+            btn.disabled = true;
+            btn.textContent = 'Signing in...';
+
+            try {
+                await ViberloopAuth.login(email, password);
+            } catch (error) {
+                errorEl.textContent = error.message || 'Login failed. Please try again.';
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-3"></i>Sign In';
+            }
+        });
+
+        async function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                cancelAmendment();
+                try {
+                    await ViberloopAuth.logout();
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+                currentRole = null;
+                currentUser = null;
+                document.getElementById('transactionForm').reset();
+                clearAllFiles();
+                showLoginScreen();
+                var btn = document.getElementById('loginButton');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt mr-3"></i>Sign In';
+            }
+        }
+
+        // ==================== TAB SWITCHING ====================
+        function switchFormTab(tab) {
+            currentTab = tab;
+
+            if (tab === 'incoming') {
+                document.getElementById('tabIncoming').classList.remove('tab-inactive');
+                document.getElementById('tabIncoming').classList.add('tab-active');
+                document.getElementById('tabOutgoing').classList.remove('tab-active');
+                document.getElementById('tabOutgoing').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Incoming Goods';
+            } else {
+                document.getElementById('tabOutgoing').classList.remove('tab-inactive');
+                document.getElementById('tabOutgoing').classList.add('tab-active');
+                document.getElementById('tabIncoming').classList.remove('tab-active');
+                document.getElementById('tabIncoming').classList.add('tab-inactive');
+                document.getElementById('formTitle').textContent = 'Outgoing Goods';
+            }
+
+            renderForm();
+        }
+
+        // ==================== FORM RENDERING ====================
+        function renderForm() {
+            var config = roleConfig[currentRole];
+            var fieldsContainer = document.getElementById('dynamicFields');
+            fieldsContainer.innerHTML = '';
+
+            var fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(function(field) {
+                var fieldDiv = document.createElement('div');
+
+                var label = document.createElement('label');
+                label.className = 'block text-purple-300 text-sm font-bold mb-2';
+                label.textContent = field.label;
+                if (field.required) {
+                    var required = document.createElement('span');
+                    required.className = 'text-red-400';
+                    required.textContent = ' *';
+                    label.appendChild(required);
+                }
+                fieldDiv.appendChild(label);
+
+                if (field.type === 'select') {
+                    var select = document.createElement('select');
+                    select.id = field.id;
+                    select.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    if (field.required) select.required = true;
+
+                    var defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select ' + field.label.toLowerCase() + '...';
+                    select.appendChild(defaultOption);
+
+                    field.options.forEach(function(opt) {
+                        var option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        select.appendChild(option);
+                    });
+
+                    fieldDiv.appendChild(select);
+                } else if (field.type === 'multiselect') {
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                } else if (field.id === 'netWeight') {
+                    var input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = field.id;
+                    input.min = '0.01';
+                    input.step = '0.01';
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                } else {
+                    var input = document.createElement('input');
+                    input.type = field.type;
+                    input.id = field.id;
+                    input.className = 'w-full bg-white/10 border border-purple-400/30 rounded-xl px-4 py-3 text-white placeholder-purple-300/50 focus:outline-none focus:ring-2 focus:ring-purple-500';
+                    input.placeholder = field.placeholder || '';
+                    if (field.required) input.required = true;
+                    fieldDiv.appendChild(input);
+                }
+
+                fieldsContainer.appendChild(fieldDiv);
+            });
+
+            // If amending, pre-fill fields after render
+            if (amendingTransaction) {
+                prefillFormFromTransaction(amendingTransaction.data);
+            }
+        }
+
+        function prefillFormFromTransaction(data) {
+            // Universal fields
+            if (data.customer) document.getElementById('customer').value = data.customer;
+            if (data.transactionDate) document.getElementById('transactionDate').value = data.transactionDate;
+            if (data.purchaseOrder) document.getElementById('purchaseOrder').value = data.purchaseOrder;
+
+            // Dynamic fields
+            var config = roleConfig[currentRole];
+            var fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            fields.forEach(function(field) {
+                var el = document.getElementById(field.id);
+                if (el && data[field.id] !== undefined && data[field.id] !== null) {
+                    el.value = data[field.id];
+                }
+            });
+        }
+
+        // ==================== AMENDMENT ====================
+        function startAmendment(txKey, txData) {
+            amendingTransaction = { key: txKey, data: txData };
+
+            // Show banner and correction reason
+            document.getElementById('amendBanner').classList.remove('hidden');
+            document.getElementById('correctionReasonSection').classList.remove('hidden');
+            document.getElementById('correctionReason').required = true;
+            document.getElementById('correctionReason').value = '';
+
+            // Switch to the correct tab if needed
+            var config = roleConfig[currentRole];
+            if (config.hasTabs && txData.transactionType) {
+                switchFormTab(txData.transactionType);
+            } else {
+                renderForm();
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelAmendment() {
+            amendingTransaction = null;
+            document.getElementById('amendBanner').classList.add('hidden');
+            document.getElementById('correctionReasonSection').classList.add('hidden');
+            document.getElementById('correctionReason').required = false;
+            document.getElementById('correctionReason').value = '';
+            document.getElementById('transactionForm').reset();
+
+            var today = new Date().toISOString().split('T')[0];
+            document.getElementById('transactionDate').value = today;
+        }
+
+        // ==================== MULTI-FILE UPLOAD HANDLING ====================
+        function handleFileUpload(event, type) {
+            var files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            files.forEach(function(file) {
+                if (type === 'photo') {
+                    if (uploadedPhotos.length >= 10) {
+                        alert('Maximum 10 photos allowed');
+                        return;
+                    }
+
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        compressAndAddPhoto(file, e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else if (type === 'file') {
+                    if (uploadedFiles.length >= 5) {
+                        alert('Maximum 5 files allowed');
+                        return;
+                    }
+
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File "' + file.name + '" is too large. Maximum 5MB allowed.');
+                        return;
+                    }
+
+                    uploadedFiles.push({
+                        file: file,
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        url: null
+                    });
+
+                    renderFileList();
+                    updateUploadCount();
+                }
+            });
+
+            event.target.value = '';
+        }
+
+        function compressAndAddPhoto(file, dataUrl) {
+            var img = new Image();
+            img.onload = function() {
+                var canvas = document.getElementById('photoCanvas');
+                var ctx = canvas.getContext('2d');
+
+                var width = img.width;
+                var height = img.height;
+                var maxDimension = 800;
+
+                if (width > height && width > maxDimension) {
+                    height = (height / width) * maxDimension;
+                    width = maxDimension;
+                } else if (height > maxDimension) {
+                    width = (width / height) * maxDimension;
+                    height = maxDimension;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                var quality = 0.7;
+                var compressed = canvas.toDataURL('image/jpeg', quality);
+
+                while (compressed.length > 500000 && quality > 0.1) {
+                    quality -= 0.1;
+                    compressed = canvas.toDataURL('image/jpeg', quality);
+                }
+
+                uploadedPhotos.push({
+                    file: file,
+                    preview: compressed,
+                    url: null
+                });
+
+                renderPhotoGallery();
+                updateUploadCount();
+            };
+            img.onerror = function() {
+                alert('Error processing image. Please try another photo.');
+            };
+            img.src = dataUrl;
+        }
+
+        function renderPhotoGallery() {
+            var gallery = document.getElementById('photoGallery');
+
+            if (uploadedPhotos.length === 0) {
+                gallery.classList.add('hidden');
+                gallery.innerHTML = '';
+                return;
+            }
+
+            gallery.classList.remove('hidden');
+            gallery.innerHTML = '';
+
+            uploadedPhotos.forEach(function(photo, index) {
+                var div = document.createElement('div');
+                div.className = 'relative group';
+
+                var imgEl = document.createElement('img');
+                imgEl.src = photo.preview;
+                imgEl.className = 'w-full h-24 object-cover rounded-lg border-2 border-purple-400';
+                div.appendChild(imgEl);
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition';
+                removeBtn.setAttribute('data-index', index);
+                removeBtn.addEventListener('click', function() {
+                    removePhoto(parseInt(this.getAttribute('data-index')));
+                });
+                var removeIcon = document.createElement('i');
+                removeIcon.className = 'fas fa-times text-xs';
+                removeBtn.appendChild(removeIcon);
+                div.appendChild(removeBtn);
+
+                if (photo.url) {
+                    var checkDiv = document.createElement('div');
+                    checkDiv.className = 'absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded';
+                    var checkIcon = document.createElement('i');
+                    checkIcon.className = 'fas fa-check';
+                    checkDiv.appendChild(checkIcon);
+                    div.appendChild(checkDiv);
+                }
+
+                gallery.appendChild(div);
+            });
+        }
+
+        function renderFileList() {
+            var fileListEl = document.getElementById('fileList');
+
+            if (uploadedFiles.length === 0) {
+                fileListEl.classList.add('hidden');
+                fileListEl.innerHTML = '';
+                return;
+            }
+
+            fileListEl.classList.remove('hidden');
+            fileListEl.innerHTML = '';
+
+            uploadedFiles.forEach(function(file, index) {
+                var div = document.createElement('div');
+                div.className = 'bg-black/20 rounded-lg p-2 flex items-center justify-between';
+
+                var iconName = file.type.includes('pdf') ? 'fa-file-pdf' : 'fa-file-alt';
+                var size = (file.size / 1024).toFixed(1) + ' KB';
+
+                var infoWrap = document.createElement('div');
+                infoWrap.className = 'flex items-center flex-1';
+
+                var icon = document.createElement('i');
+                icon.className = 'fas ' + iconName + ' text-purple-400 mr-2';
+                infoWrap.appendChild(icon);
+
+                var textWrap = document.createElement('div');
+                textWrap.className = 'flex-1';
+
+                var nameEl = document.createElement('div');
+                nameEl.className = 'text-white text-sm truncate';
+                nameEl.textContent = file.name;
+                textWrap.appendChild(nameEl);
+
+                var sizeEl = document.createElement('div');
+                sizeEl.className = 'text-purple-300 text-xs';
+                sizeEl.textContent = size;
+                textWrap.appendChild(sizeEl);
+
+                infoWrap.appendChild(textWrap);
+                div.appendChild(infoWrap);
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'bg-red-500 hover:bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center ml-2';
+                removeBtn.setAttribute('data-index', index);
+                removeBtn.addEventListener('click', function() {
+                    removeFile(parseInt(this.getAttribute('data-index')));
+                });
+                var removeIcon = document.createElement('i');
+                removeIcon.className = 'fas fa-times text-xs';
+                removeBtn.appendChild(removeIcon);
+                div.appendChild(removeBtn);
+
+                if (file.url) {
+                    var checkDiv = document.createElement('div');
+                    checkDiv.className = 'ml-2 bg-green-500 text-white text-xs px-2 py-1 rounded';
+                    var checkIcon = document.createElement('i');
+                    checkIcon.className = 'fas fa-check';
+                    checkDiv.appendChild(checkIcon);
+                    div.appendChild(checkDiv);
+                }
+
+                fileListEl.appendChild(div);
+            });
+        }
+
+        function updateUploadCount() {
+            var count = document.getElementById('uploadCount');
+            count.textContent = uploadedPhotos.length + ' photo' + (uploadedPhotos.length !== 1 ? 's' : '') + ', ' + uploadedFiles.length + ' file' + (uploadedFiles.length !== 1 ? 's' : '');
+        }
+
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            renderPhotoGallery();
+            updateUploadCount();
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderFileList();
+            updateUploadCount();
+        }
+
+        function clearAllFiles() {
+            uploadedPhotos = [];
+            uploadedFiles = [];
+            var cam = document.getElementById('photoInputCamera');
+            var upl = document.getElementById('photoInputUpload');
+            var fi = document.getElementById('fileInput');
+            if (cam) cam.value = '';
+            if (upl) upl.value = '';
+            if (fi) fi.value = '';
+            renderPhotoGallery();
+            renderFileList();
+            updateUploadCount();
+        }
+
+        // ==================== FORM SUBMISSION ====================
+        document.getElementById('transactionForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!database) {
+                alert('Firebase database is not initialized. Please refresh the page and try again.');
+                return;
+            }
+
+            if (!currentUser) {
+                alert('You must be logged in to submit transactions.');
+                return;
+            }
+
+            var config = roleConfig[currentRole];
+
+            var customer = document.getElementById('customer').value.trim();
+            var transactionDate = document.getElementById('transactionDate').value;
+            var purchaseOrder = document.getElementById('purchaseOrder').value.trim();
+
+            if (!customer || !transactionDate || !purchaseOrder) {
+                alert('Please fill in all universal fields (Customer, Date, Purchase Order)');
+                return;
+            }
+
+            if (purchaseOrder.length < 3) {
+                alert('Purchase Order must be at least 3 characters.');
+                return;
+            }
+
+            // If amending, require correction reason
+            if (amendingTransaction) {
+                var reason = document.getElementById('correctionReason').value.trim();
+                if (!reason) {
+                    alert('Please provide a correction reason.');
+                    return;
+                }
+            }
+
+            var formData = {
+                customer: customer,
+                transactionDate: transactionDate,
+                purchaseOrder: purchaseOrder,
+                role: currentRole,
+                location: config.location
+            };
+
+            if (config.hasTabs) {
+                formData.transactionType = currentTab;
+            }
+
+            var fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            var weightValid = true;
+            fields.forEach(function(field) {
+                var element = document.getElementById(field.id);
+                if (element) {
+                    formData[field.id] = element.value.trim();
+                    if (field.id === 'netWeight' && formData[field.id]) {
+                        var w = parseFloat(formData[field.id]);
+                        if (isNaN(w) || w < 0.01) {
+                            weightValid = false;
+                        }
+                    }
+                }
+            });
+
+            if (!weightValid) {
+                alert('Net weight must be a positive number (minimum 0.01 kg).');
+                return;
+            }
+
+            pendingFormData = formData;
+            showConfirmationModal(formData, config);
+        });
+
+        function showConfirmationModal(formData, config) {
+            var content = document.getElementById('confirmationContent');
+            content.innerHTML = '';
+
+            // Photos preview
+            if (uploadedPhotos.length > 0) {
+                var photoSection = document.createElement('div');
+                photoSection.className = 'mb-4';
+
+                var photoLabel = document.createElement('div');
+                photoLabel.className = 'text-purple-300 text-xs uppercase font-bold mb-2';
+                photoLabel.textContent = 'Photos (' + uploadedPhotos.length + ')';
+                photoSection.appendChild(photoLabel);
+
+                var photoGrid = document.createElement('div');
+                photoGrid.className = 'grid grid-cols-4 gap-2';
+                uploadedPhotos.forEach(function(photo) {
+                    var img = document.createElement('img');
+                    img.src = photo.preview;
+                    img.className = 'w-full h-20 object-cover rounded-lg border-2 border-purple-400';
+                    photoGrid.appendChild(img);
+                });
+                photoSection.appendChild(photoGrid);
+                content.appendChild(photoSection);
+            }
+
+            // Files preview
+            if (uploadedFiles.length > 0) {
+                var fileSection = document.createElement('div');
+                fileSection.className = 'mb-4';
+
+                var fileLabel = document.createElement('div');
+                fileLabel.className = 'text-purple-300 text-xs uppercase font-bold mb-2';
+                fileLabel.textContent = 'Files (' + uploadedFiles.length + ')';
+                fileSection.appendChild(fileLabel);
+
+                var fileWrap = document.createElement('div');
+                fileWrap.className = 'space-y-1';
+                uploadedFiles.forEach(function(file) {
+                    var fileRow = document.createElement('div');
+                    fileRow.className = 'text-white text-xs';
+                    var fileIcon = document.createElement('i');
+                    fileIcon.className = 'fas fa-file mr-1';
+                    fileRow.appendChild(fileIcon);
+                    var fileName = document.createTextNode(file.name);
+                    fileRow.appendChild(fileName);
+                    fileWrap.appendChild(fileRow);
+                });
+                fileSection.appendChild(fileWrap);
+                content.appendChild(fileSection);
+            }
+
+            // Universal fields block
+            var universalBlock = document.createElement('div');
+            universalBlock.className = 'bg-black/20 rounded-xl p-3 space-y-2';
+
+            var universalItems = [
+                { label: 'Customer', value: formData.customer },
+                { label: 'Date', value: formData.transactionDate },
+                { label: 'Purchase Order', value: formData.purchaseOrder },
+                { label: 'Role', value: config.display }
+            ];
+            if (formData.transactionType) {
+                universalItems.push({ label: 'Type', value: formData.transactionType.toUpperCase() });
+            }
+
+            universalItems.forEach(function(item) {
+                var row = document.createElement('div');
+                row.className = 'flex justify-between';
+                var labelSpan = document.createElement('span');
+                labelSpan.className = 'text-purple-300 text-xs uppercase font-bold';
+                labelSpan.textContent = item.label;
+                var valueSpan = document.createElement('span');
+                valueSpan.className = 'text-white text-sm font-bold';
+                valueSpan.textContent = item.value;
+                row.appendChild(labelSpan);
+                row.appendChild(valueSpan);
+                universalBlock.appendChild(row);
+            });
+            content.appendChild(universalBlock);
+
+            // Dynamic fields block
+            var fields = [];
+            if (!config.hasTabs) {
+                fields = config.fields.single || [];
+            } else {
+                fields = config.fields[currentTab] || [];
+            }
+
+            if (fields.length > 0) {
+                var dynamicBlock = document.createElement('div');
+                dynamicBlock.className = 'bg-black/20 rounded-xl p-3 space-y-2';
+
+                fields.forEach(function(field) {
+                    var value = formData[field.id] || 'N/A';
+                    var row = document.createElement('div');
+                    row.className = 'flex justify-between';
+                    var labelSpan = document.createElement('span');
+                    labelSpan.className = 'text-purple-300 text-xs uppercase font-bold';
+                    labelSpan.textContent = field.label;
+                    var valueSpan = document.createElement('span');
+                    valueSpan.className = 'text-white text-sm';
+                    valueSpan.textContent = value;
+                    row.appendChild(labelSpan);
+                    row.appendChild(valueSpan);
+                    dynamicBlock.appendChild(row);
+                });
+                content.appendChild(dynamicBlock);
+            }
+
+            // Correction reason if amending
+            if (amendingTransaction) {
+                var corrBlock = document.createElement('div');
+                corrBlock.className = 'bg-yellow-500/20 rounded-xl p-3 space-y-1';
+
+                var corrLabel = document.createElement('div');
+                corrLabel.className = 'text-yellow-300 text-xs uppercase font-bold';
+                corrLabel.textContent = 'Correction Reason';
+                corrBlock.appendChild(corrLabel);
+
+                var corrValue = document.createElement('div');
+                corrValue.className = 'text-white text-sm';
+                corrValue.textContent = document.getElementById('correctionReason').value.trim();
+                corrBlock.appendChild(corrValue);
+
+                content.appendChild(corrBlock);
+            }
+
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+
+        function closeConfirmation() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+            pendingFormData = null;
+        }
+
+        async function confirmSubmission() {
+            if (!pendingFormData) {
+                alert('No pending transaction data');
+                return;
+            }
+
+            document.getElementById('confirmationModal').classList.add('hidden');
+            document.getElementById('miningModal').classList.remove('hidden');
+
+            var miningDelay = Math.floor(Math.random() * 700) + 800;
+
+            setTimeout(async function() {
+                try {
+                    var timestamp = Date.now();
+
+                    // Build photo paths array
+                    var photoPaths = [];
+                    var filePaths = [];
+
+                    for (var i = 0; i < uploadedPhotos.length; i++) {
+                        var filename = 'photo-' + (i + 1) + '-' + timestamp + '.jpg';
+                        photoPaths.push('transactions/' + timestamp + '/photos/' + filename);
+                    }
+
+                    for (var i = 0; i < uploadedFiles.length; i++) {
+                        filePaths.push('transactions/' + timestamp + '/files/' + uploadedFiles[i].name);
+                    }
+
+                    // Build memo data for hashing
+                    var memoData = {
+                        app: 'Viberloop',
+                        v: '3.0',
+                        customer: pendingFormData.customer,
+                        date: pendingFormData.transactionDate,
+                        po: pendingFormData.purchaseOrder,
+                        role: pendingFormData.role,
+                        location: pendingFormData.location,
+                        nx: pendingFormData.nxReference || null,
+                        pl: pendingFormData.packingList || null,
+                        weight: pendingFormData.netWeight || null,
+                        batchSize: pendingFormData.batchSize || null,
+                        materialType: pendingFormData.materialType || null,
+                        wasteSource: pendingFormData.wasteSource || null,
+                        recyclingHub: pendingFormData.recyclingHubLocation || null,
+                        spinner: pendingFormData.spinner || null,
+                        weaver: pendingFormData.weaver || null,
+                        manufacturing: pendingFormData.manufacturing || null,
+                        pol: pendingFormData.pol || null,
+                        pod: pendingFormData.pod || null,
+                        distributionCenter: pendingFormData.distributionCenter || null,
+                        truckId: pendingFormData.truckId || null,
+                        containerId: pendingFormData.containerId || null,
+                        container: pendingFormData.container || null,
+                        type: pendingFormData.transactionType || 'single',
+                        photos: photoPaths.length > 0 ? photoPaths : null,
+                        files: filePaths.length > 0 ? filePaths : null,
+                        ts: timestamp
+                    };
+
+                    // Remove null values
+                    Object.keys(memoData).forEach(function(key) {
+                        if (memoData[key] === null || memoData[key] === undefined) {
+                            delete memoData[key];
+                        }
+                    });
+
+                    // Compute deterministic hash
+                    var hash = await computeHash(memoData);
+
+                    // Upload photos to Firebase Storage
+                    var photoUrls = [];
+                    var fileUrls = [];
+
+                    for (var i = 0; i < uploadedPhotos.length; i++) {
+                        var photo = uploadedPhotos[i];
+                        try {
+                            var response = await fetch(photo.preview);
+                            var blob = await response.blob();
+                            var storagePath = photoPaths[i];
+                            var storageRef = storage.ref(storagePath);
+                            await storageRef.put(blob);
+                            var url = await storageRef.getDownloadURL();
+                            photoUrls.push({
+                                url: url,
+                                path: storagePath,
+                                filename: storagePath.split('/').pop(),
+                                uploadedAt: timestamp
+                            });
+                        } catch (error) {
+                            console.error('Error uploading photo ' + (i + 1) + ':', error);
+                        }
+                    }
+
+                    for (var i = 0; i < uploadedFiles.length; i++) {
+                        var fileData = uploadedFiles[i];
+                        try {
+                            var storagePath = filePaths[i];
+                            var storageRef = storage.ref(storagePath);
+                            await storageRef.put(fileData.file);
+                            var url = await storageRef.getDownloadURL();
+                            fileUrls.push({
+                                url: url,
+                                path: storagePath,
+                                name: fileData.name,
+                                type: fileData.type,
+                                size: fileData.size,
+                                uploadedAt: timestamp
+                            });
+                        } catch (error) {
+                            console.error('Error uploading file ' + (i + 1) + ':', error);
+                        }
+                    }
+
+                    // Build transaction record
+                    var entryGroupId = amendingTransaction
+                        ? amendingTransaction.data.entryGroupId
+                        : generateUUID();
+
+                    var version = amendingTransaction
+                        ? (amendingTransaction.data.version || 1) + 1
+                        : 1;
+
+                    var transaction = {
+                        customer: pendingFormData.customer,
+                        transactionDate: pendingFormData.transactionDate,
+                        purchaseOrder: pendingFormData.purchaseOrder,
+                        role: pendingFormData.role,
+                        location: pendingFormData.location,
+                        hash: hash,
+                        time: new Date().toLocaleString(),
+                        photos: photoUrls,
+                        files: fileUrls,
+                        photoCount: photoUrls.length,
+                        fileCount: fileUrls.length,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        version: version,
+                        entryGroupId: entryGroupId,
+                        status: 'active',
+                        createdBy: currentUser.uid,
+                        createdByEmail: currentUser.email
+                    };
+
+                    if (pendingFormData.transactionType) {
+                        transaction.transactionType = pendingFormData.transactionType;
+                    }
+
+                    // Copy dynamic field values
+                    var config = roleConfig[currentRole];
+                    var fields = [];
+                    if (!config.hasTabs) {
+                        fields = config.fields.single || [];
+                    } else {
+                        fields = config.fields[currentTab] || [];
+                    }
+                    fields.forEach(function(field) {
+                        if (pendingFormData[field.id] !== undefined) {
+                            transaction[field.id] = pendingFormData[field.id];
+                        }
+                    });
+
+                    // Amendment-specific fields
+                    if (amendingTransaction) {
+                        transaction.supersedes = amendingTransaction.key;
+                        transaction.correctionReason = document.getElementById('correctionReason').value.trim();
+                    }
+
+                    // Push the new transaction
+                    var newRef = await database.ref('transactions').push(transaction);
+                    var newKey = newRef.key;
+
+                    // If amending, mark old transaction as superseded
+                    if (amendingTransaction) {
+                        await database.ref('transactions/' + amendingTransaction.key).update({
+                            status: 'superseded',
+                            supersededBy: newKey
+                        });
+                    }
+
+                    document.getElementById('miningModal').classList.add('hidden');
+
+                    var successTitle = document.getElementById('successTitle');
+                    var successHashEl = document.getElementById('successHash');
+                    if (amendingTransaction) {
+                        successTitle.textContent = 'Correction Submitted!';
+                        successHashEl.textContent = 'Hash: ' + hash.substring(0, 16) + '... (v' + version + ')';
+                    } else {
+                        successTitle.textContent = 'Transaction Confirmed!';
+                        successHashEl.textContent = 'Hash: ' + hash.substring(0, 16) + '...';
+                    }
+
+                    document.getElementById('successModal').classList.remove('hidden');
+
+                    document.getElementById('transactionForm').reset();
+                    clearAllFiles();
+                    cancelAmendment();
+
+                    var today = new Date().toISOString().split('T')[0];
+                    document.getElementById('transactionDate').value = today;
+
+                    loadRecentTransactions();
+                    pendingFormData = null;
+
+                } catch (error) {
+                    console.error('Error saving transaction:', error);
+                    document.getElementById('miningModal').classList.add('hidden');
+                    alert('Error submitting transaction. Please try again.\n\nError: ' + (error.message || error.code || 'Unknown error'));
+                    pendingFormData = null;
+                }
+            }, miningDelay);
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // ==================== RECENT TRANSACTIONS ====================
+        function loadRecentTransactions() {
+            var container = document.getElementById('recentTransactions');
+            container.innerHTML = '';
+
+            var loadingP = document.createElement('p');
+            loadingP.className = 'text-purple-300 text-sm';
+            loadingP.textContent = 'Loading...';
+            container.appendChild(loadingP);
+
+            database.ref('transactions').orderByChild('timestamp').limitToLast(10).once('value')
+                .then(function(snapshot) {
+                    container.innerHTML = '';
+                    var transactions = [];
+
+                    snapshot.forEach(function(childSnapshot) {
+                        transactions.unshift({
+                            key: childSnapshot.key,
+                            data: childSnapshot.val()
+                        });
+                    });
+
+                    if (transactions.length === 0) {
+                        var emptyP = document.createElement('p');
+                        emptyP.className = 'text-purple-300 text-sm text-center py-4';
+                        emptyP.textContent = 'No transactions yet';
+                        container.appendChild(emptyP);
+                        return;
+                    }
+
+                    var now = Date.now();
+                    var fortyEightHours = 48 * 60 * 60 * 1000;
+
+                    transactions.forEach(function(tx) {
+                        var card = document.createElement('div');
+                        card.className = 'bg-black/30 rounded-xl p-4 border border-purple-500/30';
+
+                        // Superseded badge
+                        if (tx.data.status === 'superseded') {
+                            card.className += ' opacity-50';
+                        }
+
+                        var headerRow = document.createElement('div');
+                        headerRow.className = 'flex justify-between items-start mb-2';
+
+                        var leftDiv = document.createElement('div');
+
+                        var refDiv = document.createElement('div');
+                        refDiv.className = 'text-white font-bold';
+                        refDiv.textContent = tx.data.nxReference || tx.data.packingList || 'N/A';
+                        leftDiv.appendChild(refDiv);
+
+                        var locDiv = document.createElement('div');
+                        locDiv.className = 'text-purple-300 text-sm';
+                        locDiv.textContent = tx.data.location || '';
+                        leftDiv.appendChild(locDiv);
+
+                        var metaDiv = document.createElement('div');
+                        metaDiv.className = 'text-purple-400 text-xs';
+                        metaDiv.textContent = (tx.data.customer || 'N/A') + ' - ' + (tx.data.transactionType || 'Single');
+                        leftDiv.appendChild(metaDiv);
+
+                        headerRow.appendChild(leftDiv);
+
+                        var rightDiv = document.createElement('div');
+                        rightDiv.className = 'flex flex-col items-end gap-1';
+
+                        var weightBadge = document.createElement('div');
+                        weightBadge.className = 'bg-purple-600 px-3 py-1 rounded-lg text-white text-xs';
+                        weightBadge.textContent = (tx.data.netWeight || 'N/A') + ' kg';
+                        rightDiv.appendChild(weightBadge);
+
+                        if (tx.data.status === 'superseded') {
+                            var supBadge = document.createElement('span');
+                            supBadge.className = 'bg-red-500/50 text-red-200 text-xs px-2 py-0.5 rounded';
+                            supBadge.textContent = 'Superseded';
+                            rightDiv.appendChild(supBadge);
+                        }
+
+                        if (tx.data.version && tx.data.version > 1) {
+                            var verBadge = document.createElement('span');
+                            verBadge.className = 'bg-yellow-500/50 text-yellow-200 text-xs px-2 py-0.5 rounded';
+                            verBadge.textContent = 'v' + tx.data.version;
+                            rightDiv.appendChild(verBadge);
+                        }
+
+                        headerRow.appendChild(rightDiv);
+                        card.appendChild(headerRow);
+
+                        var timeDiv = document.createElement('div');
+                        timeDiv.className = 'text-purple-400 text-xs';
+                        var clockIcon = document.createElement('i');
+                        clockIcon.className = 'fas fa-clock mr-1';
+                        timeDiv.appendChild(clockIcon);
+                        timeDiv.appendChild(document.createTextNode(tx.data.time || ''));
+                        card.appendChild(timeDiv);
+
+                        var hashDiv = document.createElement('div');
+                        hashDiv.className = 'text-purple-400 text-xs mt-1 truncate';
+                        var linkIcon = document.createElement('i');
+                        linkIcon.className = 'fas fa-link mr-1';
+                        hashDiv.appendChild(linkIcon);
+                        hashDiv.appendChild(document.createTextNode(tx.data.hash || ''));
+                        card.appendChild(hashDiv);
+
+                        // Amend button: only for current user's active transactions within 48 hours
+                        var txTimestamp = tx.data.timestamp || 0;
+                        var isOwnTx = currentUser && tx.data.createdBy === currentUser.uid;
+                        var isRecent = (now - txTimestamp) < fortyEightHours;
+                        var isActive = tx.data.status !== 'superseded';
+
+                        if (isOwnTx && isRecent && isActive) {
+                            var amendBtn = document.createElement('button');
+                            amendBtn.className = 'mt-2 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 text-yellow-200 text-xs font-bold px-3 py-1.5 rounded-lg transition';
+                            amendBtn.setAttribute('data-key', tx.key);
+                            var editIcon = document.createElement('i');
+                            editIcon.className = 'fas fa-edit mr-1';
+                            amendBtn.appendChild(editIcon);
+                            amendBtn.appendChild(document.createTextNode('Amend'));
+                            amendBtn.addEventListener('click', (function(key, data) {
+                                return function() { startAmendment(key, data); };
+                            })(tx.key, tx.data));
+                            card.appendChild(amendBtn);
+                        }
+
+                        container.appendChild(card);
+                    });
+                })
+                .catch(function(error) {
+                    console.error('Error loading transactions:', error);
+                    container.innerHTML = '';
+
+                    if (error.code === 'PERMISSION_DENIED') {
+                        var warnDiv = document.createElement('div');
+                        warnDiv.className = 'bg-yellow-500/20 border border-yellow-500/50 rounded-xl p-4 text-yellow-200 text-sm';
+
+                        var warnTitle = document.createElement('div');
+                        warnTitle.className = 'font-bold mb-2';
+                        var lockIcon = document.createElement('i');
+                        lockIcon.className = 'fas fa-lock mr-2';
+                        warnTitle.appendChild(lockIcon);
+                        warnTitle.appendChild(document.createTextNode('Authentication Required'));
+                        warnDiv.appendChild(warnTitle);
+
+                        var warnMsg = document.createElement('div');
+                        warnMsg.className = 'mb-2';
+                        warnMsg.textContent = 'Cannot load transactions. Firebase security rules require authentication.';
+                        warnDiv.appendChild(warnMsg);
+
+                        container.appendChild(warnDiv);
+                    } else {
+                        var errP = document.createElement('p');
+                        errP.className = 'text-red-400 text-sm';
+                        errP.textContent = 'Error loading transactions: ' + error.message;
+                        container.appendChild(errP);
+                    }
+                });
+        }
+
+        // ==================== INITIALIZATION ====================
+        window.addEventListener('DOMContentLoaded', function() {
+            initAuth();
+        });
+    </script>
+</body>
+</html>
